@@ -63,15 +63,13 @@ public partial class CipdbContext : DbContext
     {
         modelBuilder.Entity<Cart>(entity =>
         {
-            entity.HasKey(e => e.CartId).HasName("PK__Cart__2EF52A27C8EC2F4E");
+            entity.HasKey(e => e.CartId).HasName("PK__Cart__2EF52A27970D37B7");
 
             entity.ToTable("Cart");
 
-            entity.HasIndex(e => e.UserId, "UQ__Cart__B9BE370EAA6DB139").IsUnique();
+            entity.HasIndex(e => e.UserId, "UQ__Cart__B9BE370E000AE7FA").IsUnique();
 
-            entity.Property(e => e.CartId)
-                .ValueGeneratedNever()
-                .HasColumnName("cart_id");
+            entity.Property(e => e.CartId).HasColumnName("cart_id");
             entity.Property(e => e.TotalPrice).HasColumnName("total_price");
             entity.Property(e => e.UserId).HasColumnName("user_id");
 
@@ -92,7 +90,7 @@ public partial class CipdbContext : DbContext
                         .HasConstraintName("FK__Cart_Deta__cart___5441852A"),
                     j =>
                     {
-                        j.HasKey("CartId", "ExamId").HasName("PK__Cart_Det__A73DED99AF524B10");
+                        j.HasKey("CartId", "ExamId").HasName("PK__Cart_Det__A73DED99A029201C");
                         j.ToTable("Cart_Detail");
                         j.IndexerProperty<int>("CartId").HasColumnName("cart_id");
                         j.IndexerProperty<int>("ExamId").HasColumnName("exam_id");
@@ -101,13 +99,11 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<CertType>(entity =>
         {
-            entity.HasKey(e => e.TypeId).HasName("PK__Cert_Typ__2C000598DD06AD09");
+            entity.HasKey(e => e.TypeId).HasName("PK__Cert_Typ__2C00059831E56A0E");
 
             entity.ToTable("Cert_Types");
 
-            entity.Property(e => e.TypeId)
-                .ValueGeneratedNever()
-                .HasColumnName("type_id");
+            entity.Property(e => e.TypeId).HasColumnName("type_id");
             entity.Property(e => e.TypeCode)
                 .HasMaxLength(1)
                 .HasColumnName("type_code");
@@ -118,11 +114,9 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<Certification>(entity =>
         {
-            entity.HasKey(e => e.CertId).HasName("PK__Certific__024B46EC0E7C712F");
+            entity.HasKey(e => e.CertId).HasName("PK__Certific__024B46EC12DD91B2");
 
-            entity.Property(e => e.CertId)
-                .ValueGeneratedNever()
-                .HasColumnName("cert_id");
+            entity.Property(e => e.CertId).HasColumnName("cert_id");
             entity.Property(e => e.CertCode)
                 .HasMaxLength(1)
                 .HasColumnName("cert_code");
@@ -169,7 +163,7 @@ public partial class CipdbContext : DbContext
                         .HasConstraintName("FK__Cert_Cert__cert___66603565"),
                     j =>
                     {
-                        j.HasKey("CertId", "CertIdTwo").HasName("PK__Cert_Cer__9FBF828F9AE5A511");
+                        j.HasKey("CertId", "CertIdTwo").HasName("PK__Cert_Cer__9FBF828FC371BBBA");
                         j.ToTable("Cert_Cert");
                         j.IndexerProperty<int>("CertId").HasColumnName("cert_id");
                         j.IndexerProperty<int>("CertIdTwo").HasColumnName("cert_id_two");
@@ -188,7 +182,7 @@ public partial class CipdbContext : DbContext
                         .HasConstraintName("FK__Cert_Cert__cert___6754599E"),
                     j =>
                     {
-                        j.HasKey("CertId", "CertIdTwo").HasName("PK__Cert_Cer__9FBF828F9AE5A511");
+                        j.HasKey("CertId", "CertIdTwo").HasName("PK__Cert_Cer__9FBF828FC371BBBA");
                         j.ToTable("Cert_Cert");
                         j.IndexerProperty<int>("CertId").HasColumnName("cert_id");
                         j.IndexerProperty<int>("CertIdTwo").HasColumnName("cert_id_two");
@@ -197,11 +191,9 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<Course>(entity =>
         {
-            entity.HasKey(e => e.CourseId).HasName("PK__Courses__8F1EF7AEF670FDBF");
+            entity.HasKey(e => e.CourseId).HasName("PK__Courses__8F1EF7AEC6083914");
 
-            entity.Property(e => e.CourseId)
-                .ValueGeneratedNever()
-                .HasColumnName("course_id");
+            entity.Property(e => e.CourseId).HasColumnName("course_id");
             entity.Property(e => e.CertId).HasColumnName("cert_id");
             entity.Property(e => e.CourseCode)
                 .HasMaxLength(1)
@@ -223,13 +215,11 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<CoursesEnrollment>(entity =>
         {
-            entity.HasKey(e => e.CourseEnrollmentId).HasName("PK__Courses___88BB3C79962BBD33");
+            entity.HasKey(e => e.CourseEnrollmentId).HasName("PK__Courses___88BB3C795DC42E2B");
 
             entity.ToTable("Courses_Enrollment");
 
-            entity.Property(e => e.CourseEnrollmentId)
-                .ValueGeneratedNever()
-                .HasColumnName("course_enrollment_id");
+            entity.Property(e => e.CourseEnrollmentId).HasColumnName("course_enrollment_id");
             entity.Property(e => e.CourseEnrollmentDate)
                 .HasColumnType("datetime")
                 .HasColumnName("course_enrollment_date");
@@ -246,13 +236,11 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<ExamSession>(entity =>
         {
-            entity.HasKey(e => e.SessionId).HasName("PK__Exam_Ses__69B13FDCCEA655DC");
+            entity.HasKey(e => e.SessionId).HasName("PK__Exam_Ses__69B13FDCD5630ACC");
 
             entity.ToTable("Exam_Sessions");
 
-            entity.Property(e => e.SessionId)
-                .ValueGeneratedNever()
-                .HasColumnName("session_id");
+            entity.Property(e => e.SessionId).HasColumnName("session_id");
             entity.Property(e => e.CertId).HasColumnName("cert_id");
             entity.Property(e => e.SessionAddress)
                 .HasMaxLength(1)
@@ -277,13 +265,11 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<ExamsEnrollment>(entity =>
         {
-            entity.HasKey(e => e.ExamEnrollmentId).HasName("PK__Exams_En__225496D52ACDA18E");
+            entity.HasKey(e => e.ExamEnrollmentId).HasName("PK__Exams_En__225496D59C78648C");
 
             entity.ToTable("Exams_Enrollment");
 
-            entity.Property(e => e.ExamEnrollmentId)
-                .ValueGeneratedNever()
-                .HasColumnName("exam_enrollment_id");
+            entity.Property(e => e.ExamEnrollmentId).HasColumnName("exam_enrollment_id");
             entity.Property(e => e.ExamEnrollmentDate)
                 .HasColumnType("datetime")
                 .HasColumnName("exam_enrollment_date");
@@ -300,11 +286,9 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<Feedback>(entity =>
         {
-            entity.HasKey(e => e.FeedbackId).HasName("PK__Feedback__7A6B2B8C424CDE45");
+            entity.HasKey(e => e.FeedbackId).HasName("PK__Feedback__7A6B2B8C524C1F24");
 
-            entity.Property(e => e.FeedbackId)
-                .ValueGeneratedNever()
-                .HasColumnName("feedback_id");
+            entity.Property(e => e.FeedbackId).HasColumnName("feedback_id");
             entity.Property(e => e.ExamId).HasColumnName("exam_id");
             entity.Property(e => e.FeedbackCreatedAt)
                 .HasColumnType("datetime")
@@ -328,7 +312,7 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<JobCert>(entity =>
         {
-            entity.HasKey(e => new { e.CertId, e.JobPositionId }).HasName("PK__Job_Cert__6266A6D88AD79F92");
+            entity.HasKey(e => new { e.CertId, e.JobPositionId }).HasName("PK__Job_Cert__6266A6D8B7C649FB");
 
             entity.ToTable("Job_Cert");
 
@@ -348,7 +332,7 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<JobPosition>(entity =>
         {
-            entity.HasKey(e => e.JobPositionId).HasName("PK__Job_Posi__02DE03475E081E95");
+            entity.HasKey(e => e.JobPositionId).HasName("PK__Job_Posi__02DE0347CC7AC955");
 
             entity.ToTable("Job_Positions");
 
@@ -368,11 +352,9 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<Major>(entity =>
         {
-            entity.HasKey(e => e.MajorId).HasName("PK__Majors__DC7AC3C42401D665");
+            entity.HasKey(e => e.MajorId).HasName("PK__Majors__DC7AC3C4C125CB73");
 
-            entity.Property(e => e.MajorId)
-                .ValueGeneratedNever()
-                .HasColumnName("major_id");
+            entity.Property(e => e.MajorId).HasColumnName("major_id");
             entity.Property(e => e.MajorCode)
                 .HasMaxLength(255)
                 .HasColumnName("major_code");
@@ -396,7 +378,7 @@ public partial class CipdbContext : DbContext
                         .HasConstraintName("FK__Major_Pos__major__656C112C"),
                     j =>
                     {
-                        j.HasKey("MajorId", "JobPositionId").HasName("PK__Major_Po__BC5723F0D8B0DE25");
+                        j.HasKey("MajorId", "JobPositionId").HasName("PK__Major_Po__BC5723F00F074254");
                         j.ToTable("Major_Position");
                         j.IndexerProperty<int>("MajorId").HasColumnName("major_id");
                         j.IndexerProperty<int>("JobPositionId").HasColumnName("job_position_id");
@@ -405,13 +387,11 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<Organize>(entity =>
         {
-            entity.HasKey(e => e.OrganizeId).HasName("PK__Organize__C5D74862BBA60ED3");
+            entity.HasKey(e => e.OrganizeId).HasName("PK__Organize__C5D74862DC0E62BC");
 
             entity.ToTable("Organize");
 
-            entity.Property(e => e.OrganizeId)
-                .ValueGeneratedNever()
-                .HasColumnName("organize_id");
+            entity.Property(e => e.OrganizeId).HasColumnName("organize_id");
             entity.Property(e => e.OrganizeAddress)
                 .HasMaxLength(1)
                 .HasColumnName("organize_address");
@@ -425,11 +405,9 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<Payment>(entity =>
         {
-            entity.HasKey(e => e.PaymentId).HasName("PK__Payments__ED1FC9EAFB8FE9AD");
+            entity.HasKey(e => e.PaymentId).HasName("PK__Payments__ED1FC9EAE7192F6F");
 
-            entity.Property(e => e.PaymentId)
-                .ValueGeneratedNever()
-                .HasColumnName("payment_id");
+            entity.Property(e => e.PaymentId).HasColumnName("payment_id");
             entity.Property(e => e.CourseEnrollmentId).HasColumnName("course_enrollment_id");
             entity.Property(e => e.ExamEnrollmentId).HasColumnName("exam_enrollment_id");
             entity.Property(e => e.PaymentAmount).HasColumnName("payment_amount");
@@ -459,11 +437,9 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<Question>(entity =>
         {
-            entity.HasKey(e => e.QuestionId).HasName("PK__Question__2EC2154972AFD824");
+            entity.HasKey(e => e.QuestionId).HasName("PK__Question__2EC2154972586FC8");
 
-            entity.Property(e => e.QuestionId)
-                .ValueGeneratedNever()
-                .HasColumnName("question_id");
+            entity.Property(e => e.QuestionId).HasColumnName("question_id");
             entity.Property(e => e.CorrectAnswer).HasColumnName("correct_answer");
             entity.Property(e => e.ExamId).HasColumnName("exam_id");
             entity.Property(e => e.QuestionAnswer)
@@ -480,13 +456,11 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<SimulationExam>(entity =>
         {
-            entity.HasKey(e => e.ExamId).HasName("PK__Simulati__9C8C7BE9A7DB6CDA");
+            entity.HasKey(e => e.ExamId).HasName("PK__Simulati__9C8C7BE9567AA417");
 
             entity.ToTable("Simulation_Exams");
 
-            entity.Property(e => e.ExamId)
-                .ValueGeneratedNever()
-                .HasColumnName("exam_id");
+            entity.Property(e => e.ExamId).HasColumnName("exam_id");
             entity.Property(e => e.CertId).HasColumnName("cert_id");
             entity.Property(e => e.ExamCode)
                 .HasMaxLength(1)
@@ -520,7 +494,7 @@ public partial class CipdbContext : DbContext
                         .HasConstraintName("FK__Voucher_O__exam___5CD6CB2B"),
                     j =>
                     {
-                        j.HasKey("ExamId", "VoucherId").HasName("PK__Voucher___04871413E1F77568");
+                        j.HasKey("ExamId", "VoucherId").HasName("PK__Voucher___04871413AF9F6BD2");
                         j.ToTable("Voucher_Of_Exam");
                         j.IndexerProperty<int>("ExamId").HasColumnName("exam_id");
                         j.IndexerProperty<int>("VoucherId").HasColumnName("voucher_id");
@@ -529,7 +503,7 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<StudentOfCourse>(entity =>
         {
-            entity.HasKey(e => new { e.CouseEnrollmentId, e.CourseId }).HasName("PK__Student___793235F2D5670AB1");
+            entity.HasKey(e => new { e.CouseEnrollmentId, e.CourseId }).HasName("PK__Student___793235F2B33E0FA7");
 
             entity.ToTable("Student_Of_Course");
 
@@ -557,7 +531,7 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<StudentOfExam>(entity =>
         {
-            entity.HasKey(e => new { e.EnrollmentId, e.ExamId }).HasName("PK__Student___E4EC6DC40C75B221");
+            entity.HasKey(e => new { e.EnrollmentId, e.ExamId }).HasName("PK__Student___E4EC6DC4C1190D60");
 
             entity.ToTable("Student_Of_Exam");
 
@@ -585,13 +559,11 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Users__B9BE370FEC5D4FD4");
+            entity.HasKey(e => e.UserId).HasName("PK__Users__B9BE370F4223BBB4");
 
-            entity.Property(e => e.UserId)
-                .ValueGeneratedNever()
-                .HasColumnName("user_id");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.Property(e => e.Address)
-                .HasMaxLength(1)
+                .HasMaxLength(255)
                 .HasColumnName("address");
             entity.Property(e => e.Dob)
                 .HasColumnType("datetime")
@@ -600,12 +572,15 @@ public partial class CipdbContext : DbContext
                 .HasMaxLength(255)
                 .HasColumnName("email");
             entity.Property(e => e.Fullname)
-                .HasMaxLength(1)
+                .HasMaxLength(255)
                 .HasColumnName("fullname");
             entity.Property(e => e.Password)
                 .HasMaxLength(255)
                 .HasColumnName("password");
-            entity.Property(e => e.PhoneNumber).HasColumnName("phone_number");
+            entity.Property(e => e.PhoneNumber)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("phone_number");
             entity.Property(e => e.Role)
                 .HasMaxLength(255)
                 .HasColumnName("role");
@@ -623,11 +598,9 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<Voucher>(entity =>
         {
-            entity.HasKey(e => e.VoucherId).HasName("PK__Vouchers__80B6FFA8B58A01DF");
+            entity.HasKey(e => e.VoucherId).HasName("PK__Vouchers__80B6FFA829A73AD5");
 
-            entity.Property(e => e.VoucherId)
-                .ValueGeneratedNever()
-                .HasColumnName("voucher_id");
+            entity.Property(e => e.VoucherId).HasColumnName("voucher_id");
             entity.Property(e => e.CreationDate)
                 .HasColumnType("datetime")
                 .HasColumnName("creation_date");
@@ -646,15 +619,13 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<Wallet>(entity =>
         {
-            entity.HasKey(e => e.WalletId).HasName("PK__Wallet__0EE6F04157411278");
+            entity.HasKey(e => e.WalletId).HasName("PK__Wallet__0EE6F041A7D2ED6F");
 
             entity.ToTable("Wallet");
 
-            entity.HasIndex(e => e.UserId, "UQ__Wallet__B9BE370E62A41689").IsUnique();
+            entity.HasIndex(e => e.UserId, "UQ__Wallet__B9BE370E4F116389").IsUnique();
 
-            entity.Property(e => e.WalletId)
-                .ValueGeneratedNever()
-                .HasColumnName("wallet_id");
+            entity.Property(e => e.WalletId).HasColumnName("wallet_id");
             entity.Property(e => e.DepositDate)
                 .HasColumnType("datetime")
                 .HasColumnName("deposit_date");

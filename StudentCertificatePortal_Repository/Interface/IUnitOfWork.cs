@@ -1,4 +1,5 @@
-﻿using System;
+﻿using StudentCertificatePortal_Data.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,7 @@ namespace StudentCertificatePortal_Repository.Interface
 {
     public interface IUnitOfWork
     {
+        IBaseRepository<User> UserRepository { get; }
         Task Commit(CancellationToken cancellationToken);
     }
 }
