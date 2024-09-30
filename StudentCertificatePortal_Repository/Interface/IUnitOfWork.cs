@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace StudentCertificatePortal_Repository.Interface
 {
-    internal class IUnitOfWork
+    public interface IUnitOfWork
     {
+        Task Commit(CancellationToken cancellationToken);
     }
 }

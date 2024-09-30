@@ -15,4 +15,8 @@
     <Folder Include="Controllers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\StudentCertificatePortal_Repository\StudentCertificatePortal_Repository.csproj" />
+  </ItemGroup>
+
 </Project>
