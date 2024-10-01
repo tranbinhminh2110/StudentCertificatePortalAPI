@@ -71,7 +71,16 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityRequirement(securityRequirement);
 
 });
-
+// Add Cors Policy
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -90,6 +99,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseCors();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
