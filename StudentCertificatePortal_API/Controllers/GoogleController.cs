@@ -19,12 +19,12 @@ namespace StudentCertificatePortal_API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class AccountController: ControllerBase
+    public class GoogleController: ControllerBase
     {
         private readonly IUnitOfWork _uow;
         private readonly GenerateJSONWebTokenHelper _helper;
         private readonly ILoginService _service;
-        public AccountController(IUnitOfWork uow, GenerateJSONWebTokenHelper helper, ILoginService service)
+        public GoogleController(IUnitOfWork uow, GenerateJSONWebTokenHelper helper, ILoginService service)
         {
             _uow = uow;
             _helper = helper;
@@ -34,7 +34,7 @@ namespace StudentCertificatePortal_API.Controllers
         [HttpGet("login-google")]
         public IActionResult LoginGoogle()
         {
-            var redirectUrl = Url.Action("GoogleResponse", "Account");
+            var redirectUrl = Url.Action("GoogleResponse", "Google");
             var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
