@@ -67,7 +67,7 @@ public partial class CipdbContext : DbContext
         return connectionString;
     }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer(GetConnectionString("DBDefault"));
+        => optionsBuilder.UseSqlServer(GetConnectionString("CIPDB"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
