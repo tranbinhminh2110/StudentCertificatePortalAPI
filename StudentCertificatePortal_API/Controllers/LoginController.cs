@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using StudentCertificatePortal_API.Commons;
@@ -6,6 +8,7 @@ using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.Contracts.Responses;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_API.Utils;
+using System.Security.Claims;
 
 namespace StudentCertificatePortal_API.Controllers
 {
@@ -39,5 +42,7 @@ namespace StudentCertificatePortal_API.Controllers
                 return Unauthorized("Email or Password is incorrect!");
             }
         }
+
+        
     }
 }

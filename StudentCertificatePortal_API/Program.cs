@@ -1,5 +1,8 @@
-using FluentValidation;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using StudentCertificatePortal_API.Services.Implemetation;
 using StudentCertificatePortal_API.Services.Interface;
@@ -17,6 +20,35 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<CipdbContext>(options =>
        options.UseSqlServer(builder.Configuration.GetConnectionString("CIPDB")));
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+})
+.AddCookie() 
+.AddGoogle(options =>
+{
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+    options.CallbackPath = "/sign-in-google"; 
+});
+
+
+// Thêm chính sách CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:7283", "https://localhost:7283") // Thay bằng địa chỉ của frontend
+                   .AllowAnyHeader()
+                   .AllowAnyMethod()
+                   .AllowCredentials(); // Cho phép gửi cookies hoặc xác thực
+        });
+});
 
 // Primary services
 builder.Services.AddHttpContextAccessor();
@@ -98,13 +130,16 @@ if (app.Environment.IsDevelopment())
         c.EnableTryItOutByDefault();
     });
 }
+app.UseRouting();
+app.UseCors("AllowAllOrigins");
+app.UseHttpsRedirection();
 
 app.UseCors();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseDeveloperExceptionPage();
 app.MapControllers();
 
 app.Run();
