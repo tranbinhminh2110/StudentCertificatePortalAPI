@@ -121,8 +121,7 @@ if (app.Environment.IsDevelopment())
         c.EnableTryItOutByDefault();
     });
 }
-app.UseSwagger();
-app.UseSwaggerUI();
+
 app.UseRouting();
 app.UseCors("AllowAllOrigins");
 app.UseHttpsRedirection();
