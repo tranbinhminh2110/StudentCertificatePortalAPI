@@ -122,10 +122,13 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+
 app.UseRouting();
 app.UseCors("AllowAllOrigins");
 app.UseHttpsRedirection();
 
+app.UseSwagger();
+app.UseSwaggerUI();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseDeveloperExceptionPage();
