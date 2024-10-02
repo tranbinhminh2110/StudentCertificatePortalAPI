@@ -62,5 +62,5 @@ jobs:
         with:
           app-name: 'certificateinformationportal'
           slot-name: 'Production'
-          package: ./myapp
+          package: .
           
