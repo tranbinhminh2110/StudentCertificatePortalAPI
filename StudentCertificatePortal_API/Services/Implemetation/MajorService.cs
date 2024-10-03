@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
+using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
@@ -11,14 +13,24 @@ namespace StudentCertificatePortal_API.Services.Implemetation
     {
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
-        public MajorService(IUnitOfWork uow, IMapper mapper)
+
+        private readonly IValidator<CreateMajorRequest> _addMajorValidator;
+        private readonly IValidator<UpdateMajorRequest> _updateMajorValidator;
+        public MajorService(IUnitOfWork uow, IMapper mapper,IValidator<CreateMajorRequest> addMajorValidator, IValidator<UpdateMajorRequest> updateMajorValidator)
         {
             _uow = uow;
             _mapper = mapper;
+            _addMajorValidator = addMajorValidator;
+            _updateMajorValidator = updateMajorValidator;
         }
 
         public async Task<MajorDto> CreateMajorAsync(CreateMajorRequest request, CancellationToken cancellationToken)
         {
+            var validation = await _addMajorValidator.ValidateAsync(request, cancellationToken);
+            if (!validation.IsValid)
+            {
+                throw new RequestValidationException(validation.Errors);
+            }
             var majorEntity = new Major()
             {
                 MajorCode = request.MajorCode,
@@ -60,6 +72,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<MajorDto> UpdateMajorAsync(int majorId, UpdateMajorRequest request, CancellationToken cancellationToken)
         {
+            var validation = await _updateMajorValidator.ValidateAsync(request, cancellationToken);
+            if (!validation.IsValid)
+            {
+                throw new RequestValidationException(validation.Errors);
+            }
             var major = await _uow.MajorRepository.FirstOrDefaultAsync(x => x.MajorId == majorId, cancellationToken);
             if (major is null)
             {
