@@ -43,7 +43,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAllOrigins",
         builder =>
         {
-            builder.WithOrigins("http://localhost:7283", "https://localhost:3000") // Thay bằng địa chỉ của frontend
+            builder.WithOrigins("https://localhost:3000", "http://localhost:7283") // Thay bằng địa chỉ của frontend
                    .AllowAnyHeader()
                    .AllowAnyMethod()
                    .AllowCredentials(); // Cho phép gửi cookies hoặc xác thực
