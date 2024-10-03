@@ -60,6 +60,7 @@ builder.Services.AddTransient<GenerateJSONWebTokenHelper>();
 
 // Add a implementation "Repositories"
 builder.Services.AddTransient<IBaseRepository<User>, UserRepository>();
+builder.Services.AddTransient<IBaseRepository<Organize>, OrganizeRepository>();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
 
@@ -67,6 +68,7 @@ builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<IOrganizeService, OrganizeService>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
