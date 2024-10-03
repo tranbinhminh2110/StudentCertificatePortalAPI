@@ -14,6 +14,7 @@ namespace StudentCertificatePortal_Repository.Implementation
 
         private IBaseRepository<User>? _userRepository;
         private IBaseRepository<Organize>? _organizeRepository;
+        private IBaseRepository<Major>? _majorRepository;
 
         public UnitOfWork(CipdbContext context)
         {
@@ -23,6 +24,8 @@ namespace StudentCertificatePortal_Repository.Implementation
 
         public IBaseRepository<User> UserRepository => _userRepository ??= new UserRepository(_context);
         public IBaseRepository<Organize> OrganizeRepository => _organizeRepository ??= new OrganizeRepository(_context);
+        public IBaseRepository<Major> MajorRepository => _majorRepository ??= new MajorRepository(_context);
+
 
 
         public async Task Commit(CancellationToken cancellationToken)

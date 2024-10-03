@@ -369,7 +369,7 @@ public partial class CipdbContext : DbContext
                 .HasMaxLength(255)
                 .HasColumnName("major_code");
             entity.Property(e => e.MajorDescription)
-                .HasMaxLength(1)
+                .HasMaxLength(255)
                 .HasColumnName("major_description");
             entity.Property(e => e.MajorName)
                 .HasMaxLength(255)
