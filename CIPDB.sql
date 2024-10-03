@@ -17,7 +17,7 @@ GO
 CREATE TABLE [Majors] (
   [major_id] integer IDENTITY(1,1) PRIMARY KEY,
   [major_code] nvarchar(255),
-  [major_name] nvarchar,
+  [major_name] nvarchar(255),
   [major_description] nvarchar
 )
 GO
@@ -31,21 +31,21 @@ GO
 
 CREATE TABLE [Job_Positions] (
   [job_position_id] integer PRIMARY KEY,
-  [job_position_code] nvarchar,
-  [job_position_name] nvarchar,
-  [job_position_description] nvarchar
+  [job_position_code] nvarchar(255),
+  [job_position_name] nvarchar(255),
+  [job_position_description] nvarchar(255)
 )
 GO
 
 CREATE TABLE [Certifications] (
   [cert_id] integer IDENTITY(1,1) PRIMARY KEY,
-  [cert_name] nvarchar,
-  [cert_code] nvarchar,
-  [cert_description] nvarchar,
+  [cert_name] nvarchar(255),
+  [cert_code] nvarchar(255),
+  [cert_description] nvarchar(255),
   [cert_cost] integer,
-  [cert_point_system] nvarchar,
+  [cert_point_system] nvarchar(255),
   [cert_image] text,
-  [cert_prerequisite] nvarchar,
+  [cert_prerequisite] nvarchar(255),
   [expiry_date] datetime,
   [type_id] integer,
   [organize_id] integer
@@ -61,17 +61,17 @@ GO
 
 CREATE TABLE [Cert_Types] (
   [type_id] integer IDENTITY(1,1) PRIMARY KEY,
-  [type_code] nvarchar,
-  [type_name] nvarchar
+  [type_code] nvarchar(255),
+  [type_name] nvarchar(255)
 )
 GO
 
 CREATE TABLE [Exam_Sessions] (
   [session_id] integer IDENTITY(1,1) PRIMARY KEY,
-  [session_name] nvarchar,
-  [session_code] nvarchar,
+  [session_name] nvarchar(255),
+  [session_code] nvarchar(255),
   [session_date] datetime,
-  [session_address] nvarchar,
+  [session_address] nvarchar(255),
   [cert_id] integer,
   [session_createdAt] datetime
 )
@@ -79,10 +79,10 @@ GO
 
 CREATE TABLE [Simulation_Exams] (
   [exam_id] integer IDENTITY(1,1) PRIMARY KEY,
-  [exam_name] nvarchar,
-  [exam_code] nvarchar,
+  [exam_name] nvarchar(255),
+  [exam_code] nvarchar(255),
   [cert_id] integer,
-  [exam_description] nvarchar,
+  [exam_description] nvarchar(255),
   [exam_fee] integer,
   [exam_discount_fee] integer,
   [exam_image] text
@@ -91,9 +91,9 @@ GO
 
 CREATE TABLE [Questions] (
   [question_id] integer IDENTITY(1,1) PRIMARY KEY,
-  [question_name] nvarchar,
+  [question_name] nvarchar(255),
   [exam_id] integer,
-  [question_answer] nvarchar,
+  [question_answer] nvarchar(255),
   [correct_answer] bit
 )
 GO
@@ -121,7 +121,7 @@ GO
 
 CREATE TABLE [Feedbacks] (
   [feedback_id] integer IDENTITY(1,1) PRIMARY KEY,
-  [feedback_description] nvarchar,
+  [feedback_description] nvarchar(255),
   [user_id] integer,
   [exam_id] integer,
   [feedback_createdAt] datetime,
@@ -163,8 +163,8 @@ GO
 
 CREATE TABLE [Vouchers] (
   [voucher_id] integer IDENTITY(1,1) PRIMARY KEY,
-  [voucher_name] nvarchar,
-  [voucher_description] nvarchar,
+  [voucher_name] nvarchar(255),
+  [voucher_description] nvarchar(255),
   [percentage] integer,
   [creation_date] datetime,
   [expiry_date] datetime,
@@ -191,18 +191,18 @@ GO
 
 CREATE TABLE [Organize] (
   [organize_id] integer IDENTITY(1,1) PRIMARY KEY,
-  [organize_name] nvarchar,
-  [organize_address] nvarchar,
-  [organize_contact] nvarchar
+  [organize_name] nvarchar(255),
+  [organize_address] nvarchar(255),
+  [organize_contact] nvarchar(255)
 )
 GO
 
 CREATE TABLE [Courses] (
   [course_id] integer IDENTITY(1,1) PRIMARY KEY,
-  [course_name] nvarchar,
-  [course_code] nvarchar,
+  [course_name] nvarchar(255),
+  [course_code] nvarchar(255),
   [course_time] nvarchar(255),
-  [course_description] nvarchar,
+  [course_description] nvarchar(255),
   [cert_id] integer
 )
 GO
