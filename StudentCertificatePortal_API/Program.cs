@@ -40,14 +40,12 @@ builder.Services.AddAuthentication(options =>
 // Thêm chính sách CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllOrigins",
-        builder =>
-        {
-            builder.WithOrigins("https://localhost:3000", "http://localhost:7283") // Thay bằng địa chỉ của frontend
-                   .AllowAnyHeader()
-                   .AllowAnyMethod()
-                   .AllowCredentials(); // Cho phép gửi cookies hoặc xác thực
-        });
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
+    });
 });
 
 // Primary services
@@ -124,7 +122,7 @@ if (app.Environment.IsDevelopment())
 
 
 app.UseRouting();
-app.UseCors("AllowAllOrigins");
+app.UseCors();
 app.UseHttpsRedirection();
 
 app.UseSwagger();
