@@ -13,6 +13,8 @@ namespace StudentCertificatePortal_Repository.Implementation
         private readonly CipdbContext _context;
 
         private IBaseRepository<User>? _userRepository;
+        private IBaseRepository<Organize>? _organizeRepository;
+
         public UnitOfWork(CipdbContext context)
         {
             _context = context;
@@ -20,6 +22,8 @@ namespace StudentCertificatePortal_Repository.Implementation
         internal CipdbContext Context => _context;
 
         public IBaseRepository<User> UserRepository => _userRepository ??= new UserRepository(_context);
+        public IBaseRepository<Organize> OrganizeRepository => _organizeRepository ??= new OrganizeRepository(_context);
+
 
         public async Task Commit(CancellationToken cancellationToken)
         {
