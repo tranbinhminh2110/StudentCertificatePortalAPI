@@ -2,6 +2,7 @@
 using FluentValidation;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
+using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
@@ -13,15 +14,22 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
 
-        /*        private readonly IValidator<CreateOrganizeRequest> _addOrganizeValidator;
-                private readonly IValidator<UpdateOrganizeRequest> _updateOrganizeValidator;*/
-        public OrganizeService(IUnitOfWork uow, IMapper mapper)
+        private readonly IValidator<CreateOrganizeRequest> _addOrganizeValidator;
+        private readonly IValidator<UpdateOrganizeRequest> _updateOrganizeValidator;
+        public OrganizeService(IUnitOfWork uow, IMapper mapper, IValidator<CreateOrganizeRequest> addOrganizeValidator, IValidator<UpdateOrganizeRequest> updateOrganizeValidator)
         {
             _uow = uow;
             _mapper = mapper;
+            _addOrganizeValidator = addOrganizeValidator;
+            _updateOrganizeValidator = updateOrganizeValidator;
         }
         public async Task<OrganizeDto> CreateOrganizeAsync(CreateOrganizeRequest request, CancellationToken cancellationToken)
         {
+            var validation = await _addOrganizeValidator.ValidateAsync(request, cancellationToken);
+            if (!validation.IsValid)
+            {
+                throw new RequestValidationException(validation.Errors);
+            }
             var organizeEntity = new Organize()
             {
                 OrganizeName = request.OrganizeName,
@@ -63,6 +71,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<OrganizeDto> UpdateOrganizeAsync(int oragnizeId, UpdateOrganizeRequest request, CancellationToken cancellationToken)
         {
+            var validation = await _updateOrganizeValidator.ValidateAsync(request, cancellationToken);
+            if (!validation.IsValid)
+            {
+                throw new RequestValidationException(validation.Errors);
+            }
             var organize = await _uow.OrganizeRepository.FirstOrDefaultAsync(x => x.OrganizeId == oragnizeId, cancellationToken);
             if (organize is null) 
             {
