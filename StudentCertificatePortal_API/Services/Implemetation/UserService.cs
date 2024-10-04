@@ -16,15 +16,54 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         private readonly IValidator<CreateUserRequest> _addUserValidator;
         private readonly IValidator<UpdateUserRequest> _updateUserValidator;
+        private readonly IValidator<CreateRegisterUserRequest> _addregisterUserValidator;
 
 
-        public UserService(IUnitOfWork uow, IMapper mapper, IValidator<CreateUserRequest> addUserValidator, IValidator<UpdateUserRequest> updateUserValidator)
+        public UserService(IUnitOfWork uow, IMapper mapper,
+            IValidator<CreateUserRequest> addUserValidator,
+            IValidator<UpdateUserRequest> updateUserValidator,
+            IValidator<CreateRegisterUserRequest> addregisterUserValidator)
         {
             _uow = uow;
             _mapper = mapper;
             _addUserValidator = addUserValidator;
             _updateUserValidator = updateUserValidator;
+            _addregisterUserValidator = addregisterUserValidator;
         }
+
+        public async Task<UserDto> CreateRegisterUserAsync(CreateRegisterUserRequest request, CancellationToken cancellationToken)
+        {
+            var existingUser = await _uow.UserRepository.FirstOrDefaultAsync(x =>
+               x.Username.Trim().ToLower() == request.Username.Trim().ToLower()
+               || x.Email.Trim() == request.Email.Trim(),
+               cancellationToken);
+
+            if (existingUser != null)
+            {
+                throw new Exception("This username/email has already been taken.");
+            }
+
+            var userEntity = new User()
+            {
+                Username = request.Username?.Trim(),
+                Password = request.Password,
+                Email = request.Email?.Trim(),
+                Fullname = request.Fullname?.Trim(),
+                Dob = request.Dob,
+                Address = request.Address?.Trim(),
+                PhoneNumber = request.PhoneNumber?.Trim(),
+                Role = "Student",
+                Status = true,
+                UserCreatedAt = DateTime.UtcNow,
+                UserImage = request.UserImage
+            };
+
+            var addedUser = await _uow.UserRepository.AddAsync(userEntity);
+            await _uow.Commit(cancellationToken);
+
+            return _mapper.Map<UserDto>(addedUser);
+        }
+
         public async Task<UserDto> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken)
         {
             var existingUser = await _uow.UserRepository.FirstOrDefaultAsync(x =>
