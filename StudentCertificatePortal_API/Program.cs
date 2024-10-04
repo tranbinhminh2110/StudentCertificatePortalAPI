@@ -60,8 +60,9 @@ builder.Services.AddTransient<IBaseRepository<User>, UserRepository>();
 builder.Services.AddTransient<IBaseRepository<Organize>, OrganizeRepository>();
 builder.Services.AddTransient<IBaseRepository<Major>, MajorRepository>();
 builder.Services.AddTransient<IBaseRepository<Course>, CourseRepository>();
+builder.Services.AddTransient<IBaseRepository<Certification>, CertificationRepository>();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IEmailService, EmailService>();
+
 
 
 // Add a implement "Service"
@@ -71,6 +72,8 @@ builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IOrganizeService, OrganizeService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IMajorService, MajorService>();
+builder.Services.AddScoped<ICertificationService, CertificationService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddSingleton<IRedisService>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
