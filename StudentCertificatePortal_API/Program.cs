@@ -53,13 +53,14 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
 builder.Services.AddTransient<GenerateJSONWebTokenHelper>();
-
+builder.Services.AddTransient<GenerateOTP>();
 
 // Add a implementation "Repositories"
 builder.Services.AddTransient<IBaseRepository<User>, UserRepository>();
 builder.Services.AddTransient<IBaseRepository<Organize>, OrganizeRepository>();
 builder.Services.AddTransient<IBaseRepository<Major>, MajorRepository>();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 
 // Add a implement "Service"
@@ -68,6 +69,12 @@ builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IOrganizeService, OrganizeService>();
 builder.Services.AddScoped<IMajorService, MajorService>();
+builder.Services.AddSingleton<IRedisService>(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    var redisConnectionString = configuration["ConnectionStrings:Redis"];
+    return new RedisService(redisConnectionString);
+});
 
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
