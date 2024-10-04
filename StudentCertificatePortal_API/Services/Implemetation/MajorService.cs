@@ -16,7 +16,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         private readonly IValidator<CreateMajorRequest> _addMajorValidator;
         private readonly IValidator<UpdateMajorRequest> _updateMajorValidator;
-        public MajorService(IUnitOfWork uow, IMapper mapper,IValidator<CreateMajorRequest> addMajorValidator, IValidator<UpdateMajorRequest> updateMajorValidator)
+        public MajorService(IUnitOfWork uow, IMapper mapper, IValidator<CreateMajorRequest> addMajorValidator, IValidator<UpdateMajorRequest> updateMajorValidator)
         {
             _uow = uow;
             _mapper = mapper;

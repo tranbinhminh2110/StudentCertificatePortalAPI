@@ -59,6 +59,7 @@ builder.Services.AddTransient<GenerateOTP>();
 builder.Services.AddTransient<IBaseRepository<User>, UserRepository>();
 builder.Services.AddTransient<IBaseRepository<Organize>, OrganizeRepository>();
 builder.Services.AddTransient<IBaseRepository<Major>, MajorRepository>();
+builder.Services.AddTransient<IBaseRepository<Course>, CourseRepository>();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
@@ -68,6 +69,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
 builder.Services.AddScoped<IOrganizeService, OrganizeService>();
+builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IMajorService, MajorService>();
 builder.Services.AddSingleton<IRedisService>(provider =>
 {
