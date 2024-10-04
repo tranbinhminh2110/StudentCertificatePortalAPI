@@ -18,10 +18,10 @@ namespace StudentCertificatePortal_API.Controllers
         }
 
         [HttpPost]
-        [ValidateRequest(typeof(CreateUserRequest))]
-        public async Task<ActionResult<Result<UserDto>>> CreateUser([FromBody] CreateUserRequest request)
+        [ValidateRequest(typeof(CreateRegisterUserRequest))]
+        public async Task<ActionResult<Result<UserDto>>> CreateUser([FromBody] CreateRegisterUserRequest request)
         {
-            var result = await _service.CreateUserAsync(request, new CancellationToken());
+            var result = await _service.CreateRegisterUserAsync(request, new CancellationToken());
             return Ok(Result<UserDto>.Succeed(result));
         }
     }

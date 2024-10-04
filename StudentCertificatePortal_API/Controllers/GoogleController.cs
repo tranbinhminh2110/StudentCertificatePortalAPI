@@ -73,7 +73,7 @@ namespace StudentCertificatePortal_API.Controllers
                     Dob = DateTime.Now,
                     Address = "Student Certificate Portal",
                     PhoneNumber = "0123456789",
-                    Role = "Guest",
+                    Role = "Student",
                     Status = true,
                     UserCreatedAt = DateTime.Now,
                 };

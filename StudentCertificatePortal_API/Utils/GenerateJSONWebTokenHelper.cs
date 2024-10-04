@@ -34,8 +34,10 @@ namespace StudentCertificatePortal_API.Utils
         {
             var claims = new List<Claim>();
 
+            claims.Add(new Claim(ClaimTypes.Name, user.UserId.ToString()));
+
             // Add email as Name claim
-            claims.Add(new Claim(ClaimTypes.Name, user.Email));
+            claims.Add(new Claim(ClaimTypes.Email, user.Email));
 
             // Add role
             claims.Add(new Claim(ClaimTypes.Role, user.Role));
