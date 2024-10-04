@@ -19,7 +19,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         {
             // Tạo email bằng MimeKit
             var mimeMessage = new MimeMessage();
-            mimeMessage.From.Add(new MailboxAddress("Sender Name", _fromEmail));
+            mimeMessage.From.Add(new MailboxAddress("Student Certificate Portal", _fromEmail));
             mimeMessage.To.Add(new MailboxAddress("Recipient", email));
             mimeMessage.Subject = subject;
 
