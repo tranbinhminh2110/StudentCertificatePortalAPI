@@ -16,6 +16,7 @@ namespace StudentCertificatePortal_Repository.Implementation
         private IBaseRepository<Organize>? _organizeRepository;
         private IBaseRepository<Major>? _majorRepository;
         private IBaseRepository<Course>? _courseRepository;
+        private IBaseRepository<Certification>? _certificationRepository;
 
         public UnitOfWork(CipdbContext context)
         {
@@ -27,6 +28,7 @@ namespace StudentCertificatePortal_Repository.Implementation
         public IBaseRepository<Organize> OrganizeRepository => _organizeRepository ??= new OrganizeRepository(_context);
         public IBaseRepository<Major> MajorRepository => _majorRepository ??= new MajorRepository(_context);
         public IBaseRepository<Course> CourseRepository => _courseRepository ??= new CourseRepository(_context);
+        public IBaseRepository<Certification> CertificationRepository => _certificationRepository ??= new CertificationRepository(_context);
 
 
 
