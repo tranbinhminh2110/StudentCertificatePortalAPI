@@ -12,6 +12,7 @@ namespace StudentCertificatePortal_Repository.Interface
         IBaseRepository<User> UserRepository { get; }
         IBaseRepository<Organize> OrganizeRepository { get; }
         IBaseRepository<Major> MajorRepository { get; }
+        IBaseRepository<Course> CourseRepository { get; }
 
         Task Commit(CancellationToken cancellationToken);
     }
