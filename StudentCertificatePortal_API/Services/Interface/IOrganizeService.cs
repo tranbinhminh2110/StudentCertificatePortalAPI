@@ -10,6 +10,8 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<OrganizeDto> GetOrganizeByIdAsync(int organizeId, CancellationToken cancellationToken);   
         Task<OrganizeDto> UpdateOrganizeAsync(int oragnizeId, UpdateOrganizeRequest request, CancellationToken cancellationToken);
         Task<OrganizeDto> DeleteOrganizeAsync(int organizeId, CancellationToken cancellationToken);
-       
+        Task<List<OrganizeDto>> GetOrganizeByNameAsync(string organizeName, CancellationToken cancellationToken);
+
+
     }
 }

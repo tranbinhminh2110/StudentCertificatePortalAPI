@@ -26,9 +26,10 @@ namespace StudentCertificatePortal_API.Controllers
         [HttpGet("{courseId:int}")]
         public async Task<ActionResult<Result<CourseDto>>> GetCourseById([FromRoute] int courseId)
         {
-            var result = await _service.GetCourseById(courseId, new CancellationToken());
+            var result = await _service.GetCourseByIdAsync(courseId, new CancellationToken());
             return Ok(Result<CourseDto>.Succeed(result));
         }
+        
         [HttpPost]
         public async Task<ActionResult<Result<CourseDto>>> CreateCourse([FromBody] CreateCourseRequest request)
         {
@@ -46,6 +47,12 @@ namespace StudentCertificatePortal_API.Controllers
         {
             var result = await _service.DeleteCourseAsync(courseId, new CancellationToken());
             return Ok(Result<CourseDto>.Succeed(result));
+        }
+        [HttpGet("{courseName}")]
+        public async Task<ActionResult<Result<List<CourseDto>>>> GetCourseByName([FromRoute] string courseName)
+        {
+            var result = await _service.GetCourseByNameAsync(courseName, new CancellationToken());
+            return Ok(Result<List<CourseDto>>.Succeed(result));
         }
     }
 }

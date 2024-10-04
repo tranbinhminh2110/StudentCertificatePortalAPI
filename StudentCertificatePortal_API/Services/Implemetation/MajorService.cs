@@ -70,6 +70,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return _mapper.Map<MajorDto>(result);
         }
 
+        public async Task<List<MajorDto>> GetMajorByNameAsync(string majorName, CancellationToken cancellationToken)
+        {
+            var result = await _uow.MajorRepository.WhereAsync(x => x.MajorName.Contains(majorName), cancellationToken);
+            if (result is null)
+            {
+                throw new KeyNotFoundException("Major not found.");
+            }
+            return _mapper.Map<List<MajorDto>>(result);
+        }
+
         public async Task<MajorDto> UpdateMajorAsync(int majorId, UpdateMajorRequest request, CancellationToken cancellationToken)
         {
             var validation = await _updateMajorValidator.ValidateAsync(request, cancellationToken);

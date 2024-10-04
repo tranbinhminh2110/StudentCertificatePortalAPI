@@ -47,5 +47,11 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.DeleteOrganizeAsync(organizeId, new CancellationToken());
             return Ok(Result<OrganizeDto>.Succeed(result));
         }
+        [HttpGet("{organizeName}")]
+        public async Task<ActionResult<Result<List<OrganizeDto>>>> GetOrganizeByName([FromRoute] string organizeName)
+        {
+            var result = await _service.GetOrganizeByNameAsync(organizeName, new CancellationToken());
+            return Ok(Result<List<OrganizeDto>>.Succeed(result));
+        }
     }
 }

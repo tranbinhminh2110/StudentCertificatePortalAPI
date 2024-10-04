@@ -47,5 +47,11 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.DeleteMajorAsync(majorId, new CancellationToken());
             return Ok(Result<MajorDto>.Succeed(result));
         }
+        [HttpGet("{majorName}")]
+        public async Task<ActionResult<Result<List<MajorDto>>>> GetMajorByName([FromRoute] string majorName)
+        {
+            var result = await _service.GetMajorByNameAsync(majorName, new CancellationToken());
+            return Ok(Result<List<MajorDto>>.Succeed(result));
+        }
     }
 }

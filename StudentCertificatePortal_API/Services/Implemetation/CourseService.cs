@@ -32,18 +32,19 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new RequestValidationException(validation.Errors);
             }
-            /*            var certification = await _uow.CertificationRepository.FirstOrDefaultAsync(x => x.CertId == request.CertId, cancellationToken);
+            var certification = await _uow.CertificationRepository.FirstOrDefaultAsync(x => x.CertId == request.CertId, cancellationToken);
 
-                        if (certification == null)
-                        {
-                            throw new Exception("Certification not found. Course creation requires a valid CertId.");
-                        }*/
+            if (certification == null)
+            {
+                throw new Exception("Certification not found. Course creation requires a valid CertId.");
+            }
             var courseEntity = new Course()
             {
                 CourseName = request.CourseName,
                 CourseCode = request.CourseCode,
                 CourseTime = request.CourseTime,
                 CourseDescription = request.CourseDescription,
+                CertId = request.CertId,
             };
             var result = await _uow.CourseRepository.AddAsync(courseEntity);
             await _uow.Commit(cancellationToken);
@@ -69,7 +70,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return _mapper.Map<List<CourseDto>>(result);
         }
 
-        public async Task<CourseDto> GetCourseById(int courseId, CancellationToken cancellationToken)
+        public async Task<CourseDto> GetCourseByIdAsync(int courseId, CancellationToken cancellationToken)
         {
             var result = await _uow.CourseRepository.FirstOrDefaultAsync(x => x.CourseId == courseId, cancellationToken);
             if (result is null)
@@ -77,6 +78,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new KeyNotFoundException("Course not found.");
             }
             return _mapper.Map<CourseDto>(result);
+        }
+
+        public async Task<List<CourseDto>> GetCourseByNameAsync(string courseName, CancellationToken cancellationToken)
+        {
+            var result = await _uow.CourseRepository.WhereAsync(x => x.CourseName.Contains(courseName), cancellationToken);
+            if (result is null)
+            {
+                throw new KeyNotFoundException("Course not found.");
+            }
+            return _mapper.Map<List<CourseDto>>(result);
         }
 
         public async Task<CourseDto> UpdateCourseAsync(int courseId, UpdateCourseRequest request, CancellationToken cancellationToken)
@@ -95,6 +106,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             course.CourseCode = request.CourseCode;
             course.CourseTime = request.CourseTime;
             course.CourseDescription = request.CourseDescription;
+            course.CertId = request.CertId;
             _uow.CourseRepository.Update(course);
             await _uow.Commit(cancellationToken);
             return _mapper.Map<CourseDto>(course);
