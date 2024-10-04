@@ -7,8 +7,9 @@ namespace StudentCertificatePortal_API.Services.Interface
     {
         Task<CourseDto> CreateCourseAsync(CreateCourseRequest request, CancellationToken cancellationToken);
         Task<List<CourseDto>> GetAll();
-        Task<CourseDto> GetCourseById(int courseId, CancellationToken cancellationToken);
+        Task<CourseDto> GetCourseByIdAsync(int courseId, CancellationToken cancellationToken);
         Task<CourseDto> UpdateCourseAsync(int courseId, UpdateCourseRequest request, CancellationToken cancellationToken);
         Task<CourseDto> DeleteCourseAsync(int courseId, CancellationToken cancellationToken);
+        Task<List<CourseDto>> GetCourseByNameAsync(string courseName, CancellationToken cancellationToken);
     }
 }

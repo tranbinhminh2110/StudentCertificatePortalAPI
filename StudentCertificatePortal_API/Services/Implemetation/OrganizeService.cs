@@ -69,6 +69,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return _mapper.Map<OrganizeDto>(result);
         }
 
+        public async Task<List<OrganizeDto>> GetOrganizeByNameAsync(string organizeName, CancellationToken cancellationToken)
+        {
+            var result = await _uow.OrganizeRepository.WhereAsync(x => x.OrganizeName.Contains(organizeName), cancellationToken);
+            if (result is null)
+            {
+                throw new KeyNotFoundException("Organize not found.");
+            }
+            return _mapper.Map<List<OrganizeDto>>(result);
+        }
+
         public async Task<OrganizeDto> UpdateOrganizeAsync(int oragnizeId, UpdateOrganizeRequest request, CancellationToken cancellationToken)
         {
             var validation = await _updateOrganizeValidator.ValidateAsync(request, cancellationToken);
