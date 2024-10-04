@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Exceptions;
@@ -22,6 +23,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             _updateUserValidator = updateUserValidator;
         }
 
+        public async Task<UserDto> FindByEmailAsync(string email)
+        {
+            if (email == null) throw new ArgumentNullException("email");
+            var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.Email == email);
+            return _mapper.Map<UserDto>(user);
+        }
         public async Task<UserDto> GetProfileByIdAsync(int userId, CancellationToken cancellationToken)
         {
             var result = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
@@ -32,6 +39,22 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
 
             return _mapper.Map<UserDto>(result);
+        }
+
+        public async Task<IdentityResult> ResetPasswordAsync(string email, string newPassword)
+        {
+            var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.Email == email);
+            if (user is null)
+            {
+                return IdentityResult.Failed(new IdentityError { Description = "Người dùng không tồn tại." });
+            }
+
+            user.Password = newPassword;
+
+            _uow.UserRepository.Update(user);
+            await _uow.Commit(new CancellationToken());
+
+            return IdentityResult.Success;
         }
         public async Task<UserDto> UpdateProfileAsync(int userId, UpdateProfileRequest request, CancellationToken cancellationToken)
         {
