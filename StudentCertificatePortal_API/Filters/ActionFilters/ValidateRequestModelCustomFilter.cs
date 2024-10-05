@@ -10,7 +10,8 @@ namespace StudentCertificatePortal_API.Filters.ActionFilters
 {
 
 
-    public class ValidateRequestAttribute : TypeFilterAttribute {
+    public class ValidateRequestAttribute : TypeFilterAttribute
+    {
         public ValidateRequestAttribute(Type requestType)
         : base(typeof(ValidateRequestFilter<,>).MakeGenericType(requestType, ValidateRequestHelper.GetValidatorType(requestType)))
         {
