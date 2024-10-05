@@ -1,9 +1,14 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using StudentCertificatePortal_API.Filters.ActionFilters;
+using StudentCertificatePortal_API.Middlewares;
+using StudentCertificatePortal_API.Policies;
 using StudentCertificatePortal_API.Services.Implemetation;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_API.Utils;
@@ -17,6 +22,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddHttpClient();
 builder.Services.AddDbContext<CipdbContext>(options =>
        options.UseSqlServer(builder.Configuration.GetConnectionString("CIPDB")));
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
@@ -45,6 +51,22 @@ builder.Services.AddCors(options =>
                              .AllowCredentials()
                              .AllowAnyHeader()
                              .AllowAnyMethod());
+});
+
+//Add Validation && not use "ModelStateInvalidFilter"
+
+builder.Services.Configure<ApiBehaviorOptions>(opts =>
+{
+    opts.SuppressModelStateInvalidFilter = true;
+});
+// Add filter "ValidateRequestFilter"
+
+builder.Services.AddControllersWithViews(opts =>
+{
+    opts.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer()));
+
+    // Set order very high to allow other filters to include their own validation results.
+    opts.Filters.Add<ValidateRequestFilter>(int.MaxValue - 100);
 });
 
 // Primary services
@@ -81,6 +103,9 @@ builder.Services.AddSingleton<IRedisService>(provider =>
     return new RedisService(redisConnectionString);
 });
 
+
+// Middlewares & Filters
+builder.Services.AddScoped<ExceptionMiddleware>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -134,6 +159,12 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = string.Empty;
         c.EnableTryItOutByDefault();
     });
+    app.UseDeveloperExceptionPage(); // Only for development
+    
+}
+else
+{
+    app.UseExceptionHandler("/error"); // Use custom error page in production
 }
 
 
@@ -143,9 +174,9 @@ app.UseHttpsRedirection();
 
 app.UseSwagger();
 app.UseSwaggerUI();
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseDeveloperExceptionPage();
 app.MapControllers();
 
 app.Run();
