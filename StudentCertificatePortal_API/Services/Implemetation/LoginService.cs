@@ -26,6 +26,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             if (user == null)
             {
                 throw new ConflictException("User not found!");
+            }else if(user.Status == false)
+            {
+                throw new UserAuthenticationException("Account is disabled. Please contact support.");
             }
 
             return _mapper.Map<UserDto>(user);

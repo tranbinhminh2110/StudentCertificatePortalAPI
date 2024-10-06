@@ -31,6 +31,23 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             _addregisterUserValidator = addregisterUserValidator;
         }
 
+        public async Task<UserDto> ChangeStatusAccountAsync(int userId, CancellationToken cancellationToken)
+        {
+            var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == userId);
+            if(user == null)
+            {
+                throw new KeyNotFoundException("User not found.");
+            }
+
+            user.Status = !user.Status;
+
+            _uow.UserRepository.Update(user);
+
+            await _uow.Commit(cancellationToken);
+            return _mapper.Map<UserDto>(user);
+
+        }
+
         public async Task<UserDto> CreateRegisterUserAsync(CreateRegisterUserRequest request, CancellationToken cancellationToken)
         {
             var existingUser = await _uow.UserRepository.FirstOrDefaultAsync(x =>
