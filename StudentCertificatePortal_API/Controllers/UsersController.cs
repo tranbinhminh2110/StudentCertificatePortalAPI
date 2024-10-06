@@ -54,5 +54,12 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.DeleteUserByIdAsync(userId, new CancellationToken());
             return Ok(Result<UserDto>.Succeed(result));
         }
+
+        [HttpPost("{userId:int}/setstatus")]
+        public async Task<ActionResult<Result<UserDto>>> ChangeStatusAccount([FromRoute] int userId)
+        {
+            var result = await _service.ChangeStatusAccountAsync(userId, new CancellationToken());
+            return Ok(Result<UserDto>.Succeed(result));
+        }
     }
 }

@@ -32,9 +32,9 @@ namespace StudentCertificatePortal_API.Middlewares
                 // Custom exceptions
                 { typeof(ConflictException), HandleConflictExceptionAsync },
                 { typeof(RequestValidationException), HandleRequestValidationExceptionAsync },
-                /*{ typeof(TokenValidationException), HandleTokenValidationExceptionAsync },
+                { typeof(TokenValidationException), HandleTokenValidationExceptionAsync },
                 { typeof(UserAuthenticationException), HandleUserAuthenticationExceptionAsync },
-                { typeof(UnsupportedMediaTypeException), HandleUnsupportedMediaTypeExceptionAsync }*/
+                { typeof(UnsupportedMediaTypeException), HandleUnsupportedMediaTypeExceptionAsync }
             };
         }
 
