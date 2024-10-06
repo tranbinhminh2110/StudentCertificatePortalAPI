@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace StudentCertificatePortal_Data.Models;
 
@@ -56,18 +55,9 @@ public partial class CipdbContext : DbContext
 
     public virtual DbSet<Wallet> Wallets { get; set; }
 
-    public static string GetConnectionString(string connectionStringName)
-    {
-        var config = new ConfigurationBuilder()
-            .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-            .AddJsonFile("appsettings.json")
-            .Build();
-
-        string connectionString = config.GetConnectionString(connectionStringName);
-        return connectionString;
-    }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer(GetConnectionString("CIPDB"));
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Server=tcp:cipserver.database.windows.net,1433;Initial Catalog=CIPDB;Persist Security Info=False;User ID=boyktminh;Password=Khongnho1@;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -160,11 +150,11 @@ public partial class CipdbContext : DbContext
                 .HasForeignKey(d => d.TypeId)
                 .HasConstraintName("FK__Certifica__type___17F790F9");
 
-            entity.HasMany(d => d.CertIdTwos).WithMany(p => p.Certs)
+            entity.HasMany(d => d.CertIdPrerequisites).WithMany(p => p.Certs)
                 .UsingEntity<Dictionary<string, object>>(
                     "CertCert",
                     r => r.HasOne<Certification>().WithMany()
-                        .HasForeignKey("CertIdTwo")
+                        .HasForeignKey("CertIdPrerequisite")
                         .OnDelete(DeleteBehavior.ClientSetNull)
                         .HasConstraintName("FK__Cert_Cert__cert___1F98B2C1"),
                     l => l.HasOne<Certification>().WithMany()
@@ -173,13 +163,13 @@ public partial class CipdbContext : DbContext
                         .HasConstraintName("FK__Cert_Cert__cert___1EA48E88"),
                     j =>
                     {
-                        j.HasKey("CertId", "CertIdTwo").HasName("PK__Cert_Cer__9FBF828F634B8977");
+                        j.HasKey("CertId", "CertIdPrerequisite").HasName("PK__Cert_Cer__9FBF828F634B8977");
                         j.ToTable("Cert_Cert");
                         j.IndexerProperty<int>("CertId").HasColumnName("cert_id");
-                        j.IndexerProperty<int>("CertIdTwo").HasColumnName("cert_id_two");
+                        j.IndexerProperty<int>("CertIdPrerequisite").HasColumnName("cert_id_prerequisite");
                     });
 
-            entity.HasMany(d => d.Certs).WithMany(p => p.CertIdTwos)
+            entity.HasMany(d => d.Certs).WithMany(p => p.CertIdPrerequisites)
                 .UsingEntity<Dictionary<string, object>>(
                     "CertCert",
                     r => r.HasOne<Certification>().WithMany()
@@ -187,15 +177,15 @@ public partial class CipdbContext : DbContext
                         .OnDelete(DeleteBehavior.ClientSetNull)
                         .HasConstraintName("FK__Cert_Cert__cert___1EA48E88"),
                     l => l.HasOne<Certification>().WithMany()
-                        .HasForeignKey("CertIdTwo")
+                        .HasForeignKey("CertIdPrerequisite")
                         .OnDelete(DeleteBehavior.ClientSetNull)
                         .HasConstraintName("FK__Cert_Cert__cert___1F98B2C1"),
                     j =>
                     {
-                        j.HasKey("CertId", "CertIdTwo").HasName("PK__Cert_Cer__9FBF828F634B8977");
+                        j.HasKey("CertId", "CertIdPrerequisite").HasName("PK__Cert_Cer__9FBF828F634B8977");
                         j.ToTable("Cert_Cert");
                         j.IndexerProperty<int>("CertId").HasColumnName("cert_id");
-                        j.IndexerProperty<int>("CertIdTwo").HasColumnName("cert_id_two");
+                        j.IndexerProperty<int>("CertIdPrerequisite").HasColumnName("cert_id_prerequisite");
                     });
         });
 

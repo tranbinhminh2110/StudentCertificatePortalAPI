@@ -39,7 +39,7 @@ public partial class Certification
 
     public virtual CertType? Type { get; set; }
 
-    public virtual ICollection<Certification> CertIdTwos { get; set; } = new List<Certification>();
+    public virtual ICollection<Certification> CertIdPrerequisites { get; set; } = new List<Certification>();
 
     public virtual ICollection<Certification> Certs { get; set; } = new List<Certification>();
 }
