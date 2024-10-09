@@ -34,6 +34,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
             var jobEntity = new JobPosition()
             {
+                JobPositionId = new Random().Next(1, 10000),
                 JobPositionCode = request.JobPositionCode,
                 JobPositionName = request.JobPositionName,
                 JobPositionDescription = request.JobPositionDescription,
