@@ -59,6 +59,38 @@ namespace StudentCertificatePortal_Repository.Implementation
         {
             return await _context.Set<T>().Where(predicate).ToListAsync(cancellationToken);
         }
+        public virtual async Task<List<T>> GetAllAsync(Func<IQueryable<T>, IQueryable<T>> include = null)
+        {
+            IQueryable<T> query = _context.Set<T>(); 
+            if (include != null)
+            {
+                query = include(query);
+            }
+
+            return await query.ToListAsync();
+        }
+
+        public virtual async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken, Func<IQueryable<T>, IQueryable<T>> include = null)
+        {
+            IQueryable<T> query = _context.Set<T>();
+            if (include != null)
+            {
+                query = include(query);
+            }
+
+            return await query.FirstOrDefaultAsync(predicate, cancellationToken);
+        }
+
+        public IQueryable<T> Include(params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> query = _context.Set<T>();
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+            return query;
+        }
+
 
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_Data.Models;
 using System.Reflection;
 
@@ -8,7 +9,12 @@ namespace StudentCertificatePortal_API.Mapping
     {
         public MappingProfile()
         {
+            
             ApplyMappingsFromAssembly(Assembly.GetExecutingAssembly());
+            CreateMap<Certification, CertificationDto>()
+            .ForMember(dest => dest.CertPrerequisite, opt => opt.Ignore())
+            .ForMember(dest => dest.CertCodePrerequisite, opt => opt.Ignore())
+            .ForMember(dest => dest.CertDescriptionPrerequisite, opt => opt.Ignore());
         }
 
         private void ApplyMappingsFromAssembly(Assembly assembly)

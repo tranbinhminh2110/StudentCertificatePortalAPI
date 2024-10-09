@@ -31,8 +31,8 @@ namespace StudentCertificatePortal_API.Validators
                 .When(cert => !string.IsNullOrEmpty(cert.CertImage))
                 .WithMessage("Certification image must be a valid URL");
 
-            RuleFor(cert => cert.CertPrerequisite)
-                .MaximumLength(200).WithMessage("Certification prerequisite cannot exceed 200 characters");
+           /* RuleFor(cert => cert.CertPrerequisite)
+                .MaximumLength(200).WithMessage("Certification prerequisite cannot exceed 200 characters");*/
 
             RuleFor(cert => cert.ExpiryDate)
                 .NotEmpty().WithMessage("Expiry date is required")
