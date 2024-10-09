@@ -97,7 +97,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new RequestValidationException(validation.Errors);
             }
-            var session = await _uow.ExamSessionRepository.FirstOrDefaultAsync(x => x.SessionId == sessionId, cancellationToken).ConfigureAwait(false);
+            var session = await _uow.ExamSessionRepository.FirstOrDefaultAsync(x => x.SessionId == sessionId, cancellationToken);
             if (session is null) 
             {
                 throw new KeyNotFoundException("ExamSession not found.");
@@ -106,8 +106,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             session.SessionCode = request.SessionCode;
             session.SessionDate = request.SessionDate;
             session.SessionAddress = request.SessionAddress;
-            session.SessionCreatedAt = request.SessionCreatedAt;
-
             _uow.ExamSessionRepository.Update(session);
             await _uow.Commit(cancellationToken);
             return _mapper.Map<ExamSessionDto>(session);

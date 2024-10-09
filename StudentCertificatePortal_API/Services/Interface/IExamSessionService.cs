@@ -6,7 +6,7 @@ namespace StudentCertificatePortal_API.Services.Interface
 {
     public interface IExamSessionService
     {
-        Task<ExamSessionDto>CreateExamSessionAsync(CreateExamSessionRequest request, CancellationToken cancellationToken);
+        Task<ExamSessionDto> CreateExamSessionAsync(CreateExamSessionRequest request, CancellationToken cancellationToken);
         Task<List<ExamSessionDto>> GetAll();
         Task<ExamSessionDto> GetExamSessionByIdAsync(int sessionId, CancellationToken cancellationToken);
         Task<ExamSessionDto> UpdateExamSessionAsync(int sessionId, UpdateExamSessionRequest request, CancellationToken cancellationToken);

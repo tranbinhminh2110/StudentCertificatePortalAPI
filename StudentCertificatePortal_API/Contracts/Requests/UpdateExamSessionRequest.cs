@@ -9,7 +9,5 @@
         public DateTime? SessionDate { get; set; }
 
         public string? SessionAddress { get; set; }
-
-        public DateTime? SessionCreatedAt { get; set; }
     }
 }
