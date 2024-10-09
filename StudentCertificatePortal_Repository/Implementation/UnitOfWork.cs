@@ -19,6 +19,7 @@ namespace StudentCertificatePortal_Repository.Implementation
         private IBaseRepository<Certification>? _certificationRepository;
         private IBaseRepository<JobPosition>? _jobPositionRepository;
         private IBaseRepository<ExamSession>? _examSessionRepository;
+        private IBaseRepository<Feedback>? _feedbackRepository;
 
         public UnitOfWork(CipdbContext context)
         {
@@ -33,6 +34,7 @@ namespace StudentCertificatePortal_Repository.Implementation
         public IBaseRepository<Certification> CertificationRepository => _certificationRepository ??= new CertificationRepository(_context);
         public IBaseRepository<JobPosition> JobPositionRepository => _jobPositionRepository ??= new JobPositionRepository(_context);
         public IBaseRepository<ExamSession> ExamSessionRepository => _examSessionRepository ??= new ExamSessionRepository(_context);
+        public IBaseRepository<Feedback> FeedbackRepository => _feedbackRepository ??= new FeedbackRepository(_context);
 
 
 
