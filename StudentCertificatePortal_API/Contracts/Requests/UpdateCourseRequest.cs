@@ -10,6 +10,5 @@
 
         public string? CourseDescription { get; set; }
 
-        public int? CertId { get; set; }
     }
 }
