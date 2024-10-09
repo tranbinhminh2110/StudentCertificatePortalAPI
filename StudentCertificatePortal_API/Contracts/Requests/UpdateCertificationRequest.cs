@@ -15,8 +15,10 @@
 
         public string? CertImage { get; set; }
 
-        public string? CertPrerequisite { get; set; }
-
         public DateTime? ExpiryDate { get; set; }
+        public int? TypeId { get; set; }
+
+        public int? OrganizeId { get; set; }
+        public List<int>? CertIdPrerequisites { get; set; }
     }
 }

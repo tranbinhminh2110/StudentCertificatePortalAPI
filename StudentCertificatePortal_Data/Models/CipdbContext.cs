@@ -156,11 +156,11 @@ public partial class CipdbContext : DbContext
                     r => r.HasOne<Certification>().WithMany()
                         .HasForeignKey("CertIdPrerequisite")
                         .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__Cert_Cert__cert___1F98B2C1"),
+                        .HasConstraintName("FK_Cert_Cert_PrerequisiteCertId"),
                     l => l.HasOne<Certification>().WithMany()
                         .HasForeignKey("CertId")
                         .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__Cert_Cert__cert___1EA48E88"),
+                        .HasConstraintName("FK_Cert_Cert_CertId"),
                     j =>
                     {
                         j.HasKey("CertId", "CertIdPrerequisite").HasName("PK__Cert_Cer__9FBF828F634B8977");
@@ -168,6 +168,7 @@ public partial class CipdbContext : DbContext
                         j.IndexerProperty<int>("CertId").HasColumnName("cert_id");
                         j.IndexerProperty<int>("CertIdPrerequisite").HasColumnName("cert_id_prerequisite");
                     });
+           
 
             entity.HasMany(d => d.Certs).WithMany(p => p.CertIdPrerequisites)
                 .UsingEntity<Dictionary<string, object>>(
@@ -175,11 +176,11 @@ public partial class CipdbContext : DbContext
                     r => r.HasOne<Certification>().WithMany()
                         .HasForeignKey("CertId")
                         .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__Cert_Cert__cert___1EA48E88"),
+                        .HasConstraintName("FK_Cert_Cert_CertId"),
                     l => l.HasOne<Certification>().WithMany()
                         .HasForeignKey("CertIdPrerequisite")
                         .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__Cert_Cert__cert___1F98B2C1"),
+                        .HasConstraintName("FK_Cert_Cert_PrerequisiteCertId"),
                     j =>
                     {
                         j.HasKey("CertId", "CertIdPrerequisite").HasName("PK__Cert_Cer__9FBF828F634B8977");

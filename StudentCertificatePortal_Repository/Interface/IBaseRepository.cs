@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using StudentCertificatePortal_Data.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -17,5 +19,9 @@ namespace StudentCertificatePortal_Repository.Interface
         T Delete(T obj);
         Task<IEnumerable<T>> WhereAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
         void RemoveRange(params T[] entities);
+
+        Task<List<T>> GetAllAsync(Func<IQueryable<T>, IQueryable<T>> include = null);
+        Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken, Func<IQueryable<T>, IQueryable<T>> include = null);
+        IQueryable<T> Include(params Expression<Func<T, object>>[] includes);
     }
 }
