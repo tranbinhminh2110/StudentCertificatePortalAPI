@@ -15,6 +15,7 @@ namespace StudentCertificatePortal_Repository.Interface
         IBaseRepository<Course> CourseRepository { get; }
         IBaseRepository<Certification> CertificationRepository { get; }
         IBaseRepository<JobPosition> JobPositionRepository { get; }
+        IBaseRepository<ExamSession> ExamSessionRepository { get; }
 
         Task Commit(CancellationToken cancellationToken);
     }
