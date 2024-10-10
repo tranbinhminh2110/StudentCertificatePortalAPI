@@ -7,5 +7,7 @@
         public string? MajorName { get; set; }
 
         public string? MajorDescription { get; set; }
+        public List<int>? JobPositionId { get; set; }
+
     }
 }

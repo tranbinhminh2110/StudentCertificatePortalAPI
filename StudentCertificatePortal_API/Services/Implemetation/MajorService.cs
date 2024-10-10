@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Exceptions;
@@ -37,47 +38,112 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 MajorName = request.MajorName,
                 MajorDescription = request.MajorDescription,
             };
-            var result = await _uow.MajorRepository.AddAsync(majorEntity);
-            await _uow.Commit(cancellationToken);
-            return _mapper.Map<MajorDto>(result);
+            if (request.JobPositionId != null && request.JobPositionId.Any())
+            {
+                foreach (var jobPositionId in request.JobPositionId)
+                {
+                    var jobPosition = await _uow.JobPositionRepository.FirstOrDefaultAsync(
+                        x => x.JobPositionId == jobPositionId, cancellationToken);
+                    if (jobPosition != null)
+                    {
+                        majorEntity.JobPositions.Add(jobPosition);
+                        await _uow.MajorRepository.AddAsync(majorEntity);
+                    }
+                    else
+                    {
+                        throw new KeyNotFoundException($"JobPosition with ID {jobPositionId} not found.");
+                    }
+
+                }
+            }
+            try
+            {
+                await _uow.Commit(cancellationToken);
+                var majorDto = _mapper.Map<MajorDto>(majorEntity);
+                majorDto.JobPositionId = majorEntity.JobPositions
+                    .Select(majorjob => majorjob.JobPositionId)
+                    .ToList();
+                return majorDto;
+            }
+            catch (Exception ex)
+            {
+                var innerExceptionMessage = ex.InnerException?.Message ?? "No inner exception";
+                throw new Exception($"An error occurred while saving the entity changes: {innerExceptionMessage}", ex);
+
+            }
         }
 
         public async Task<MajorDto> DeleteMajorAsync(int majorId, CancellationToken cancellationToken)
         {
-            var major = await _uow.MajorRepository.FirstOrDefaultAsync(x => x.MajorId == majorId, cancellationToken);
+            var major = await _uow.MajorRepository.FirstOrDefaultAsync(
+                x => x.MajorId == majorId, 
+                cancellationToken, include: q => q.Include(c => c.JobPositions));
             if (major is null) 
             {
                 throw new KeyNotFoundException("Major not found.");
             }
+            major.JobPositions?.Clear();
+
             _uow.MajorRepository.Delete(major);
             await _uow.Commit(cancellationToken);
-            return _mapper.Map<MajorDto>(major);
+
+            var majorDto = _mapper.Map<MajorDto>(major);
+            return majorDto;
         }
 
         public async Task<List<MajorDto>> GetAll()
         {
-            var result = await _uow.MajorRepository.GetAll();
-            return _mapper.Map<List<MajorDto>>(result);
+            var result = await _uow.MajorRepository.GetAllAsync(query => 
+            query.Include(c => c.JobPositions));
+
+            var majorDtos = result.Select(result =>
+            {
+                var majorDto = _mapper.Map<MajorDto>(result);
+
+                majorDto.JobPositionId = result.JobPositions
+                .Select(majorjob => majorjob.JobPositionId)
+                .ToList();
+
+                return majorDto;
+            }).ToList();
+            return majorDtos;
         }
 
         public async Task<MajorDto> GetMajorByIdAsync(int majorId, CancellationToken cancellationToken)
         {
-            var result = await _uow.MajorRepository.FirstOrDefaultAsync(x => x.MajorId == majorId, cancellationToken);
+            var result = await _uow.MajorRepository.FirstOrDefaultAsync(
+                x => x.MajorId == majorId, cancellationToken: cancellationToken,include: query => query.Include(c => c.JobPositions));
             if (result is null)
             {
                 throw new KeyNotFoundException("Major not found.");
             }
-            return _mapper.Map<MajorDto>(result);
+            var majorDto = _mapper.Map<MajorDto>(result);
+
+            majorDto.JobPositionId = result.JobPositions
+                .Select(majorjob => majorjob.JobPositionId)
+                .ToList();
+
+            return majorDto;
         }
 
         public async Task<List<MajorDto>> GetMajorByNameAsync(string majorName, CancellationToken cancellationToken)
         {
-            var result = await _uow.MajorRepository.WhereAsync(x => x.MajorName.Contains(majorName), cancellationToken);
-            if (result is null)
+            var result = await _uow.MajorRepository.WhereAsync(x => x.MajorName.Contains(majorName), cancellationToken,
+                    include: query => query.Include(c => c.JobPositions));
+            if (result is null || !result.Any())
             {
                 throw new KeyNotFoundException("Major not found.");
             }
-            return _mapper.Map<List<MajorDto>>(result);
+            var majorDtos = _mapper.Map<List<MajorDto>>(result);
+
+            foreach (var majorDto in majorDtos)
+            {
+                var major = result.FirstOrDefault(c => c.MajorId == majorDto.MajorId);
+                majorDto.JobPositionId = major.JobPositions
+                .Select(majorjob => majorjob.JobPositionId)
+                .ToList();
+            }
+            return majorDtos;
         }
 
         public async Task<MajorDto> UpdateMajorAsync(int majorId, UpdateMajorRequest request, CancellationToken cancellationToken)
@@ -87,7 +153,10 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new RequestValidationException(validation.Errors);
             }
-            var major = await _uow.MajorRepository.FirstOrDefaultAsync(x => x.MajorId == majorId, cancellationToken);
+            var major = await _uow.MajorRepository
+                .Include(x => x.JobPositions)
+                .FirstOrDefaultAsync(x => x.MajorId == majorId, cancellationToken)
+                .ConfigureAwait(false);
             if (major is null)
             {
                 throw new KeyNotFoundException("Major not found.");
@@ -96,9 +165,73 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             major.MajorName = request.MajorName;
             major.MajorDescription = request.MajorDescription;
 
+            // Get existing JobPosition IDs
+            var existingJobPositionIds = major.JobPositions.Select(j => j.JobPositionId).ToList();
+            var newJobPositionIds = request.JobPositionId ?? new List<int>();
+
+            // Remove JobPositions that are no longer referenced
+            foreach (var existingJobPositionId in existingJobPositionIds)
+            {
+                if (!newJobPositionIds.Contains(existingJobPositionId))
+                {
+                    var jobPositionToRemove = major.JobPositions.FirstOrDefault(j => j.JobPositionId == existingJobPositionId);
+                    if (jobPositionToRemove != null)
+                    {
+                        major.JobPositions.Remove(jobPositionToRemove);
+                    }
+                }
+            }
+
+            // Add new JobPositions that are not already in the Major
+            foreach (var newJobPositionId in newJobPositionIds)
+            {
+                if (!existingJobPositionIds.Contains(newJobPositionId))
+                {
+                    var jobPosition = await _uow.JobPositionRepository
+                        .FirstOrDefaultAsync(x => x.JobPositionId == newJobPositionId, cancellationToken);
+
+                    if (jobPosition != null)
+                    {
+                        // Check if this relationship already exists to avoid duplicates
+                        if (!major.JobPositions.Any(j => j.JobPositionId == newJobPositionId))
+                        {
+                            major.JobPositions.Add(jobPosition);
+                        }
+                    }
+                    else
+                    {
+                        throw new KeyNotFoundException($"JobPosition with ID {newJobPositionId} not found.");
+                    }
+                }
+            }
+
+            // Update the Major in the repository
             _uow.MajorRepository.Update(major);
-            await _uow.Commit(cancellationToken);
-            return _mapper.Map<MajorDto>(major);
+
+            try
+            {
+                await _uow.Commit(cancellationToken);
+
+                // Create the DTO and populate JobPosition details
+                var majorDto = _mapper.Map<MajorDto>(major);
+                majorDto.JobPositionId = major.JobPositions.Select(j => j.JobPositionId).ToList();
+
+                return majorDto;
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new Exception("The Major you're trying to update has been modified by another user. Please try again.", ex);
+            }
+            catch (DbUpdateException ex)
+            {
+                var innerExceptionMessage = ex.InnerException?.Message ?? "No inner exception";
+                throw new Exception($"An error occurred while saving the entity changes: {innerExceptionMessage}", ex);
+            }
+            catch (Exception ex)
+            {
+                var innerExceptionMessage = ex.InnerException?.Message ?? "No inner exception";
+                throw new Exception($"An unexpected error occurred: {innerExceptionMessage}", ex);
+            }
         }
     }
 }
