@@ -1,4 +1,5 @@
-﻿using StudentCertificatePortal_API.Mapping;
+﻿using AutoMapper;
+using StudentCertificatePortal_API.Mapping;
 using StudentCertificatePortal_Data.Models;
 
 namespace StudentCertificatePortal_API.DTOs
@@ -12,6 +13,7 @@ namespace StudentCertificatePortal_API.DTOs
         public string? MajorName { get; set; }
 
         public string? MajorDescription { get; set; }
-
+        public List<int>? JobPositionId { get; set; } = new List<int>();
+       
     }
 }
