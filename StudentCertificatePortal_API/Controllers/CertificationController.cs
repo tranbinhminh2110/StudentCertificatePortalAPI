@@ -42,11 +42,11 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.UpdateCertificationAsync(certId, request, new CancellationToken());
             return Ok(Result<CertificationDto>.Succeed(result));
         }
-        /*[HttpDelete("{certId:int}")]
+        [HttpDelete("{certId:int}")]
         public async Task<ActionResult<Result<CourseDto>>> DeleteCertificationById([FromRoute] int certId)
         {
             var result = await _service.DeleteCertificationAsync(certId, new CancellationToken());
             return Ok(Result<CertificationDto>.Succeed(result));
-        }*/
+        }
     }
 }

@@ -100,41 +100,53 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
 
 
-        /*public async Task<CertificationDto> DeleteCertificationAsync(int certificationId, CancellationToken cancellationToken)
+        public async Task<CertificationDto> DeleteCertificationAsync(int certificationId, CancellationToken cancellationToken)
         {
-            // Retrieve the certification
-            var certification = await _uow.CertificationRepository
-                .FirstOrDefaultAsync(x => x.CertId == certificationId, cancellationToken);
+            // Retrieve the certification with its prerequisites
+            var certification = await _uow.CertificationRepository.FirstOrDefaultAsync(
+                x => x.CertId == certificationId,
+                cancellationToken,
+                include: q => q.Include(c => c.CertIdPrerequisites)
+            );
 
             if (certification is null)
             {
                 throw new KeyNotFoundException("Certification not found.");
             }
 
-            // Find and delete all certifications that depend on this certification
-            var dependentCertifications = await _uow.CertificationRepository
-                .WhereAsync(x => x.CertIdPrerequisites.Any(p => p.CertId == certificationId), cancellationToken);
+            // Remove all prerequisites where this certification is listed as a prerequisite
+            certification.CertIdPrerequisites?.Clear();
+
+            // Find dependent certifications that have this certification as a prerequisite
+            var dependentCertifications = await _uow.CertificationRepository.WhereAsync(
+                x => x.CertIdPrerequisites.Any(p => p.CertId == certificationId),
+                cancellationToken
+            );
 
             foreach (var dependentCert in dependentCertifications)
             {
-                // Remove the prerequisite reference
-                var prerequisitesToRemove = dependentCert.CertIdPrerequisites
+                // Reload the dependent certification with its prerequisites if needed
+                var fullDependentCert = await _uow.CertificationRepository.FirstOrDefaultAsync(
+                    x => x.CertId == dependentCert.CertId,
+                    cancellationToken,
+                    include: q => q.Include(c => c.CertIdPrerequisites)
+                );
+
+                // Remove the specific prerequisite reference
+                var prerequisitesToRemove = fullDependentCert.CertIdPrerequisites
                     .Where(p => p.CertId == certificationId)
                     .ToList();
 
                 foreach (var prerequisite in prerequisitesToRemove)
                 {
-                    dependentCert.CertIdPrerequisites.Remove(prerequisite);
+                    fullDependentCert.CertIdPrerequisites.Remove(prerequisite);
                 }
 
-                // If the dependent certification has no prerequisites left, delete it as well
-                if (!dependentCert.CertIdPrerequisites.Any())
-                {
-                    _uow.CertificationRepository.Delete(dependentCert);
-                }
+                // Save the changes for each dependent certification
+                _uow.CertificationRepository.Update(fullDependentCert);
             }
 
-            // Commit changes to remove references first
+            // Commit changes to remove all prerequisites and dependent relationships first
             await _uow.Commit(cancellationToken);
 
             // Now delete the main certification
@@ -144,7 +156,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             // Map the deleted certification to DTO
             var certificationDto = _mapper.Map<CertificationDto>(certification);
             return certificationDto;
-        }*/
+        }
+
+
+
+
 
 
 
