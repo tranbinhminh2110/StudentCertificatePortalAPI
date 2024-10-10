@@ -48,5 +48,21 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.DeleteCertificationAsync(certId, new CancellationToken());
             return Ok(Result<CertificationDto>.Succeed(result));
         }
+
+        [HttpGet("~/api/v1/[controller]/search")]
+        public async Task<ActionResult<Result<List<CertificationDto>>>> GetCertificcationByName([FromQuery] string? certName = null)
+        {
+            IEnumerable<CertificationDto> result;
+            if(certName == null)
+            {
+                result = await _service.GetAll();
+            }
+            else
+            {
+                result = await _service.GetCertificationByNameAsync(certName, new CancellationToken());
+            }
+            
+            return Ok(Result<List<CertificationDto>>.Succeed(result.ToList()));
+        }
     }
 }
