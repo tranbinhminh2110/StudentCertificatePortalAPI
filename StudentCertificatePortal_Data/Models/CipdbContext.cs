@@ -155,11 +155,11 @@ public partial class CipdbContext : DbContext
                     "CertCert",
                     r => r.HasOne<Certification>().WithMany()
                         .HasForeignKey("CertIdPrerequisite")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("FK_Cert_Cert_PrerequisiteCertId"),
                     l => l.HasOne<Certification>().WithMany()
                         .HasForeignKey("CertId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("FK_Cert_Cert_CertId"),
                     j =>
                     {
