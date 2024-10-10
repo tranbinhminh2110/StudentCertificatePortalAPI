@@ -15,6 +15,8 @@ public partial class CipdbContext : DbContext
     {
     }
 
+    public virtual DbSet<Answer> Answers { get; set; }
+
     public virtual DbSet<Cart> Carts { get; set; }
 
     public virtual DbSet<CertType> CertTypes { get; set; }
@@ -61,6 +63,19 @@ public partial class CipdbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Answer>(entity =>
+        {
+            entity.HasKey(e => e.AnswerId).HasName("PK__Answers__337243182036AF4F");
+
+            entity.Property(e => e.AnswerId).HasColumnName("answer_id");
+            entity.Property(e => e.QuestionId).HasColumnName("question_id");
+            entity.Property(e => e.Text).HasMaxLength(255);
+
+            entity.HasOne(d => d.Question).WithMany(p => p.Answers)
+                .HasForeignKey(d => d.QuestionId)
+                .HasConstraintName("FK__Answers__questio__40058253");
+        });
+
         modelBuilder.Entity<Cart>(entity =>
         {
             entity.HasKey(e => e.CartId).HasName("PK__Cart__2EF52A27D80337D7");
@@ -168,14 +183,12 @@ public partial class CipdbContext : DbContext
                         j.IndexerProperty<int>("CertId").HasColumnName("cert_id");
                         j.IndexerProperty<int>("CertIdPrerequisite").HasColumnName("cert_id_prerequisite");
                     });
-           
 
             entity.HasMany(d => d.Certs).WithMany(p => p.CertIdPrerequisites)
                 .UsingEntity<Dictionary<string, object>>(
                     "CertCert",
                     r => r.HasOne<Certification>().WithMany()
                         .HasForeignKey("CertId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
                         .HasConstraintName("FK_Cert_Cert_CertId"),
                     l => l.HasOne<Certification>().WithMany()
                         .HasForeignKey("CertIdPrerequisite")
@@ -441,11 +454,7 @@ public partial class CipdbContext : DbContext
             entity.HasKey(e => e.QuestionId).HasName("PK__Question__2EC2154913E6412D");
 
             entity.Property(e => e.QuestionId).HasColumnName("question_id");
-            entity.Property(e => e.CorrectAnswer).HasColumnName("correct_answer");
             entity.Property(e => e.ExamId).HasColumnName("exam_id");
-            entity.Property(e => e.QuestionAnswer)
-                .HasMaxLength(255)
-                .HasColumnName("question_answer");
             entity.Property(e => e.QuestionName)
                 .HasMaxLength(255)
                 .HasColumnName("question_name");

@@ -11,9 +11,7 @@ public partial class Question
 
     public int? ExamId { get; set; }
 
-    public string? QuestionAnswer { get; set; }
-
-    public bool? CorrectAnswer { get; set; }
+    public virtual ICollection<Answer> Answers { get; set; } = new List<Answer>();
 
     public virtual SimulationExam? Exam { get; set; }
 }
