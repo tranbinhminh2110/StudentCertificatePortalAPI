@@ -10,5 +10,7 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<CertificationDto> GetCertificationById(int certificationId, CancellationToken cancellationToken);
         Task<CertificationDto> UpdateCertificationAsync(int certificationId, UpdateCertificationRequest request, CancellationToken cancellationToken);
         Task<CertificationDto> DeleteCertificationAsync(int certificationId, CancellationToken cancellationToken);
+
+        Task<List<CertificationDto>> GetCertificationByNameAsync(string certName, CancellationToken cancellationToken);
     }
 }

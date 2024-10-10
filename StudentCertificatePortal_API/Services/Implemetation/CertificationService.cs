@@ -240,7 +240,41 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return certificationDto;
         }
 
+        public async Task<List<CertificationDto>> GetCertificationByNameAsync(string certName, CancellationToken cancellationToken)
+        {
+            var certifications = await _uow.CertificationRepository
+                .WhereAsync(
+                    x => x.CertName.Contains(certName),
+                    cancellationToken,
+                    include: query => query.Include(c => c.CertIdPrerequisites)
+                );
 
+            if (certifications == null || !certifications.Any())
+            {
+                throw new KeyNotFoundException("No certifications found with the given name.");
+            }
+
+            var certificationDtos = _mapper.Map<List<CertificationDto>>(certifications);
+
+            foreach (var certificationDto in certificationDtos)
+            {
+                var certification = certifications.First(c => c.CertId == certificationDto.CertId);
+
+                certificationDto.CertPrerequisite = certification.CertIdPrerequisites
+                    .Select(prerequisite => prerequisite.CertName)
+                    .ToList();
+
+                certificationDto.CertCodePrerequisite = certification.CertIdPrerequisites
+                    .Select(prerequisite => prerequisite.CertCode)
+                    .ToList();
+
+                certificationDto.CertDescriptionPrerequisite = certification.CertIdPrerequisites
+                    .Select(prerequisite => prerequisite.CertDescription)
+                    .ToList();
+            }
+
+            return certificationDtos;
+        }
 
 
         public async Task<CertificationDto> UpdateCertificationAsync(int certificationId, UpdateCertificationRequest request, CancellationToken cancellationToken)

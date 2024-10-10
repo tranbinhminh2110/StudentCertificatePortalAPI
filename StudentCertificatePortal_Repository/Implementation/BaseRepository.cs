@@ -81,6 +81,27 @@ namespace StudentCertificatePortal_Repository.Implementation
             return await query.FirstOrDefaultAsync(predicate, cancellationToken);
         }
 
+
+        public virtual async Task<IEnumerable<T>> WhereAsync(
+    Expression<Func<T, bool>> predicate,
+    CancellationToken cancellationToken,
+    Func<IQueryable<T>, IQueryable<T>> include = null)
+        {
+            IQueryable<T> query = _context.Set<T>();
+
+            // Include related entities if specified
+            if (include != null)
+            {
+                query = include(query);
+            }
+
+            // Apply the filter predicate
+            query = query.Where(predicate);
+
+            // Execute the query and return the results as a list
+            return await query.ToListAsync(cancellationToken);
+        }
+
         public IQueryable<T> Include(params Expression<Func<T, object>>[] includes)
         {
             IQueryable<T> query = _context.Set<T>();
