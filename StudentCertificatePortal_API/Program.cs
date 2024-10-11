@@ -108,6 +108,7 @@ builder.Services.AddScoped<IExamSessionService, ExamSessionService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<ISimulationExamService, SimulationExamService>();
 builder.Services.AddScoped<IExamEnrollmentService, ExamEnrollmentService>();
+builder.Services.AddScoped<IQandAService, QandAService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddSingleton<IRedisService>(provider =>
 {
