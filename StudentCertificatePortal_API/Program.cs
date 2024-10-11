@@ -88,6 +88,8 @@ builder.Services.AddTransient<IBaseRepository<ExamSession>, ExamSessionRepositor
 builder.Services.AddTransient<IBaseRepository<Feedback>, FeedbackRepository>();
 builder.Services.AddTransient<IBaseRepository<SimulationExam>, SimulationExamRepository>();
 builder.Services.AddTransient<IBaseRepository<JobCert>, JobCertRepository>();
+builder.Services.AddTransient<IBaseRepository<Question>, QuestionRepository>();
+builder.Services.AddTransient<IBaseRepository<Answer>, AnswerRepository>();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
 
@@ -104,6 +106,7 @@ builder.Services.AddScoped<IJobPositionService, JobPositionService>();
 builder.Services.AddScoped<IExamSessionService, ExamSessionService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<ISimulationExamService, SimulationExamService>();
+builder.Services.AddScoped<IQandAService, QandAService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddSingleton<IRedisService>(provider =>
 {

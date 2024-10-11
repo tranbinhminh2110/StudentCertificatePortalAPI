@@ -19,6 +19,8 @@ namespace StudentCertificatePortal_Repository.Interface
         IBaseRepository<Feedback> FeedbackRepository { get; }
         IBaseRepository<SimulationExam> SimulationExamRepository { get; }
         IBaseRepository<JobCert> JobCertRepository { get; }
+        IBaseRepository<Question> QuestionRepository { get; }
+        IBaseRepository<Answer> AnswerRepository{ get; }
 
         Task Commit(CancellationToken cancellationToken);
     }

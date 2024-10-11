@@ -73,7 +73,8 @@ public partial class CipdbContext : DbContext
 
             entity.HasOne(d => d.Question).WithMany(p => p.Answers)
                 .HasForeignKey(d => d.QuestionId)
-                .HasConstraintName("FK__Answers__questio__40058253");
+                .HasConstraintName("FK__Answers__questio__40058253")
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Cart>(entity =>

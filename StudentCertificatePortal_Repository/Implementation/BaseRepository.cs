@@ -82,10 +82,7 @@ namespace StudentCertificatePortal_Repository.Implementation
         }
 
 
-        public virtual async Task<IEnumerable<T>> WhereAsync(
-    Expression<Func<T, bool>> predicate,
-    CancellationToken cancellationToken,
-    Func<IQueryable<T>, IQueryable<T>> include = null)
+        public virtual async Task<IEnumerable<T>> WhereAsync( Expression<Func<T, bool>> predicate,CancellationToken cancellationToken,Func<IQueryable<T>, IQueryable<T>> include = null)
         {
             IQueryable<T> query = _context.Set<T>();
 
