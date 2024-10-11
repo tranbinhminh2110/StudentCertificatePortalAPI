@@ -104,10 +104,15 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         {
             // Retrieve the certification with its prerequisites
             var certification = await _uow.CertificationRepository.FirstOrDefaultAsync(
-                x => x.CertId == certificationId,
-                cancellationToken,
-                include: q => q.Include(c => c.CertIdPrerequisites)
-            );
+        x => x.CertId == certificationId,
+        cancellationToken,
+        include: q => q.Include(c => c.CertIdPrerequisites)
+                        .Include(c => c.Courses)
+                        .Include(c => c.ExamSessions)
+                        .Include(c => c.JobPositions)
+                        .Include(c => c.SimulationExams)
+    );
+
 
             if (certification is null)
             {
@@ -116,6 +121,10 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             // Remove all prerequisites where this certification is listed as a prerequisite
             certification.CertIdPrerequisites?.Clear();
+            certification.Courses?.Clear();
+            certification.ExamSessions?.Clear();
+            certification.JobPositions?.Clear();
+            certification.SimulationExams?.Clear();
 
             // Find dependent certifications that have this certification as a prerequisite
             var dependentCertifications = await _uow.CertificationRepository.WhereAsync(
@@ -199,11 +208,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             return certificationDtos;
         }
-
-
-
-
-
 
 
         public async Task<CertificationDto> GetCertificationById(int certificationId, CancellationToken cancellationToken)
