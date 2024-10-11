@@ -5,12 +5,12 @@ namespace StudentCertificatePortal_API.Services.Interface
 {
     public interface IExamEnrollmentService
     {
-        Task<CertificationDto> CreateExamEnrollmentAsync(CreateCertificationRequest request, CancellationToken cancellationToken);
-        Task<List<CertificationDto>> GetAll();
-        Task<CertificationDto> GetCertificationById(int certificationId, CancellationToken cancellationToken);
-        Task<CertificationDto> UpdateCertificationAsync(int certificationId, UpdateCertificationRequest request, CancellationToken cancellationToken);
-        Task<CertificationDto> DeleteCertificationAsync(int certificationId, CancellationToken cancellationToken);
+        Task<ExamEnrollmentDto> CreateExamEnrollmentAsync(CreateExamEnrollmentRequest request, CancellationToken cancellationToken);
+        Task<List<ExamEnrollmentDto>> GetAll();
+        Task<ExamEnrollmentDto> GetExamEnrollmentById(int examEnrollmentId, CancellationToken cancellationToken);
+        Task<ExamEnrollmentDto> UpdateExamEnrollmentAsync(int examEnrollmentId, UpdateExamEnrollmentRequest request, CancellationToken cancellationToken);
+        Task<ExamEnrollmentDto> DeleteExamEnrollmentAsync(int examEnrollmentId, CancellationToken cancellationToken);
 
-        Task<List<CertificationDto>> GetCertificationByNameAsync(string certName, CancellationToken cancellationToken);
+        /*Task<List<ExamEnrollmentDto>> GetExamEnrollmentByNameAsync(string examEnrollmentName, CancellationToken cancellationToken);*/
     }
 }
