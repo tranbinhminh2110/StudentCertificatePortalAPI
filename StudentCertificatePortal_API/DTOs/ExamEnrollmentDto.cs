@@ -1,6 +1,9 @@
-﻿namespace StudentCertificatePortal_API.DTOs
+﻿using StudentCertificatePortal_API.Mapping;
+using StudentCertificatePortal_Data.Models;
+
+namespace StudentCertificatePortal_API.DTOs
 {
-    public class ExamEnrollmentDto
+    public class ExamEnrollmentDto: IMapFrom<ExamsEnrollment>
     {
         public int ExamEnrollmentId { get; set; }
 
