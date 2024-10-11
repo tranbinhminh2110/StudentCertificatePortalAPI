@@ -21,7 +21,7 @@ namespace StudentCertificatePortal_API.DTOs
 
         public string? CertImage { get; set; }
 
-        public DateTime? ExpiryDate { get; set; }
+        public string? CertValidity { get; set; }
 
         // Danh sách ID của các chứng chỉ tiền đề
         public List<string>? CertPrerequisite { get; set; } = new List<string>();

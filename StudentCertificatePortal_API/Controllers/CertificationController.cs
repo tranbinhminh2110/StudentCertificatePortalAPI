@@ -58,5 +58,11 @@ namespace StudentCertificatePortal_API.Controllers
             
             return Ok(Result<List<CertificationDto>>.Succeed(result.ToList()));
         }
+        [HttpDelete("{certId:int}")]
+        public async Task<ActionResult<Result<CertificationDto>>> DeleteCertificationById([FromRoute] int certId)
+        {
+            var result = await _service.DeleteCertificationAsync(certId, new CancellationToken());
+            return Ok(Result<CertificationDto>.Succeed(result));
+        }
     }
 }
