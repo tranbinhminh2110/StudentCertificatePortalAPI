@@ -57,11 +57,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     }
                 }
             }
-            // Save the job position to the repository
-            await _uow.JobPositionRepository.AddAsync(jobEntity);
-            await _uow.Commit(cancellationToken);
-
-           /* // Handle the relationship with certifications
+            // Handle the relationship with certifications
             if (request.CertId != null && request.CertId.Any())
             {
                 foreach (var certId in request.CertId)
@@ -71,41 +67,36 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                     if (certification != null)
                     {
-                        var jobCert = new JobCert()
-                        {
-                            CertId = certification.CertId,
-                            JobPositionId = jobEntity.JobPositionId,
-
-                        };
-
-                        jobEntity.JobCerts.Add(jobCert); // Add JobCert to the job position
-                        await _uow.JobCertRepository.AddAsync(jobCert); // Save each JobCert
-
+                        jobEntity.Certs.Add(certification); // Add majors to the job position
                     }
                     else
                     {
                         throw new KeyNotFoundException($"Certification with ID {certId} not found.");
                     }
                 }
-                await _uow.Commit(cancellationToken);
-            }*/
+            }
+            // Save the job position to the repository
+            await _uow.JobPositionRepository.AddAsync(jobEntity);
+            await _uow.Commit(cancellationToken);
             // Map the result to a DTO and return it
             var jobPositionDto = _mapper.Map<JobPositionDto>(jobEntity);
             jobPositionDto.MajorId = jobEntity.Majors.Select(m => m.MajorId).ToList();
-/*            jobPositionDto.CertId = jobEntity.JobCerts.Select(c => c.CertId).ToList();
-*/
+            jobPositionDto.CertId = jobEntity.Certs.Select(c => c.CertId).ToList();
+
             return jobPositionDto;
         }
 
         public async Task<JobPositionDto> DeleteJobPositionAsync(int jobPositionId, CancellationToken cancellationToken)
         {
             var job = await _uow.JobPositionRepository.FirstOrDefaultAsync(x => x.JobPositionId == jobPositionId, cancellationToken,
-                include: x => x.Include(c => c.Majors));
+                include: x => x.Include(c => c.Majors)
+                               .Include(c => c.Certs));
             if (job is null)
             {
                 throw new KeyNotFoundException("JobPosition not found.");
             }
             job.Majors?.Clear();
+            job.Certs?.Clear();
 
             _uow.JobPositionRepository.Delete(job);
             await _uow.Commit(cancellationToken);
@@ -117,13 +108,18 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<List<JobPositionDto>> GetAll()
         {
             var result = await _uow.JobPositionRepository.GetAllAsync(query =>
-            query.Include(c => c.Majors));
+            query.Include(c => c.Majors)
+                 .Include(c => c.Certs));
             var jobDtos = result.Select(result =>
             {
                 var jobDto = _mapper.Map<JobPositionDto>(result);
 
                 jobDto.MajorId = result.Majors
                 .Select(majorjob => majorjob.MajorId)
+                .ToList();
+
+                jobDto.CertId = result.Certs
+                .Select(cert => cert.CertId)
                 .ToList();
 
                 return jobDto;
@@ -134,7 +130,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<JobPositionDto> GetJobPositionByIdAsync(int jobPositionId, CancellationToken cancellationToken)
         {
             var result = await _uow.JobPositionRepository.FirstOrDefaultAsync(x => x.JobPositionId == jobPositionId,
-                cancellationToken: cancellationToken, include: query => query.Include(c => c.Majors));
+                cancellationToken: cancellationToken, include: query => query
+                .Include(c => c.Majors)
+                .Include(c => c.Certs));
             if (result is null)
             {
                 throw new KeyNotFoundException("JobPosition not found.");
@@ -144,6 +142,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             jobDto.MajorId = result.Majors
                 .Select(majorjob => majorjob.MajorId)
                 .ToList();
+            jobDto.CertId = result.Certs
+                .Select(cert => cert.CertId)
+                .ToList();
 
             return jobDto;
         }
@@ -151,8 +152,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<List<JobPositionDto>> GetJobPositionByNameAsync(string jobPositionName, CancellationToken cancellationToken)
         {
             var result = await _uow.JobPositionRepository.WhereAsync(x => x.JobPositionName.Contains(jobPositionName), cancellationToken,
-                include: query => query.Include(c => c.Majors));
-            if (result is null)
+                include: query => query.Include(c => c.Majors)
+                                       .Include(c => c.Certs));
+            if (result is null || !result.Any())
             {
                 throw new KeyNotFoundException("Major not found.");
             }
@@ -163,6 +165,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 jobDto.MajorId = job.Majors
                 .Select(majorjob => majorjob.MajorId)
                 .ToList();
+
+                // Map Certs to CertId
+                jobDto.CertId = job.Certs
+                    .Select(cert => cert.CertId)
+                    .ToList();
             }
             return jobDtos;
         }
@@ -176,6 +183,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
             var job = await _uow.JobPositionRepository
                 .Include(x => x.Majors)
+                .Include(c => c.Certs)
                 .FirstOrDefaultAsync(x => x.JobPositionId == jobPositionId, cancellationToken)
                 .ConfigureAwait(false);
             if (job is null)
@@ -221,6 +229,42 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     }
                 }
             }
+            // Update Certs
+            var existingCertIds = new HashSet<int>(job.Certs.Select(x => x.CertId));
+            var newCertIds = request.CertId ?? new List<int>();
+
+            foreach (var existingCertId in existingCertIds)
+            {
+                if (!newCertIds.Contains(existingCertId))
+                {
+                    var certToRemove = job.Certs.FirstOrDefault(c => c.CertId == existingCertId);
+                    if (certToRemove != null)
+                    {
+                        job.Certs.Remove(certToRemove);
+                    }
+                }
+            }
+
+            foreach (var newCertId in newCertIds)
+            {
+                if (!existingCertIds.Contains(newCertId))
+                {
+                    var certification = await _uow.CertificationRepository
+                        .FirstOrDefaultAsync(x => x.CertId == newCertId, cancellationToken);
+
+                    if (certification != null)
+                    {
+                        if (!job.Certs.Any(c => c.CertId == newCertId))
+                        {
+                            job.Certs.Add(certification);
+                        }
+                    }
+                    else
+                    {
+                        throw new KeyNotFoundException($"Certification with ID {newCertId} not found.");
+                    }
+                }
+            }
 
             _uow.JobPositionRepository.Update(job);
 
@@ -230,6 +274,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                 var jobPositionDto = _mapper.Map<JobPositionDto>(job);
                 jobPositionDto.MajorId = job.Majors.Select(m => m.MajorId).ToList();
+                jobPositionDto.CertId = job.Certs.Select(c => c.CertId).ToList(); 
 
                 return jobPositionDto;
             }

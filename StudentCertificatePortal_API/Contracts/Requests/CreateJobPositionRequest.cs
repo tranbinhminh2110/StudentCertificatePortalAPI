@@ -9,6 +9,6 @@
         public string? JobPositionDescription { get; set; }
         public List<int>? MajorId { get; set; } = new List<int>();
 
-/*        public List<int>? CertId { get; set; } = new List<int>();
-*/    }
+        public List<int>? CertId { get; set; } = new List<int>();
+    }
 }
