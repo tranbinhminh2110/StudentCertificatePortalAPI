@@ -179,7 +179,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     throw new KeyNotFoundException($"Simulation exam with ID {simulation.ExamId} not found.");
                 }
 
-                totalPrice += simulation.ExamFee * (1 - simulation.ExamDiscountFee);
+                totalPrice += simulation.ExamFee * (1 - simulation.ExamDiscountFee/100);
             }
 
             // Update the existing exam enrollment entity
