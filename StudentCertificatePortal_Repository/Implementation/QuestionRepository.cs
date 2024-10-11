@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 
 namespace StudentCertificatePortal_Repository.Implementation
 {
-    public class JobCertRepository : BaseRepository<JobCert>
+    public class QuestionRepository: BaseRepository<Question>
     {
-        public JobCertRepository(CipdbContext context) : base(context) { }
-        
+        public QuestionRepository(CipdbContext context) : base(context) { }
     }
-
 }

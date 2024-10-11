@@ -33,8 +33,6 @@ public partial class CipdbContext : DbContext
 
     public virtual DbSet<Feedback> Feedbacks { get; set; }
 
-    public virtual DbSet<JobCert> JobCerts { get; set; }
-
     public virtual DbSet<JobPosition> JobPositions { get; set; }
 
     public virtual DbSet<Major> Majors { get; set; }
@@ -151,9 +149,10 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.CertPrerequisite)
                 .HasMaxLength(255)
                 .HasColumnName("cert_prerequisite");
-            entity.Property(e => e.ExpiryDate)
-                .HasColumnType("datetime")
-                .HasColumnName("expiry_date");
+            entity.Property(e => e.CertValidity)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasColumnName("cert_validity");
             entity.Property(e => e.OrganizeId).HasColumnName("organize_id");
             entity.Property(e => e.TypeId).HasColumnName("type_id");
 
@@ -174,7 +173,6 @@ public partial class CipdbContext : DbContext
                         .HasConstraintName("FK_Cert_Cert_PrerequisiteCertId"),
                     l => l.HasOne<Certification>().WithMany()
                         .HasForeignKey("CertId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("FK_Cert_Cert_CertId"),
                     j =>
                     {
@@ -200,6 +198,23 @@ public partial class CipdbContext : DbContext
                         j.ToTable("Cert_Cert");
                         j.IndexerProperty<int>("CertId").HasColumnName("cert_id");
                         j.IndexerProperty<int>("CertIdPrerequisite").HasColumnName("cert_id_prerequisite");
+                    });
+
+            entity.HasMany(d => d.JobPositions).WithMany(p => p.Certs)
+                .UsingEntity<Dictionary<string, object>>(
+                    "JobCert",
+                    r => r.HasOne<JobPosition>().WithMany()
+                        .HasForeignKey("JobPositionId")
+                        .HasConstraintName("FK_JobCert_JobPosition"),
+                    l => l.HasOne<Certification>().WithMany()
+                        .HasForeignKey("CertId")
+                        .HasConstraintName("FK_JobCert_Certification"),
+                    j =>
+                    {
+                        j.HasKey("CertId", "JobPositionId").HasName("PK__Job_Cert__6266A6D8BBC23FD8");
+                        j.ToTable("Job_Cert");
+                        j.IndexerProperty<int>("CertId").HasColumnName("cert_id");
+                        j.IndexerProperty<int>("JobPositionId").HasColumnName("job_position_id");
                     });
         });
 
@@ -322,26 +337,6 @@ public partial class CipdbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.Feedbacks)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK__Feedbacks__user___0E6E26BF");
-        });
-
-        modelBuilder.Entity<JobCert>(entity =>
-        {
-            entity.HasKey(e => new { e.CertId, e.JobPositionId }).HasName("PK__Job_Cert__6266A6D8C2DB434F");
-
-            entity.ToTable("Job_Cert");
-
-            entity.Property(e => e.CertId).HasColumnName("cert_id");
-            entity.Property(e => e.JobPositionId).HasColumnName("job_position_id");
-
-            entity.HasOne(d => d.Cert).WithMany(p => p.JobCerts)
-                .HasForeignKey(d => d.CertId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Job_Cert__cert_i__1AD3FDA4");
-
-            entity.HasOne(d => d.CertNavigation).WithMany(p => p.JobCerts)
-                .HasForeignKey(d => d.CertId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__Job_Cert__cert_i__1BC821DD");
         });
 
         modelBuilder.Entity<JobPosition>(entity =>

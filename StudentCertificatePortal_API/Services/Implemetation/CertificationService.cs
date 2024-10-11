@@ -47,7 +47,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CertDescription = request.CertDescription,
                 CertPointSystem = request.CertPointSystem,
                 CertImage = request.CertImage,
-                ExpiryDate = request.ExpiryDate,
+                CertValidity = request.CertValidity,
                 TypeId = request.TypeId,
                 OrganizeId = request.OrganizeId
             };
@@ -304,7 +304,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             certification.CertCost = request.CertCost;
             certification.CertPointSystem = request.CertPointSystem;
             certification.CertImage = request.CertImage;
-            certification.ExpiryDate = request.ExpiryDate;
+            certification.CertValidity = request.CertValidity;
             certification.TypeId = request.TypeId;
             certification.OrganizeId = request.OrganizeId;
 

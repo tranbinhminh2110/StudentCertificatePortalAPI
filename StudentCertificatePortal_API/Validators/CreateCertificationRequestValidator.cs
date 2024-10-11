@@ -34,9 +34,9 @@ namespace StudentCertificatePortal_API.Validators
            /* RuleFor(cert => cert.CertPrerequisite)
                 .MaximumLength(200).WithMessage("Certification prerequisite cannot exceed 200 characters");*/
 
-            RuleFor(cert => cert.ExpiryDate)
+            /*RuleFor(cert => cert.ExpiryDate)
                 .NotEmpty().WithMessage("Expiry date is required")
-                .GreaterThan(DateTime.Now).WithMessage("Expiry date must be in the future");
+                .GreaterThan(DateTime.Now).WithMessage("Expiry date must be in the future");*/
         }
     }
 }

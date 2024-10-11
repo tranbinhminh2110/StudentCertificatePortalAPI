@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using StudentCertificatePortal_API.Commons;
+using StudentCertificatePortal_API.DTOs;
 
 namespace StudentCertificatePortal_API.Controllers
 {
@@ -6,5 +8,6 @@ namespace StudentCertificatePortal_API.Controllers
     [Route("~/api/v1/[controller]")]
     public class ApiControllerBase : ControllerBase
     {
+        
     }
 }

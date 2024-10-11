@@ -15,7 +15,7 @@
 
         public string? CertImage { get; set; }
 
-        public DateTime? ExpiryDate { get; set; }
+        public string? CertValidity { get; set; }
         public int? TypeId { get; set; }
 
         public int? OrganizeId { get; set; }

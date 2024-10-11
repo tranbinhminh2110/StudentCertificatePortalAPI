@@ -42,12 +42,6 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.UpdateCertificationAsync(certId, request, new CancellationToken());
             return Ok(Result<CertificationDto>.Succeed(result));
         }
-        [HttpDelete("{certId:int}")]
-        public async Task<ActionResult<Result<CourseDto>>> DeleteCertificationById([FromRoute] int certId)
-        {
-            var result = await _service.DeleteCertificationAsync(certId, new CancellationToken());
-            return Ok(Result<CertificationDto>.Succeed(result));
-        }
 
         [HttpGet("~/api/v1/[controller]/search")]
         public async Task<ActionResult<Result<List<CertificationDto>>>> GetCertificcationByName([FromQuery] string? certName = null)
@@ -63,6 +57,12 @@ namespace StudentCertificatePortal_API.Controllers
             }
             
             return Ok(Result<List<CertificationDto>>.Succeed(result.ToList()));
+        }
+        [HttpDelete("{certId:int}")]
+        public async Task<ActionResult<Result<CertificationDto>>> DeleteCertificationById([FromRoute] int certId)
+        {
+            var result = await _service.DeleteCertificationAsync(certId, new CancellationToken());
+            return Ok(Result<CertificationDto>.Succeed(result));
         }
     }
 }

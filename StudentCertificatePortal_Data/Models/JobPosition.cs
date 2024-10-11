@@ -13,7 +13,7 @@ public partial class JobPosition
 
     public string? JobPositionDescription { get; set; }
 
-    public virtual ICollection<JobCert> JobCerts { get; set; } = new List<JobCert>();
+    public virtual ICollection<Certification> Certs { get; set; } = new List<Certification>();
 
     public virtual ICollection<Major> Majors { get; set; } = new List<Major>();
 }
