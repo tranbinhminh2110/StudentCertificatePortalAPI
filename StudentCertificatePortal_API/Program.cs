@@ -87,6 +87,7 @@ builder.Services.AddTransient<IBaseRepository<JobPosition>, JobPositionRepositor
 builder.Services.AddTransient<IBaseRepository<ExamSession>, ExamSessionRepository>();
 builder.Services.AddTransient<IBaseRepository<Feedback>, FeedbackRepository>();
 builder.Services.AddTransient<IBaseRepository<SimulationExam>, SimulationExamRepository>();
+builder.Services.AddTransient<IBaseRepository<JobCert>, JobCertRepository>();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
 
