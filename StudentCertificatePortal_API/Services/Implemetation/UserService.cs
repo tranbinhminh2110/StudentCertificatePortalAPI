@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Exceptions;
@@ -116,7 +117,33 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<UserDto> DeleteUserByIdAsync(int userId, CancellationToken cancellationToken)
         {
-            var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
+            var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == userId,
+                cancellationToken,
+                include: q => q.Include(c => c.Feedbacks)
+                        .Include(c => c.Wallet)
+                        .Include(c => c.CoursesEnrollments)
+                        .Include(c => c.ExamsEnrollments)
+                        .Include(c => c.Cart));
+
+            
+
+            if(user == null)
+            {
+                throw new KeyNotFoundException("User not found.");
+            }
+
+            user.Feedbacks?.Clear();
+            user.CoursesEnrollments?.Clear();
+            user.ExamsEnrollments?.Clear();
+
+            var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.UserId == user.UserId);
+            if(wallet != null)
+            {
+                _uow.WalletRepository.Delete(wallet);
+                await _uow.Commit(cancellationToken);
+            }
+             
+
             if (user is null)
             {
                 throw new KeyNotFoundException("User not found.");

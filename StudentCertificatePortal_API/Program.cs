@@ -91,6 +91,7 @@ builder.Services.AddTransient<IBaseRepository<Question>, QuestionRepository>();
 builder.Services.AddTransient<IBaseRepository<Answer>, AnswerRepository>();
 builder.Services.AddTransient<IBaseRepository<CoursesEnrollment>, CourseEnrollmentRepository>();
 builder.Services.AddTransient<IBaseRepository<ExamsEnrollment>, ExamEnrollmentRepository>();
+builder.Services.AddTransient<IBaseRepository<Wallet>, WalletRepository>();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
 
@@ -109,6 +110,7 @@ builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<ISimulationExamService, SimulationExamService>();
 builder.Services.AddScoped<IExamEnrollmentService, ExamEnrollmentService>();
 builder.Services.AddScoped<IQandAService, QandAService>();
+builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddSingleton<IRedisService>(provider =>
 {

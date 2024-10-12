@@ -24,11 +24,14 @@ namespace StudentCertificatePortal_API.Controllers
         private readonly IUnitOfWork _uow;
         private readonly GenerateJSONWebTokenHelper _helper;
         private readonly ILoginService _service;
-        public GoogleController(IUnitOfWork uow, GenerateJSONWebTokenHelper helper, ILoginService service)
+        private readonly IWalletService _walletService;
+
+        public GoogleController(IUnitOfWork uow, GenerateJSONWebTokenHelper helper, ILoginService service, IWalletService walletService)
         {
             _uow = uow;
             _helper = helper;
             _service = service;
+            _walletService = walletService;
         }
 
         [HttpGet("login-google")]
@@ -77,9 +80,16 @@ namespace StudentCertificatePortal_API.Controllers
                     Status = true,
                     UserCreatedAt = DateTime.Now,
                 };
-                await _uow.UserRepository.AddAsync(user);
+                var resultUser = await _uow.UserRepository.AddAsync(user);
                 await _uow.Commit(cancellationToken);
+                var walletResult = await _walletService.CreateWalletAsync(resultUser.UserId, new CancellationToken());
+                if (walletResult == null)
+                {
+                    return BadRequest("Wallet was not successfully created");
+                }
             }
+
+            
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, result.Principal);
 
