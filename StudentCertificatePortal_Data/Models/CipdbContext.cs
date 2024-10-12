@@ -71,7 +71,6 @@ public partial class CipdbContext : DbContext
 
             entity.HasOne(d => d.Question).WithMany(p => p.Answers)
                 .HasForeignKey(d => d.QuestionId)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Answers__questio__40058253");
         });
 
@@ -96,11 +95,11 @@ public partial class CipdbContext : DbContext
                     "CartDetail",
                     r => r.HasOne<SimulationExam>().WithMany()
                         .HasForeignKey("ExamId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.ClientSetNull)
                         .HasConstraintName("FK__Cart_Deta__exam___0D7A0286"),
                     l => l.HasOne<Cart>().WithMany()
                         .HasForeignKey("CartId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.ClientSetNull)
                         .HasConstraintName("FK__Cart_Deta__cart___0C85DE4D"),
                     j =>
                     {
@@ -136,7 +135,7 @@ public partial class CipdbContext : DbContext
                 .HasColumnName("cert_code");
             entity.Property(e => e.CertCost).HasColumnName("cert_cost");
             entity.Property(e => e.CertDescription)
-                .HasMaxLength(255)
+                .HasColumnType("text")
                 .HasColumnName("cert_description");
             entity.Property(e => e.CertImage)
                 .HasColumnType("text")
@@ -159,12 +158,10 @@ public partial class CipdbContext : DbContext
 
             entity.HasOne(d => d.Organize).WithMany(p => p.Certifications)
                 .HasForeignKey(d => d.OrganizeId)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Certifica__organ__19DFD96B");
 
             entity.HasOne(d => d.Type).WithMany(p => p.Certifications)
                 .HasForeignKey(d => d.TypeId)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Certifica__type___17F790F9");
 
             entity.HasMany(d => d.CertIdPrerequisites).WithMany(p => p.Certs)
@@ -172,11 +169,10 @@ public partial class CipdbContext : DbContext
                     "CertCert",
                     r => r.HasOne<Certification>().WithMany()
                         .HasForeignKey("CertIdPrerequisite")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.ClientSetNull)
                         .HasConstraintName("FK_Cert_Cert_PrerequisiteCertId"),
                     l => l.HasOne<Certification>().WithMany()
                         .HasForeignKey("CertId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("FK_Cert_Cert_CertId"),
                     j =>
                     {
@@ -209,11 +205,9 @@ public partial class CipdbContext : DbContext
                     "JobCert",
                     r => r.HasOne<JobPosition>().WithMany()
                         .HasForeignKey("JobPositionId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("FK_JobCert_JobPosition"),
                     l => l.HasOne<Certification>().WithMany()
                         .HasForeignKey("CertId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("FK_JobCert_Certification"),
                     j =>
                     {
@@ -245,7 +239,6 @@ public partial class CipdbContext : DbContext
 
             entity.HasOne(d => d.Cert).WithMany(p => p.Courses)
                 .HasForeignKey(d => d.CertId)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Courses__cert_id__208CD6FA");
         });
 
@@ -267,7 +260,6 @@ public partial class CipdbContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.CoursesEnrollments)
                 .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Courses_E__user___236943A5");
         });
 
@@ -297,7 +289,6 @@ public partial class CipdbContext : DbContext
 
             entity.HasOne(d => d.Cert).WithMany(p => p.ExamSessions)
                 .HasForeignKey(d => d.CertId)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Exam_Sess__cert___18EBB532");
         });
 
@@ -319,7 +310,6 @@ public partial class CipdbContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.ExamsEnrollments)
                 .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Exams_Enr__user___10566F31");
         });
 
@@ -346,7 +336,6 @@ public partial class CipdbContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.Feedbacks)
                 .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Feedbacks__user___0E6E26BF");
         });
 
@@ -444,17 +433,14 @@ public partial class CipdbContext : DbContext
 
             entity.HasOne(d => d.CourseEnrollment).WithMany(p => p.Payments)
                 .HasForeignKey(d => d.CourseEnrollmentId)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Payments__course__245D67DE");
 
             entity.HasOne(d => d.ExamEnrollment).WithMany(p => p.Payments)
                 .HasForeignKey(d => d.ExamEnrollmentId)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Payments__exam_e__14270015");
 
             entity.HasOne(d => d.Wallet).WithMany(p => p.Payments)
                 .HasForeignKey(d => d.WalletId)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Payments__wallet__1332DBDC");
         });
 
@@ -470,7 +456,6 @@ public partial class CipdbContext : DbContext
 
             entity.HasOne(d => d.Exam).WithMany(p => p.Questions)
                 .HasForeignKey(d => d.ExamId)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Questions__exam___25518C17");
         });
 
@@ -499,7 +484,6 @@ public partial class CipdbContext : DbContext
 
             entity.HasOne(d => d.Cert).WithMany(p => p.SimulationExams)
                 .HasForeignKey(d => d.CertId)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Simulatio__cert___17036CC0");
 
             entity.HasMany(d => d.Vouchers).WithMany(p => p.Exams)
@@ -661,7 +645,6 @@ public partial class CipdbContext : DbContext
 
             entity.HasOne(d => d.User).WithOne(p => p.Wallet)
                 .HasForeignKey<Wallet>(d => d.UserId)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Wallet__user_id__0B91BA14");
         });
 

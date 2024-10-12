@@ -11,8 +11,6 @@ public partial class Certification
 
     public string? CertCode { get; set; }
 
-    public string? CertDescription { get; set; }
-
     public int? CertCost { get; set; }
 
     public string? CertPointSystem { get; set; }
@@ -26,6 +24,8 @@ public partial class Certification
     public int? OrganizeId { get; set; }
 
     public string? CertValidity { get; set; }
+
+    public string? CertDescription { get; set; }
 
     public virtual ICollection<Course> Courses { get; set; } = new List<Course>();
 
