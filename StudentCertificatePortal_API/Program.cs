@@ -47,7 +47,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost",
-           builder => builder.WithOrigins("http://localhost:3000")
+           builder => builder.WithOrigins("http://localhost:3000", "https://uni-cert.vercel.app/")
                              .AllowCredentials()
                              .AllowAnyHeader()
                              .AllowAnyMethod());
