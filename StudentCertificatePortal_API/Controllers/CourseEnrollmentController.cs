@@ -23,6 +23,7 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.GetAll();
             return Ok(Result<List<CourseEnrollmentDto>>.Succeed(result));
         }
+
         [HttpGet("{courseEnrollmentId:int}")]
         public async Task<ActionResult<Result<CourseEnrollmentDto>>> GetCourseEnrollmentById([FromRoute] int courseEnrollmentId)
         {

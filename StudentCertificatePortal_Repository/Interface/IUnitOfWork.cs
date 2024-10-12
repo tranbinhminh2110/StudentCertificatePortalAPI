@@ -22,6 +22,7 @@ namespace StudentCertificatePortal_Repository.Interface
         IBaseRepository<Answer> AnswerRepository{ get; }
         IBaseRepository<CoursesEnrollment> CourseEnrollmentRepository { get; }
         IBaseRepository<ExamsEnrollment> ExamEnrollmentRepository { get; }
+        IBaseRepository<Wallet> WalletRepository { get; }
 
         Task Commit(CancellationToken cancellationToken);
     }
