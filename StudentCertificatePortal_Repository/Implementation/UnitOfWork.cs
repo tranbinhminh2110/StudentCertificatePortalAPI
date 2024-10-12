@@ -26,6 +26,7 @@ namespace StudentCertificatePortal_Repository.Implementation
         private IBaseRepository<CoursesEnrollment>? _courseEnrollmentRepository;
         private IBaseRepository<ExamsEnrollment>? _examEnrollmentRepository;
         private IBaseRepository<Wallet>? _walletRepository;
+        private IBaseRepository<CertType>? _certTypeRepository;
 
         public UnitOfWork(CipdbContext context)
         {
@@ -51,6 +52,8 @@ namespace StudentCertificatePortal_Repository.Implementation
         public IBaseRepository<ExamsEnrollment> ExamEnrollmentRepository => _examEnrollmentRepository ??= new ExamEnrollmentRepository(_context);
 
         public IBaseRepository<Wallet> WalletRepository => _walletRepository ??= new WalletRepository(_context);
+
+        public IBaseRepository<CertType> CertTypeRepository => _certTypeRepository ??= new CertTypeRepository(_context);
 
         public async Task Commit(CancellationToken cancellationToken)
         {
