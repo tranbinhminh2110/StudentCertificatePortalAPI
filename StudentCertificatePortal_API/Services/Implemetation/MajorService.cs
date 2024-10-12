@@ -47,7 +47,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     if (jobPosition != null)
                     {
                         majorEntity.JobPositions.Add(jobPosition);
-                        await _uow.MajorRepository.AddAsync(majorEntity);
                     }
                     else
                     {
@@ -56,6 +55,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                 }
             }
+            await _uow.MajorRepository.AddAsync(majorEntity);
             try
             {
                 await _uow.Commit(cancellationToken);
