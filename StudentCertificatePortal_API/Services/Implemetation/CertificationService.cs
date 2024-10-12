@@ -53,7 +53,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             };
 
             // Check if CertPrerequisites exists, is not null or empty, and does not contain invalid values (e.g., 0)
-            if (request.CertIdPrerequisites != null && request.CertIdPrerequisites.Any() && !request.CertIdPrerequisites.Contains(0))
+            if (request.CertIdPrerequisites.Any())
             {
                 foreach (var certPreId in request.CertIdPrerequisites)
                 {
@@ -61,12 +61,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     if (prerequisiteCert != null)
                     {
                         certificationEntity.CertIdPrerequisites.Add(prerequisiteCert);
-                        await _uow.CertificationRepository.AddAsync(certificationEntity);
+                        
                     }
-                    else
-                    {
-                        throw new KeyNotFoundException($"Prerequisite certification with ID {certPreId} not found.");
-                    }
+                    await _uow.CertificationRepository.AddAsync(certificationEntity);
                 }
             }
 
