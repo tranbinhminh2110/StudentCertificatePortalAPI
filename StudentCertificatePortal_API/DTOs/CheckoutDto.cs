@@ -21,7 +21,7 @@
 
     public class WalletRequest
     {
-        public string? Username { get; set; }
+        public string Title { get; set; } 
         public int Point { get; set; }
         public float Price { get; set; }
     }
