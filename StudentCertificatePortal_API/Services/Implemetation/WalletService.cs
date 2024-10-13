@@ -82,15 +82,15 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<WalletDto> GetWalletByIdAsync(int userId, CancellationToken cancellationToken)
         {
             var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == userId);
-            if (user == null)
+            if (user == null )
             {
                 throw new KeyNotFoundException("User not found.");
             }
             var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.UserId == userId);
 
-            if(wallet == null)
+            if(wallet == null || wallet.WalletStatus == EnumWallet.IsLocked.ToString())
             {
-                throw new Exception("Wallet of user not found.");
+                throw new Exception("Wallet of user not found or is locked. Contact with me to support.");
             }
 
             return _mapper.Map<WalletDto>(wallet);
