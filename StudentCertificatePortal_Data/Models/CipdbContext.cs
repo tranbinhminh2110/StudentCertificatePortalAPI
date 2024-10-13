@@ -49,6 +49,8 @@ public partial class CipdbContext : DbContext
 
     public virtual DbSet<StudentOfExam> StudentOfExams { get; set; }
 
+    public virtual DbSet<Transaction> Transactions { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
 
     public virtual DbSet<Voucher> Vouchers { get; set; }
@@ -562,6 +564,32 @@ public partial class CipdbContext : DbContext
                 .HasConstraintName("FK__Student_O__exam___123EB7A3");
         });
 
+        modelBuilder.Entity<Transaction>(entity =>
+        {
+            entity.HasKey(e => e.TransactionId).HasName("PK__Transact__85C600AF17A6394D");
+
+            entity.Property(e => e.TransactionId).HasColumnName("transaction_id");
+            entity.Property(e => e.Amount).HasColumnName("amount");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("createdAt");
+            entity.Property(e => e.Point).HasColumnName("point");
+            entity.Property(e => e.TransDesription)
+                .HasColumnType("text")
+                .HasColumnName("trans_desription");
+            entity.Property(e => e.TransStatus)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("trans_status");
+            entity.Property(e => e.WalletId).HasColumnName("wallet_id");
+
+            entity.HasOne(d => d.Wallet).WithMany(p => p.Transactions)
+                .HasForeignKey(d => d.WalletId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__Transacti__walle__47A6A41B");
+        });
+
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.UserId).HasName("PK__Users__B9BE370FB4E23B13");
@@ -631,12 +659,10 @@ public partial class CipdbContext : DbContext
             entity.HasIndex(e => e.UserId, "UQ__Wallet__B9BE370E75E6A51C").IsUnique();
 
             entity.Property(e => e.WalletId).HasColumnName("wallet_id");
-            entity.Property(e => e.DepositDate)
+            entity.Property(e => e.CreateAt)
+                .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
-                .HasColumnName("deposit_date");
-            entity.Property(e => e.History)
-                .HasMaxLength(255)
-                .HasColumnName("history");
+                .HasColumnName("createAt");
             entity.Property(e => e.Point).HasColumnName("point");
             entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.Property(e => e.WalletStatus)
