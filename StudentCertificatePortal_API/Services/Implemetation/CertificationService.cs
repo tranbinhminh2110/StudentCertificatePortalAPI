@@ -71,6 +71,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 await _uow.Commit(cancellationToken);
 
+                var organize = await _uow.OrganizeRepository.FirstOrDefaultAsync(x => x.OrganizeId == certificationEntity.OrganizeId);
+
+
+                var type = await _uow.CertTypeRepository.FirstOrDefaultAsync(x => x.TypeId == certificationEntity.TypeId);
+
                 // Create the DTO and populate the prerequisite names
                 var certificationDto = _mapper.Map<CertificationDto>(certificationEntity);
                 certificationDto.CertPrerequisite = certificationEntity.CertIdPrerequisites
@@ -84,6 +89,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 certificationDto.CertDescriptionPrerequisite = certificationEntity.CertIdPrerequisites
                     .Select(prerequisite => prerequisite.CertDescription)
                     .ToList();
+
+                certificationDto.OrganizeName = organize.OrganizeName;
+                certificationDto.TypeName = type.TypeName;
                 return certificationDto;
             }
             catch (Exception ex)
@@ -168,24 +176,22 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
 
 
-
-
-
-
-
-
-
-
-
-
         public async Task<List<CertificationDto>> GetAll()
         {
             var certifications = await _uow.CertificationRepository.GetAllAsync(query =>
                 query.Include(c => c.CertIdPrerequisites)); // Eager loading prerequisites
 
-            var certificationDtos = certifications.Select(certification =>
+            var certificationDtos = new List<CertificationDto>();
+
+            foreach (var certification in certifications)
             {
                 var certificationDto = _mapper.Map<CertificationDto>(certification);
+
+                var organize = await _uow.OrganizeRepository.FirstOrDefaultAsync(x => x.OrganizeId == certification.OrganizeId);
+                var type = await _uow.CertTypeRepository.FirstOrDefaultAsync(x => x.TypeId == certification.TypeId);
+
+                certificationDto.OrganizeName = organize?.OrganizeName; // Null check added
+                certificationDto.TypeName = type?.TypeName; // Null check added
 
                 // Manually map prerequisite details
                 certificationDto.CertPrerequisite = certification.CertIdPrerequisites
@@ -200,11 +206,13 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     .Select(prerequisite => prerequisite.CertDescription)
                     .ToList();
 
-                return certificationDto;
-            }).ToList();
+                // Add the result to the list
+                certificationDtos.Add(certificationDto);
+            }
 
             return certificationDtos;
         }
+
 
 
         public async Task<CertificationDto> GetCertificationById(int certificationId, CancellationToken cancellationToken)
