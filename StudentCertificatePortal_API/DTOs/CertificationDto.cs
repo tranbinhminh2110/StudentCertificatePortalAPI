@@ -22,10 +22,14 @@ namespace StudentCertificatePortal_API.DTOs
         public string? CertImage { get; set; }
 
         public string? CertValidity { get; set; }
+        public string? OrganizeName { get; set; }
+        public string? TypeName { get; set; }
+
 
         // Danh sách ID của các chứng chỉ tiền đề
         public List<string>? CertPrerequisite { get; set; } = new List<string>();
         public List<string>? CertCodePrerequisite { get; set; } = new List<string>();
         public List<string>? CertDescriptionPrerequisite { get; set; } = new List<string>();
+        
     }
 }
