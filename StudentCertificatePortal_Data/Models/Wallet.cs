@@ -11,13 +11,13 @@ public partial class Wallet
 
     public int? UserId { get; set; }
 
-    public DateTime? DepositDate { get; set; }
-
-    public string? History { get; set; }
-
     public string? WalletStatus { get; set; }
 
+    public DateTime CreateAt { get; set; }
+
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+
+    public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
 
     public virtual User? User { get; set; }
 }

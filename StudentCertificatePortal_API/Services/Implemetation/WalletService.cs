@@ -39,7 +39,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var newWallet = new Wallet()
             {
                 UserId = userId,
-                DepositDate = DateTime.UtcNow,
                 Point = 0,
                 WalletStatus = EnumWallet.IsUsed.ToString(),
             };
