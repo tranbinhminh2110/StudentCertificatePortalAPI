@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Exceptions;
@@ -43,11 +44,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<OrganizeDto> DeleteOrganizeAsync(int organizeId, CancellationToken cancellationToken)
         {
-            var organize = await _uow.OrganizeRepository.FirstOrDefaultAsync(x => x.OrganizeId == organizeId, cancellationToken);
+            var organize = await _uow.OrganizeRepository.FirstOrDefaultAsync(x => x.OrganizeId == organizeId, cancellationToken,
+                include: x => x.Include(c => c.Certifications)); 
             if (organize is null)
             {
                 throw new KeyNotFoundException("Organize not found.");
             }
+            organize.Certifications?.Clear();
+
             _uow.OrganizeRepository.Delete(organize);
             await _uow.Commit(cancellationToken);
             return _mapper.Map<OrganizeDto>(organize);
