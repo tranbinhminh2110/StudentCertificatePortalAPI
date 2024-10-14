@@ -102,6 +102,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 var voucherDto = _mapper.Map<VoucherDto>(result);
 
+                voucherDto.ExamId = result.Exams
+                .Select(x => x.ExamId)
+                .ToList();
                 voucherDto.ExamName = result.Exams
                 .Select(x => x.ExamName)
                 .ToList();
@@ -109,7 +112,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 .Select(x => x.ExamCode)
                 .ToList();
                 voucherDto.ExamFee = result.Exams
-                .Select(x => x.ExamFee ?? 0)
+                .Select(x => x.ExamFee)
                 .ToList();
                 return voucherDto;
             }).ToList();
@@ -125,6 +128,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new KeyNotFoundException("Voucher not founc.");
             }
             var voucherDto = _mapper.Map<VoucherDto>(result);
+            voucherDto.ExamId = result.Exams
+                .Select(x => x.ExamId)
+                .ToList();
             voucherDto.ExamName = result.Exams
                 .Select(x => x.ExamName)
                 .ToList();
@@ -132,7 +138,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 .Select(x => x.ExamCode)
                 .ToList();
             voucherDto.ExamFee = result.Exams
-                .Select(x => x.ExamFee ?? 0)
+                .Select(x => x.ExamFee)
                 .ToList();
             return voucherDto;
         }
@@ -149,12 +155,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             foreach (var voucherDto in voucherDtos)
             {
                 var voucher = result.FirstOrDefault(x => x.VoucherId == voucherDto.VoucherId);
+                voucherDto.ExamId = voucher.Exams
+                    .Select(x => x.ExamId).ToList();
                 voucherDto.ExamName = voucher.Exams
                     .Select(x => x.ExamName).ToList();
                 voucherDto.ExamCode = voucher.Exams
                     .Select(x => x.ExamCode).ToList();
                 voucherDto.ExamFee = voucher.Exams
-                    .Select(x => x.ExamFee ?? 0).ToList();
+                    .Select(x => x.ExamFee).ToList();
             }
             return voucherDtos;
         }

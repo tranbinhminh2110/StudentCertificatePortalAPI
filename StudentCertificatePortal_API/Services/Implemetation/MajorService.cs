@@ -100,6 +100,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 var majorDto = _mapper.Map<MajorDto>(result);
 
+                majorDto.JobPositionId = result.JobPositions
+                .Select(majorjob => majorjob.JobPositionId)
+                .ToList();
                 majorDto.JobPositionName = result.JobPositions
                 .Select(majorjob => majorjob.JobPositionName)
                 .ToList();
@@ -125,6 +128,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
             var majorDto = _mapper.Map<MajorDto>(result);
 
+            majorDto.JobPositionId = result.JobPositions
+            .Select(majorjob => majorjob.JobPositionId)
+            .ToList();
             majorDto.JobPositionName = result.JobPositions
             .Select(majorjob => majorjob.JobPositionName)
             .ToList();
@@ -151,6 +157,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             foreach (var majorDto in majorDtos)
             {
                 var major = result.FirstOrDefault(c => c.MajorId == majorDto.MajorId);
+                majorDto.JobPositionId = major.JobPositions
+                .Select(majorjob => majorjob.JobPositionId)
+                .ToList(); 
                 majorDto.JobPositionName = major.JobPositions
                 .Select(majorjob => majorjob.JobPositionName)
                 .ToList(); 
