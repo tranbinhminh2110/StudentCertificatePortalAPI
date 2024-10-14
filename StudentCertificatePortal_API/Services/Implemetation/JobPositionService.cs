@@ -116,6 +116,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                 jobDto.MajorName = result.Majors
                 .Select(majorjob => majorjob.MajorName)
+                .ToList();                        
+                jobDto.MajorCode = result.Majors
+                .Select(majorjob => majorjob.MajorCode)
                 .ToList();                
                 jobDto.MajorDescription = result.Majors
                 .Select(majorjob => majorjob.MajorDescription)
@@ -123,6 +126,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                 jobDto.CertName = result.Certs
                 .Select(cert => cert.CertName)
+                .ToList();                
+                jobDto.CertCode = result.Certs
+                .Select(cert => cert.CertCode)
                 .ToList();
                 jobDto.CertDescription = result.Certs
                 .Select(cert => cert.CertDescription)
@@ -147,6 +153,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             jobDto.MajorName = result.Majors
             .Select(majorjob => majorjob.MajorName)
+            .ToList();            
+            jobDto.MajorCode = result.Majors
+            .Select(majorjob => majorjob.MajorCode)
             .ToList();
             jobDto.MajorDescription = result.Majors
             .Select(majorjob => majorjob.MajorDescription)
@@ -154,6 +163,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             jobDto.CertName = result.Certs
             .Select(cert => cert.CertName)
+            .ToList();            
+            jobDto.CertCode = result.Certs
+            .Select(cert => cert.CertCode)
             .ToList();
             jobDto.CertDescription = result.Certs
             .Select(cert => cert.CertDescription)
@@ -178,6 +190,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 jobDto.MajorName = job.Majors
                 .Select(majorjob => majorjob.MajorName)
                 .ToList();                
+                jobDto.MajorCode = job.Majors
+                .Select(majorjob => majorjob.MajorCode)
+                .ToList();                
                 jobDto.MajorDescription = job.Majors
                 .Select(majorjob => majorjob.MajorDescription)
                 .ToList();
@@ -185,6 +200,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 // Map Certs to CertId
                 jobDto.CertName = job.Certs
                     .Select(cert => cert.CertName)
+                    .ToList();                 
+                jobDto.CertCode = job.Certs
+                    .Select(cert => cert.CertCode)
                     .ToList();                
                 jobDto.CertDescription = job.Certs
                     .Select(cert => cert.CertDescription)
