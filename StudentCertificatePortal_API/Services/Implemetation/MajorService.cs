@@ -103,6 +103,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 majorDto.JobPositionName = result.JobPositions
                 .Select(majorjob => majorjob.JobPositionName)
                 .ToList();
+                majorDto.JobPositionCode = result.JobPositions
+                .Select (majorjob => majorjob.JobPositionCode) 
+                .ToList();
                 majorDto.JobPositionDescription = result.JobPositions
                 .Select(majorjob => majorjob.JobPositionDescription)
                 .ToList();
@@ -125,6 +128,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             majorDto.JobPositionName = result.JobPositions
             .Select(majorjob => majorjob.JobPositionName)
             .ToList();
+            majorDto.JobPositionCode = result.JobPositions
+                .Select(majorjob => majorjob.JobPositionCode)
+                .ToList();
             majorDto.JobPositionDescription = result.JobPositions
             .Select(majorjob => majorjob.JobPositionDescription)
             .ToList();
@@ -147,7 +153,10 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 var major = result.FirstOrDefault(c => c.MajorId == majorDto.MajorId);
                 majorDto.JobPositionName = major.JobPositions
                 .Select(majorjob => majorjob.JobPositionName)
-                .ToList();                
+                .ToList(); 
+                majorDto.JobPositionCode = major.JobPositions
+                .Select(majorjob => majorjob.JobPositionCode)
+                .ToList();  
                 majorDto.JobPositionDescription = major.JobPositions
                 .Select(majorjob => majorjob.JobPositionDescription)
                 .ToList();
