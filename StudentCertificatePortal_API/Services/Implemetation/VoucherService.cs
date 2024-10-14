@@ -109,7 +109,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 .Select(x => x.ExamCode)
                 .ToList();
                 voucherDto.ExamFee = result.Exams
-                .Select(x => x.ExamFee ?? 0)
+                .Select(x => x.ExamFee)
                 .ToList();
                 return voucherDto;
             }).ToList();
@@ -132,7 +132,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 .Select(x => x.ExamCode)
                 .ToList();
             voucherDto.ExamFee = result.Exams
-                .Select(x => x.ExamFee ?? 0)
+                .Select(x => x.ExamFee)
                 .ToList();
             return voucherDto;
         }
@@ -154,7 +154,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 voucherDto.ExamCode = voucher.Exams
                     .Select(x => x.ExamCode).ToList();
                 voucherDto.ExamFee = voucher.Exams
-                    .Select(x => x.ExamFee ?? 0).ToList();
+                    .Select(x => x.ExamFee).ToList();
             }
             return voucherDtos;
         }
