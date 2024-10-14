@@ -62,15 +62,13 @@ namespace StudentCertificatePortal_API.Controllers
 
             var response = await _httpClient.PostAsync(url, content);
 
-            // Check if the request was successful
             if (response.IsSuccessStatusCode)
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
-                return Ok(responseContent); // Return the content of the response
+                return Ok(responseContent);
             }
             else
             {
-                // If request failed, return the error message
                 var errorMessage = $"Error: {response.StatusCode}, Reason: {response.ReasonPhrase}";
                 return BadRequest(errorMessage);
             }

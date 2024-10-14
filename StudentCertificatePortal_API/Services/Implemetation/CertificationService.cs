@@ -251,6 +251,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<List<CertificationDto>> GetCertificationByNameAsync(string certName, CancellationToken cancellationToken)
         {
+            // Fetch certifications including prerequisites
             var certifications = await _uow.CertificationRepository
                 .WhereAsync(
                     x => x.CertName.Contains(certName),
@@ -258,17 +259,25 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     include: query => query.Include(c => c.CertIdPrerequisites)
                 );
 
+            // If no certifications found, throw an exception
             if (certifications == null || !certifications.Any())
             {
                 throw new KeyNotFoundException("No certifications found with the given name.");
             }
 
+            // Map the certifications to DTOs
             var certificationDtos = _mapper.Map<List<CertificationDto>>(certifications);
 
             foreach (var certificationDto in certificationDtos)
             {
+                // Find the original certification entity
                 var certification = certifications.First(c => c.CertId == certificationDto.CertId);
 
+                // Fetch related organize and cert type
+                var organize = await _uow.OrganizeRepository.FirstOrDefaultAsync(x => x.OrganizeId == certification.OrganizeId);
+                var type = await _uow.CertTypeRepository.FirstOrDefaultAsync(x => x.TypeId == certification.TypeId);
+
+                // Fill in prerequisite details
                 certificationDto.CertPrerequisite = certification.CertIdPrerequisites
                     .Select(prerequisite => prerequisite.CertName)
                     .ToList();
@@ -280,10 +289,15 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 certificationDto.CertDescriptionPrerequisite = certification.CertIdPrerequisites
                     .Select(prerequisite => prerequisite.CertDescription)
                     .ToList();
+
+                // Include organization and type details in DTO
+                certificationDto.OrganizeName = organize?.OrganizeName;
+                certificationDto.TypeName = type?.TypeName;
             }
 
             return certificationDtos;
         }
+
 
 
         public async Task<CertificationDto> UpdateCertificationAsync(int certificationId, UpdateCertificationRequest request, CancellationToken cancellationToken)
