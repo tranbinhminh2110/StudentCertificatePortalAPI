@@ -62,9 +62,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             data.Items.Add(new WalletRequest()
             {
-                Title = "Recharge Points Directly",
-                Point = transaction.Point,
-                Price = transaction.Amount
+                name = "Recharge Points Directly",
+                quantity = transaction.Point,
+                price = transaction.Amount
             });
 
             return data;

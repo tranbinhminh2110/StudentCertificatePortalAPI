@@ -21,8 +21,8 @@
 
     public class WalletRequest
     {
-        public string Title { get; set; } 
-        public int Point { get; set; }
-        public float Price { get; set; }
+        public string name { get; set; } 
+        public int quantity { get; set; }
+        public float price { get; set; }
     }
 }

@@ -21,11 +21,11 @@ namespace StudentCertificatePortal_API.Controllers
             _configuration = configuration;
         }
 
-        [HttpPost("{orderId}")]
-        public async Task<IActionResult> CreatePaymentLink(int orderId)
+        [HttpPost("{transactionId}")]
+        public async Task<IActionResult> CreatePaymentLink(int transactionId)
         {
 
-            var data = await _service.CreatePaymentLinkAsync(orderId, new CancellationToken());
+            var data = await _service.CreatePaymentLinkAsync(transactionId, new CancellationToken());
             var checksumKey = _configuration["PayOS:ChecksumKey"];
             var signature = PayOSHelper.CreateSignature(
                 data.Amount.ToString(),
