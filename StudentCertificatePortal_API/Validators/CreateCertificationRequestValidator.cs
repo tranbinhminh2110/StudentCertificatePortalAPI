@@ -17,8 +17,6 @@ namespace StudentCertificatePortal_API.Validators
                 .NotEmpty().WithMessage("Certification code is required")
                 .Length(1, 10).WithMessage("Certification code must be between 1 and 10 characters");
 
-            RuleFor(cert => cert.CertDescription)
-                .MaximumLength(500).WithMessage("Certification description cannot exceed 500 characters");
 
             RuleFor(cert => cert.CertCost)
                 .GreaterThanOrEqualTo(0).WithMessage("Certification cost must be a positive number");
