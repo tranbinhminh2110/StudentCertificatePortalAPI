@@ -78,6 +78,10 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                 // Create the DTO and populate the prerequisite names
                 var certificationDto = _mapper.Map<CertificationDto>(certificationEntity);
+                certificationDto.CertPrerequisiteId = certificationEntity.CertIdPrerequisites
+                    .Select(prerequisite => prerequisite.CertId)
+                    .ToList();
+
                 certificationDto.CertPrerequisite = certificationEntity.CertIdPrerequisites
                     .Select(prerequisite => prerequisite.CertName)
                     .ToList();
@@ -89,9 +93,10 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 certificationDto.CertDescriptionPrerequisite = certificationEntity.CertIdPrerequisites
                     .Select(prerequisite => prerequisite.CertDescription)
                     .ToList();
-
-                certificationDto.OrganizeName = organize.OrganizeName;
-                certificationDto.TypeName = type.TypeName;
+                certificationDto.OrganizeId = organize?.OrganizeId;
+                certificationDto.OrganizeName = organize?.OrganizeName;
+                certificationDto.TypeId = type?.TypeId;
+                certificationDto.TypeName = type?.TypeName;
                 return certificationDto;
             }
             catch (Exception ex)
@@ -190,10 +195,15 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 var organize = await _uow.OrganizeRepository.FirstOrDefaultAsync(x => x.OrganizeId == certification.OrganizeId);
                 var type = await _uow.CertTypeRepository.FirstOrDefaultAsync(x => x.TypeId == certification.TypeId);
 
-                certificationDto.OrganizeName = organize?.OrganizeName; // Null check added
+                certificationDto.OrganizeId = organize?.OrganizeId;
+                certificationDto.OrganizeName = organize?.OrganizeName;
+                certificationDto.TypeId = type?.TypeId;
                 certificationDto.TypeName = type?.TypeName; // Null check added
 
                 // Manually map prerequisite details
+                certificationDto.CertPrerequisiteId = certification.CertIdPrerequisites
+                    .Select(prerequisite => prerequisite.CertId)
+                    .ToList();
                 certificationDto.CertPrerequisite = certification.CertIdPrerequisites
                     .Select(prerequisite => prerequisite.CertName)
                     .ToList();
@@ -230,10 +240,22 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new KeyNotFoundException("Certification not found.");
             }
 
+            var organize = await _uow.OrganizeRepository.FirstOrDefaultAsync(x => x.OrganizeId == certification.OrganizeId);
+            var type = await _uow.CertTypeRepository.FirstOrDefaultAsync(x => x.TypeId == certification.TypeId);
+
+            
             // Map the certification to DTO
             var certificationDto = _mapper.Map<CertificationDto>(certification);
 
+
+            certificationDto.OrganizeId = organize?.OrganizeId;
+            certificationDto.OrganizeName = organize?.OrganizeName;
+            certificationDto.TypeId = type?.TypeId;
+            certificationDto.TypeName = type?.TypeName;
             // Populate the prerequisite details
+            certificationDto.CertPrerequisiteId = certification.CertIdPrerequisites
+                .Select(prerequisite => prerequisite.CertId)
+                .ToList();
             certificationDto.CertPrerequisite = certification.CertIdPrerequisites
                 .Select(prerequisite => prerequisite.CertName)
                 .ToList();
@@ -278,6 +300,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 var type = await _uow.CertTypeRepository.FirstOrDefaultAsync(x => x.TypeId == certification.TypeId);
 
                 // Fill in prerequisite details
+                certificationDto.CertPrerequisiteId = certification.CertIdPrerequisites
+                    .Select(prerequisite => prerequisite.CertId)
+                    .ToList();
                 certificationDto.CertPrerequisite = certification.CertIdPrerequisites
                     .Select(prerequisite => prerequisite.CertName)
                     .ToList();
@@ -291,7 +316,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     .ToList();
 
                 // Include organization and type details in DTO
+                certificationDto.OrganizeId = organize?.OrganizeId;
                 certificationDto.OrganizeName = organize?.OrganizeName;
+                certificationDto.TypeId = type?.TypeId;
                 certificationDto.TypeName = type?.TypeName;
             }
 
