@@ -15,7 +15,7 @@ namespace StudentCertificatePortal_API.Validators
                 .NotEmpty().WithMessage("SessionCode is required.");
             RuleFor(x => x.SessionDate)
                 .NotEmpty().WithMessage("SessionDate is required.")
-                .GreaterThan(DateTime.Now.Date.AddDays(-1)).WithMessage("SessionDate must be in the future.");
+                .GreaterThan(DateTime.Now.Date.AddMinutes(-5)).WithMessage("SessionDate must be in the future.");
             RuleFor(x => x.SessionAddress)
                 .NotEmpty().WithMessage("SessionAddress is required.");
         }

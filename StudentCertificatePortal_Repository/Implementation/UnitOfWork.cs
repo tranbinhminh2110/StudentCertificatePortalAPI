@@ -28,6 +28,7 @@ namespace StudentCertificatePortal_Repository.Implementation
         private IBaseRepository<Wallet>? _walletRepository;
         private IBaseRepository<CertType>? _certTypeRepository;
         private IBaseRepository<Transaction>? _transactionRepository;
+        private IBaseRepository<Voucher>? _voucherRepository;
 
         public UnitOfWork(CipdbContext context)
         {
@@ -57,6 +58,7 @@ namespace StudentCertificatePortal_Repository.Implementation
         public IBaseRepository<CertType> CertTypeRepository => _certTypeRepository ??= new CertTypeRepository(_context);
 
         public IBaseRepository<Transaction> TransactionRepository => _transactionRepository ??= new TransactionRepository(_context);
+        public IBaseRepository<Voucher> VoucherRepository => _voucherRepository ??= new VoucherRepository(_context);
 
         public async Task Commit(CancellationToken cancellationToken)
         {
