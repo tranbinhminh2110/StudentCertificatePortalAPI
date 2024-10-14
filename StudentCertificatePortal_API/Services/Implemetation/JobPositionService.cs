@@ -114,12 +114,18 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 var jobDto = _mapper.Map<JobPositionDto>(result);
 
-                jobDto.MajorId = result.Majors
-                .Select(majorjob => majorjob.MajorId)
+                jobDto.MajorName = result.Majors
+                .Select(majorjob => majorjob.MajorName)
+                .ToList();                
+                jobDto.MajorDescription = result.Majors
+                .Select(majorjob => majorjob.MajorDescription)
                 .ToList();
 
-                jobDto.CertId = result.Certs
-                .Select(cert => cert.CertId)
+                jobDto.CertName = result.Certs
+                .Select(cert => cert.CertName)
+                .ToList();
+                jobDto.CertDescription = result.Certs
+                .Select(cert => cert.CertDescription)
                 .ToList();
 
                 return jobDto;
@@ -139,12 +145,19 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
             var jobDto = _mapper.Map<JobPositionDto>(result);
 
-            jobDto.MajorId = result.Majors
-                .Select(majorjob => majorjob.MajorId)
-                .ToList();
-            jobDto.CertId = result.Certs
-                .Select(cert => cert.CertId)
-                .ToList();
+            jobDto.MajorName = result.Majors
+            .Select(majorjob => majorjob.MajorName)
+            .ToList();
+            jobDto.MajorDescription = result.Majors
+            .Select(majorjob => majorjob.MajorDescription)
+            .ToList();
+
+            jobDto.CertName = result.Certs
+            .Select(cert => cert.CertName)
+            .ToList();
+            jobDto.CertDescription = result.Certs
+            .Select(cert => cert.CertDescription)
+            .ToList();
 
             return jobDto;
         }
@@ -162,13 +175,19 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             foreach (var jobDto in jobDtos)
             {
                 var job = result.FirstOrDefault(c => c.JobPositionId == jobDto.JobPositionId);
-                jobDto.MajorId = job.Majors
-                .Select(majorjob => majorjob.MajorId)
+                jobDto.MajorName = job.Majors
+                .Select(majorjob => majorjob.MajorName)
+                .ToList();                
+                jobDto.MajorDescription = job.Majors
+                .Select(majorjob => majorjob.MajorDescription)
                 .ToList();
 
                 // Map Certs to CertId
-                jobDto.CertId = job.Certs
-                    .Select(cert => cert.CertId)
+                jobDto.CertName = job.Certs
+                    .Select(cert => cert.CertName)
+                    .ToList();                
+                jobDto.CertDescription = job.Certs
+                    .Select(cert => cert.CertDescription)
                     .ToList();
             }
             return jobDtos;
