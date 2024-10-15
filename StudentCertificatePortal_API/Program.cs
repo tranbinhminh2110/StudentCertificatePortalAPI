@@ -95,6 +95,7 @@ builder.Services.AddTransient<IBaseRepository<Wallet>, WalletRepository>();
 builder.Services.AddTransient<IBaseRepository<CertType>, CertTypeRepository>();
 builder.Services.AddTransient<IBaseRepository<Transaction>, TransactionRepository>();
 builder.Services.AddTransient<IBaseRepository<Voucher>, VoucherRepository>();
+builder.Services.AddTransient<IBaseRepository<Payment>, PaymentRepository>();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
 
@@ -119,6 +120,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<ICheckoutService, CheckoutService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IVoucherService, VoucherService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddSingleton<IRedisService>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();

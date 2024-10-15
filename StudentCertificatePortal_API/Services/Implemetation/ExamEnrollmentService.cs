@@ -61,6 +61,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 }
             }
 
+            var eEnrollmentEntity = new ExamsEnrollment()
+            {
+                UserId = request.UserId,
+                ExamEnrollmentDate = DateTime.UtcNow,
+                ExamEnrollmentStatus = EnumExamEnrollment.OnGoing.ToString(),
+                TotalPrice = totalPrice > 0 ? totalPrice : 0, 
+            };
+
+            var result = await _uow.ExamEnrollmentRepository.AddAsync(eEnrollmentEntity);
+            await _uow.Commit(cancellationToken);
 
             foreach (var simulation in simulations)
             {
@@ -69,22 +79,25 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     throw new KeyNotFoundException($"Simulation exam with ID {simulation.ExamId} not found.");
                 }
 
-                totalPrice += simulation.ExamFee * (1 - simulation.ExamDiscountFee);
+                var studentOfExamEntity = new StudentOfExam()
+                {
+                    CreationDate = DateTime.Now,
+                    Price = simulation.ExamDiscountFee,
+                    Status = false,
+                    ExamId = simulation.ExamId,
+                    EnrollmentId = result.ExamEnrollmentId 
+                };
+
+                await _uow.StudentOfExamRepository.AddAsync(studentOfExamEntity);
+                totalPrice += simulation.ExamDiscountFee;
             }
-
-            var eEnrollmentEntity = new ExamsEnrollment()
-            {
-                UserId = request.UserId,
-                ExamEnrollmentDate = DateTime.UtcNow,
-                ExamEnrollmentStatus = EnumExamEnrollment.OnGoing.ToString(),
-                TotalPrice = totalPrice > 0? totalPrice : 0,
-            };
-
-            var result = await _uow.ExamEnrollmentRepository.AddAsync(eEnrollmentEntity);
+            result.TotalPrice = totalPrice > 0 ? totalPrice : 0;
+            _uow.ExamEnrollmentRepository.Update(result);
             await _uow.Commit(cancellationToken);
 
             return _mapper.Map<ExamEnrollmentDto>(result);
         }
+
 
 
         public async Task<ExamEnrollmentDto> DeleteExamEnrollmentAsync(int examEnrollmentId, CancellationToken cancellationToken)
@@ -131,36 +144,32 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<ExamEnrollmentDto> UpdateExamEnrollmentAsync(int examEnrollmentId, UpdateExamEnrollmentRequest request, CancellationToken cancellationToken)
         {
-            // Validate the update request
             var validation = await _updateExamEnrollmentValidator.ValidateAsync(request, cancellationToken);
             if (!validation.IsValid)
             {
                 throw new RequestValidationException(validation.Errors);
             }
 
-            // Find the existing exam enrollment
             var exam = await _uow.ExamEnrollmentRepository.FirstOrDefaultAsync(x => x.ExamEnrollmentId == examEnrollmentId, cancellationToken);
             if (exam == null)
             {
                 throw new KeyNotFoundException("Exam Enrollment not found.");
             }
 
-            // Find the user
             var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken);
             if (user == null)
             {
                 throw new KeyNotFoundException("User not found. Exam Enrollment update requires a valid UserId.");
             }
 
-            // Check if Simulation_Exams is not null or empty
             if (request.Simulation_Exams == null || !request.Simulation_Exams.Any())
             {
                 throw new ArgumentException("Simulation_Exams cannot be null or empty.");
             }
 
+            // Khởi tạo totalPrice
             int? totalPrice = 0;
 
-            // Fetch and validate simulation exams
             var simulations = new List<SimulationExam>();
             foreach (var simulationId in request.Simulation_Exams)
             {
@@ -171,7 +180,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 }
             }
 
-            // Calculate total price based on simulations
+            // Tính toán tổng giá từ ExamDiscountFee của các SimulationExam
             foreach (var simulation in simulations)
             {
                 if (simulation == null)
@@ -179,21 +188,22 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     throw new KeyNotFoundException($"Simulation exam with ID {simulation.ExamId} not found.");
                 }
 
-                totalPrice += simulation.ExamFee * (1 - simulation.ExamDiscountFee/100);
+                // Cập nhật totalPrice với ExamDiscountFee
+                totalPrice += simulation.ExamDiscountFee;
             }
 
-            // Update the existing exam enrollment entity
+            // Cập nhật thông tin ExamEnrollment
             exam.UserId = request.UserId;
-            exam.TotalPrice = totalPrice > 0 ? totalPrice : 0;
-            exam.ExamEnrollmentDate = DateTime.UtcNow; // Update to the current time, or use a custom field in the request if needed
+            exam.TotalPrice = totalPrice > 0 ? totalPrice : 0; // Gán tổng giá
+            exam.ExamEnrollmentDate = DateTime.UtcNow;
 
-            // Update the record in the repository and commit
+            // Lưu các thay đổi
             _uow.ExamEnrollmentRepository.Update(exam);
             await _uow.Commit(cancellationToken);
 
-            // Map and return the updated result
             return _mapper.Map<ExamEnrollmentDto>(exam);
         }
+
 
     }
 }
