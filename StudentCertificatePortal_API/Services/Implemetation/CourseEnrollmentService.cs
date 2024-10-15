@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using StudentCertificatePortal_API.Commons;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Enums;
@@ -34,50 +35,67 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new RequestValidationException(validation.Errors);
             }
+
             var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken);
             if (user == null)
             {
-                throw new KeyNotFoundException("User not found. Couse Enrollment creation requires a valid UserId.");
+                throw new KeyNotFoundException("User not found. Course Enrollment creation requires a valid UserId.");
             }
 
             if (request.Courses == null || !request.Courses.Any())
             {
-                throw new ArgumentException("Course cannot be null or empty.");
+                throw new ArgumentException("Courses cannot be null or empty.");
             }
 
+            var courses = new List<Course>();
             int? totalPrice = 0;
 
-            var courses = new List<Course>();
-
+            // Kiểm tra tất cả courseId và lưu vào danh sách courses
             foreach (var courseId in request.Courses)
             {
                 var course = await _uow.CourseRepository.FirstOrDefaultAsync(x => x.CourseId == courseId, cancellationToken);
-                if (course != null)
-                {
-                    courses.Add(course);
-                }
-            }
-
-
-            foreach (var course in courses)
-            {
                 if (course == null)
                 {
-                    throw new KeyNotFoundException($"Course with ID {course.CourseId} not found.");
+                    // Nếu có khóa học không hợp lệ, ném ngoại lệ và không tạo CourseEnrollment
+                    throw new KeyNotFoundException($"Course with ID {courseId} not found.");
                 }
 
-                totalPrice += course.CourseFee * (1 - course.CourseDiscountFee);
+                courses.Add(course);
             }
 
+            // Nếu đến đây, có nghĩa là tất cả courseId đều hợp lệ
             var courseEntity = new CoursesEnrollment()
             {
                 UserId = request.UserId,
                 CourseEnrollmentDate = DateTime.UtcNow,
                 CourseEnrollmentStatus = EnumCourseEnrollment.OnGoing.ToString(),
-                TotalPrice = totalPrice > 0? totalPrice : 0,
+                TotalPrice = totalPrice > 0 ? totalPrice : 0,
             };
 
+            // Tạo CourseEnrollment
             var result = await _uow.CourseEnrollmentRepository.AddAsync(courseEntity);
+            await _uow.Commit(cancellationToken);
+
+            // Thêm các bản ghi StudentOfCourse
+            foreach (var course in courses)
+            {
+                var studentOfCourseEntity = new StudentOfCourse()
+                {
+                    CreationDate = DateTime.Now,
+                    ExpiryDate = DateTime.Now.AddYears(1),
+                    Price = course.CourseDiscountFee,
+                    Status = false,
+                    CourseId = course.CourseId,
+                    CouseEnrollmentId = result.CourseEnrollmentId
+                };
+
+                await _uow.StudentOfCourseRepository.AddAsync(studentOfCourseEntity);
+                totalPrice += course.CourseDiscountFee;
+            }
+
+            // Cập nhật tổng giá cho CourseEnrollment
+            result.TotalPrice = totalPrice > 0 ? totalPrice : 0;
+            _uow.CourseEnrollmentRepository.Update(result);
             await _uow.Commit(cancellationToken);
 
             return _mapper.Map<CourseEnrollmentDto>(result);
@@ -85,16 +103,22 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<CourseEnrollmentDto> DeleteCourseEnrollmentAsync(int courseEnrollmentId, CancellationToken cancellationToken)
         {
-            var course = await _uow.CourseEnrollmentRepository.FirstOrDefaultAsync(x => x.CourseEnrollmentId == courseEnrollmentId, cancellationToken,
-                include: p => p.Include(q => q.StudentOfCourses)
-                               .Include(q => q.Payments));
-            if (course is null)
+            var courseEnrollment = await _uow.CourseEnrollmentRepository.FirstOrDefaultAsync(
+                x => x.CourseEnrollmentId == courseEnrollmentId,
+                cancellationToken, include: q => q.Include(c => c.StudentOfCourses).Include(c => c.Payments));
+
+            if (courseEnrollment is null)
             {
                 throw new KeyNotFoundException("Course Enrollment not found.");
             }
-            _uow.CourseEnrollmentRepository.Delete(course);
+
+            courseEnrollment.StudentOfCourses?.Clear();
+
+            _uow.CourseEnrollmentRepository.Delete(courseEnrollment);
             await _uow.Commit(cancellationToken);
-            return _mapper.Map<CourseEnrollmentDto>(course);
+
+            var courseEnrollmentDto = _mapper.Map<CourseEnrollmentDto>(courseEnrollment);
+            return courseEnrollmentDto;
         }
 
         public async Task<List<CourseEnrollmentDto>> GetAll()
@@ -120,11 +144,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new RequestValidationException(validation.Errors);
             }
-            var course = await _uow.CourseEnrollmentRepository.FirstOrDefaultAsync(x => x.CourseEnrollmentId == courseEnrollmentId, cancellationToken);
-            if (course is null)
+
+            var courseEnrollment = await _uow.CourseEnrollmentRepository.FirstOrDefaultAsync(
+                x => x.CourseEnrollmentId == courseEnrollmentId,
+                cancellationToken,
+                include: q => q.Include(c => c.StudentOfCourses)); // Bao gồm StudentOfCourses khi lấy CourseEnrollment
+            if (courseEnrollment is null)
             {
                 throw new KeyNotFoundException("Course Enrollment not found.");
             }
+
             var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken);
             if (user == null)
             {
@@ -136,38 +165,64 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new ArgumentException("Courses cannot be null or empty.");
             }
 
+            var courses = new List<Course>();
             int? totalPrice = 0;
 
-            var courses = new List<Course>();
+            // Kiểm tra tất cả courseId và lưu vào danh sách courses
             foreach (var courseId in request.Courses)
             {
-                var coursee = await _uow.CourseRepository.FirstOrDefaultAsync(x => x.CourseId == courseId, cancellationToken);
-                if (coursee != null)
+                var course = await _uow.CourseRepository.FirstOrDefaultAsync(x => x.CourseId == courseId, cancellationToken);
+                if (course == null)
                 {
-                    courses.Add(coursee);
+                    throw new KeyNotFoundException($"Course with ID {courseId} not found.");
                 }
+
+                courses.Add(course);
             }
 
-            foreach (var coursee in courses)
+            // Tính tổng giá cho tất cả các khóa học hợp lệ
+            foreach (var course in courses)
             {
-                if (coursee == null)
-                {
-                    throw new KeyNotFoundException($"Course with ID {coursee.CourseId} not found.");
-                }
-
-                totalPrice += coursee.CourseFee * (1 - coursee.CourseDiscountFee / 100);
+                totalPrice += course.CourseDiscountFee;
             }
 
-            course.UserId = request.UserId;
-            course.TotalPrice = totalPrice > 0 ? totalPrice : 0;
-            course.CourseEnrollmentDate = DateTime.UtcNow; // Update to the current time, or use a custom field in the request if needed
+            // Cập nhật thông tin cho CourseEnrollment
+            courseEnrollment.UserId = request.UserId;
+            courseEnrollment.TotalPrice = totalPrice > 0 ? totalPrice : 0;
+            courseEnrollment.CourseEnrollmentDate = DateTime.UtcNow;
 
-            // Update the record in the repository and commit
-            _uow.CourseEnrollmentRepository.Update(course);
+            // **Xóa các bản ghi cũ trong StudentOfCourse**
+            if (courseEnrollment.StudentOfCourses != null)
+            {
+                foreach (var studentOfCourse in courseEnrollment.StudentOfCourses)
+                {
+                    _uow.StudentOfCourseRepository.Delete(studentOfCourse);
+                }
+            }
+
+            // **Thêm các bản ghi mới vào StudentOfCourse**
+            foreach (var course in courses)
+            {
+                var studentOfCourseEntity = new StudentOfCourse()
+                {
+                    CreationDate = DateTime.Now,
+                    ExpiryDate = DateTime.Now.AddYears(1),
+                    Price = course.CourseDiscountFee,
+                    Status = false,
+                    CourseId = course.CourseId,
+                    CouseEnrollmentId = courseEnrollment.CourseEnrollmentId
+                };
+
+                await _uow.StudentOfCourseRepository.AddAsync(studentOfCourseEntity);
+            }
+
+            // Cập nhật bản ghi trong kho dữ liệu và cam kết
+            _uow.CourseEnrollmentRepository.Update(courseEnrollment);
             await _uow.Commit(cancellationToken);
 
-            // Map and return the updated result
-            return _mapper.Map<CourseEnrollmentDto>(course);
+            // Map và trả về kết quả đã cập nhật
+            return _mapper.Map<CourseEnrollmentDto>(courseEnrollment);
         }
+
     }
 }
