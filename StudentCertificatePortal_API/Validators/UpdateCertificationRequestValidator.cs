@@ -22,8 +22,8 @@ namespace StudentCertificatePortal_API.Validators
             RuleFor(cert => cert.CertCost)
                 .GreaterThanOrEqualTo(0).WithMessage("Certification cost must be a positive number");
 
-            RuleFor(cert => cert.CertPointSystem)
-                .MaximumLength(50).WithMessage("Certification point system cannot exceed 50 characters");
+            /*RuleFor(cert => cert.CertPointSystem)
+                .MaximumLength(50).WithMessage("Certification point system cannot exceed 50 characters");*/
 
             RuleFor(cert => cert.CertImage)
                 .Must(uri => Uri.IsWellFormedUriString(uri, UriKind.RelativeOrAbsolute))
