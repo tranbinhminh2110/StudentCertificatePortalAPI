@@ -45,6 +45,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CourseTime = request.CourseTime,
                 CourseDescription = request.CourseDescription,
                 CourseFee = request.CourseFee,
+                CourseDiscountFee = request.CourseDiscountFee,
+                CourseImage = request.CourseImage,
                 CertId = request.CertId,
             };
             var result = await _uow.CourseRepository.AddAsync(courseEntity);
@@ -108,6 +110,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             course.CourseTime = request.CourseTime;
             course.CourseDescription = request.CourseDescription;
             course.CourseFee = request.CourseFee;
+            course.CourseDiscountFee = request.CourseDiscountFee;
+            course.CourseImage = request.CourseImage;
             _uow.CourseRepository.Update(course);
             await _uow.Commit(cancellationToken);
             return _mapper.Map<CourseDto>(course);

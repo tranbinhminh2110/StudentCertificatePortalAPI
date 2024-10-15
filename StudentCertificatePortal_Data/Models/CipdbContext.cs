@@ -232,7 +232,11 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.CourseDescription)
                 .HasColumnType("text")
                 .HasColumnName("course_description");
+            entity.Property(e => e.CourseDiscountFee).HasColumnName("course_discount_fee");
             entity.Property(e => e.CourseFee).HasColumnName("course_fee");
+            entity.Property(e => e.CourseImage)
+                .HasColumnType("text")
+                .HasColumnName("course_image");
             entity.Property(e => e.CourseName)
                 .HasMaxLength(255)
                 .HasColumnName("course_name");
@@ -326,7 +330,7 @@ public partial class CipdbContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("feedback_createdAt");
             entity.Property(e => e.FeedbackDescription)
-                .HasMaxLength(1000)
+                .HasMaxLength(3000)
                 .HasColumnName("feedback_description");
             entity.Property(e => e.FeedbackImage)
                 .HasColumnType("text")
