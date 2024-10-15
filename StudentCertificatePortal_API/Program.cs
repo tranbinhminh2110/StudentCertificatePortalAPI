@@ -113,6 +113,7 @@ builder.Services.AddScoped<IExamSessionService, ExamSessionService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<ISimulationExamService, SimulationExamService>();
 builder.Services.AddScoped<IExamEnrollmentService, ExamEnrollmentService>();
+builder.Services.AddScoped<ICourseEnrollmentService, CourseEnrollmentService>();
 builder.Services.AddScoped<IQandAService, QandAService>();
 builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddScoped<ICertTypeService, CertTypeService>();

@@ -2,12 +2,8 @@
 {
     public class UpdateCourseEnrollmentRequest
     {
-        public DateTime? CourseEnrollmentDate { get; set; }
-
-        public string? CourseEnrollmentStatus { get; set; }
-
-        public int? TotalPrice { get; set; }
-
         public int? UserId { get; set; }
+
+        public List<int> Courses { get; set; } = new List<int>();
     }
 }

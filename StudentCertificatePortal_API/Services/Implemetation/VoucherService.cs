@@ -141,6 +141,25 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<VoucherDto> GetVoucherByIdAsync(int voucherId, CancellationToken cancellationToken)
         {
+            var expiredVouchers = await _uow.VoucherRepository.WhereAsync(v =>
+                v.ExpiryDate <= DateTime.Now && v.VoucherStatus == true);
+
+            foreach (var voucher in expiredVouchers)
+            {
+                voucher.VoucherStatus = false;
+                _uow.VoucherRepository.Update(voucher);
+            }
+
+            var validVouchers = await _uow.VoucherRepository.WhereAsync(v =>
+                v.ExpiryDate > DateTime.Now && v.VoucherStatus == false);
+
+            foreach (var voucher in validVouchers)
+            {
+                voucher.VoucherStatus = true;
+                _uow.VoucherRepository.Update(voucher);
+            }
+
+            await _uow.Commit(cancellationToken);
             var result = await _uow.VoucherRepository.FirstOrDefaultAsync(
                 x => x.VoucherId == voucherId, cancellationToken: cancellationToken, include: query => query.Include(c => c.Exams));
             if (result is null)
@@ -165,6 +184,25 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<List<VoucherDto>> GetVoucherByNameAsync(string voucherName, CancellationToken cancellationToken)
         {
+            var expiredVouchers = await _uow.VoucherRepository.WhereAsync(v =>
+                v.ExpiryDate <= DateTime.Now && v.VoucherStatus == true);
+
+            foreach (var voucher in expiredVouchers)
+            {
+                voucher.VoucherStatus = false;
+                _uow.VoucherRepository.Update(voucher);
+            }
+
+            var validVouchers = await _uow.VoucherRepository.WhereAsync(v =>
+                v.ExpiryDate > DateTime.Now && v.VoucherStatus == false);
+
+            foreach (var voucher in validVouchers)
+            {
+                voucher.VoucherStatus = true;
+                _uow.VoucherRepository.Update(voucher);
+            }
+
+            await _uow.Commit(cancellationToken);
             var result = await _uow.VoucherRepository.WhereAsync(x => x.VoucherName.Contains(voucherName), cancellationToken,
                 include: query => query.Include(c => c.Exams));
             if (result is null || !result.Any())
