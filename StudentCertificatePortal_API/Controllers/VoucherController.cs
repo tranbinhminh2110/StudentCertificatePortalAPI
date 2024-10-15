@@ -20,7 +20,7 @@ namespace StudentCertificatePortal_API.Controllers
         [HttpGet]
         public async Task<ActionResult<Result<List<VoucherDto>>>> GetAllVoucher()
         {
-            var result = await _service.GetAll();
+            var result = await _service.GetAll(new CancellationToken());
             return Ok(Result<List<VoucherDto>>.Succeed(result));
         }
         [HttpGet("{voucherId:int}")]

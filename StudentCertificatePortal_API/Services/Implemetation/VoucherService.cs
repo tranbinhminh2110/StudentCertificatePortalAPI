@@ -93,8 +93,28 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return voucherDto;
         }
 
-        public async Task<List<VoucherDto>> GetAll()
+        public async Task<List<VoucherDto>> GetAll(CancellationToken cancellationToken)
         {
+            var expiredVouchers = await _uow.VoucherRepository.WhereAsync(v =>
+                v.ExpiryDate <= DateTime.Now && v.VoucherStatus == true);
+
+            foreach (var voucher in expiredVouchers)
+            {
+                voucher.VoucherStatus = false;
+                _uow.VoucherRepository.Update(voucher);
+            }
+
+            var validVouchers = await _uow.VoucherRepository.WhereAsync(v =>
+                v.ExpiryDate > DateTime.Now && v.VoucherStatus == false);
+
+            foreach (var voucher in validVouchers)
+            {
+                voucher.VoucherStatus = true;
+                _uow.VoucherRepository.Update(voucher);
+            }
+
+            await _uow.Commit(cancellationToken);
+
             var result = await _uow.VoucherRepository.GetAllAsync(query =>
             query.Include(c => c.Exams));
 
