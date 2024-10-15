@@ -17,6 +17,8 @@ public partial class Course
 
     public int? CertId { get; set; }
 
+    public int? CourseFee { get; set; }
+
     public virtual Certification? Cert { get; set; }
 
     public virtual ICollection<StudentOfCourse> StudentOfCourses { get; set; } = new List<StudentOfCourse>();
