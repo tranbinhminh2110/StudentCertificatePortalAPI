@@ -230,8 +230,9 @@ public partial class CipdbContext : DbContext
                 .HasMaxLength(255)
                 .HasColumnName("course_code");
             entity.Property(e => e.CourseDescription)
-                .HasMaxLength(255)
+                .HasColumnType("text")
                 .HasColumnName("course_description");
+            entity.Property(e => e.CourseFee).HasColumnName("course_fee");
             entity.Property(e => e.CourseName)
                 .HasMaxLength(255)
                 .HasColumnName("course_name");
@@ -325,7 +326,7 @@ public partial class CipdbContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("feedback_createdAt");
             entity.Property(e => e.FeedbackDescription)
-                .HasMaxLength(255)
+                .HasMaxLength(1000)
                 .HasColumnName("feedback_description");
             entity.Property(e => e.FeedbackImage)
                 .HasColumnType("text")
@@ -354,7 +355,7 @@ public partial class CipdbContext : DbContext
                 .HasMaxLength(255)
                 .HasColumnName("job_position_code");
             entity.Property(e => e.JobPositionDescription)
-                .HasMaxLength(255)
+                .HasColumnType("text")
                 .HasColumnName("job_position_description");
             entity.Property(e => e.JobPositionName)
                 .HasMaxLength(255)
@@ -370,7 +371,7 @@ public partial class CipdbContext : DbContext
                 .HasMaxLength(255)
                 .HasColumnName("major_code");
             entity.Property(e => e.MajorDescription)
-                .HasMaxLength(255)
+                .HasColumnType("text")
                 .HasColumnName("major_description");
             entity.Property(e => e.MajorName)
                 .HasMaxLength(255)
@@ -642,7 +643,7 @@ public partial class CipdbContext : DbContext
                 .HasColumnName("expiry_date");
             entity.Property(e => e.Percentage).HasColumnName("percentage");
             entity.Property(e => e.VoucherDescription)
-                .HasMaxLength(255)
+                .HasColumnType("text")
                 .HasColumnName("voucher_description");
             entity.Property(e => e.VoucherName)
                 .HasMaxLength(255)

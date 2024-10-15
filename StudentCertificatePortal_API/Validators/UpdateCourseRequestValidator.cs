@@ -15,7 +15,8 @@ namespace StudentCertificatePortal_API.Validators
                 .NotEmpty().WithMessage("CourseCode is required.");
             RuleFor(x => x.CourseTime)
                 .NotEmpty().WithMessage("CourseTime is required.");
-/*                .Matches(@"^[1-9]\d* times?$").WithMessage("CourseTime must be in the format 'X time', where X is a number.");*/
+            RuleFor(x => x.CourseFee)
+                .GreaterThanOrEqualTo(0).WithMessage("CourseFee must be a positive number");
         }
     }
 }
