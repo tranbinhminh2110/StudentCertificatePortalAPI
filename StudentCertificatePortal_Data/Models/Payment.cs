@@ -9,7 +9,7 @@ public partial class Payment
 
     public DateTime? PaymentDate { get; set; }
 
-    public int? PaymentAmount { get; set; }
+    public int? PaymentPoint { get; set; }
 
     public string? PaymentMethod { get; set; }
 

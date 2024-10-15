@@ -421,13 +421,13 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.PaymentId).HasColumnName("payment_id");
             entity.Property(e => e.CourseEnrollmentId).HasColumnName("course_enrollment_id");
             entity.Property(e => e.ExamEnrollmentId).HasColumnName("exam_enrollment_id");
-            entity.Property(e => e.PaymentAmount).HasColumnName("payment_amount");
             entity.Property(e => e.PaymentDate)
                 .HasColumnType("datetime")
                 .HasColumnName("payment_date");
             entity.Property(e => e.PaymentMethod)
                 .HasMaxLength(255)
                 .HasColumnName("payment_method");
+            entity.Property(e => e.PaymentPoint).HasColumnName("payment_point");
             entity.Property(e => e.PaymentStatus)
                 .HasMaxLength(255)
                 .HasColumnName("payment_status");
