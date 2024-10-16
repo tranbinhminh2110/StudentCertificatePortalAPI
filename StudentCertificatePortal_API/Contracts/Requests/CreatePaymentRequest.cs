@@ -2,7 +2,7 @@
 {
     public class CreatePaymentRequest
     {
-        public int? WalletId { get; set; }
+        public int? UserId { get; set; }
 
         public int? ExamEnrollmentId { get; set; }
 
