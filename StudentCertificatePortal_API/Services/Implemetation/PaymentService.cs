@@ -55,11 +55,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     throw new KeyNotFoundException("Course Enrollment not found.");
                 }
 
-                // Assuming each StudentOfCourse contains the course fee
-                var totalCoursePrice = enrollCourses.StudentOfCourses.Sum(soc => soc.Course.CourseFee ?? 0);
-
                 // Check if the wallet has sufficient balance
-                bool canPay = await CanPay(request.WalletId, totalCoursePrice);
+                bool canPay = await CanPay(request.UserId, enrollCourses.TotalPrice ?? 0);
 
                 if (!canPay)
                 {
@@ -67,52 +64,47 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 }
 
                 // Retrieve the wallet
-                var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.WalletId == request.WalletId);
+                var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId);
                 if (wallet == null)
                 {
                     throw new KeyNotFoundException("Wallet not found.");
                 }
 
-                // Ensure the wallet has enough points before deducting
-                if (wallet.Point < totalCoursePrice)
-                {
-                    throw new Exception("Not enough points in wallet to cover the total course fee.");
-                }
-                // Save the payment information for course enrollment
                 var paymentEntity = new Payment()
                 {
                     PaymentDate = DateTime.UtcNow,
-                    PaymentPoint = totalCoursePrice,
-                    PaymentMethod = "Using Point",
-                    PaymentStatus = EnumTransaction.Success.ToString(),
-                    WalletId = request.WalletId,
+                    PaymentPoint = enrollCourses.TotalPrice,
+                    PaymentMethod = EnumTransaction.Success.ToString(),
+                    WalletId = wallet.WalletId,
                     CourseEnrollmentId = request.CourseEnrollmentId,
                 };
 
                 result = await _uow.PaymentRepository.AddAsync(paymentEntity);
                 await _uow.Commit(cancellation);
-                // Update points in the wallet
-                wallet.Point -= totalCoursePrice;
 
-                // Save the updated wallet information
+                wallet.Point -= enrollCourses.TotalPrice ?? 0;
+
                 _uow.WalletRepository.Update(wallet);
                 await _uow.Commit(cancellation);
 
-                var course = await _uow.CourseEnrollmentRepository.FirstOrDefaultAsync(x => x.CourseEnrollmentId == request.CourseEnrollmentId);
 
-                course.CourseEnrollmentStatus = EnumExamEnrollment.Completed.ToString();
+                var enrollment = await _uow.CourseEnrollmentRepository.FirstOrDefaultAsync(x => x.CourseEnrollmentId == request.CourseEnrollmentId);
+                enrollment.CourseEnrollmentStatus = EnumCourseEnrollment.Completed.ToString();
 
-                _uow.CourseEnrollmentRepository.Update(course);
+                _uow.CourseEnrollmentRepository.Update(enrollment);
                 await _uow.Commit(cancellation);
 
-                var socs = await _uow.StudentOfCourseRepository.WhereAsync(x => x.CourseId == course.CourseEnrollmentId);
-                foreach (var soc in socs)
+                var socs = await _uow.StudentOfCourseRepository.WhereAsync(x => x.CouseEnrollmentId == request.CourseEnrollmentId);
+
+
+                foreach(var soc in socs)
                 {
                     soc.Status = true;
                     _uow.StudentOfCourseRepository.Update(soc);
                     await _uow.Commit(cancellation);
-                }
 
+                }
+               
 
             }
             else if( request.ExamEnrollmentId > 0)
@@ -129,14 +121,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     throw new KeyNotFoundException("Exam Enrollment not found.");
                 }
                 // Insufficient balance in wallet
-                bool canPay = await CanPay(request.WalletId, enrollExams.TotalPrice ?? 0);
+                bool canPay = await CanPay(request.UserId, enrollExams.TotalPrice ?? 0);
 
                 if (!canPay)
                 {
                     throw new Exception("Insufficient balance in wallet.");
                 }
 
-                var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.WalletId == request.WalletId);
+                var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId);
                 if (wallet == null)
                 {
                     throw new KeyNotFoundException("Wallet not found."); ;
@@ -148,7 +140,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     PaymentPoint = enrollExams.TotalPrice,
                     PaymentMethod = "Using Point",
                     PaymentStatus = EnumTransaction.Success.ToString(),
-                    WalletId = request.WalletId,
+                    WalletId = wallet.UserId,
                     ExamEnrollmentId = request.ExamEnrollmentId,
                 };
 
@@ -182,9 +174,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         }
 
         // Kiểm tra số dư trong ví
-        public async Task<bool> CanPay(int? walletId, int? pointRequest)
+        public async Task<bool> CanPay(int? userId, int? pointRequest)
         {
-            var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.WalletId == walletId);
+            var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.UserId == userId);
 
             if(wallet == null || wallet.WalletStatus == EnumWallet.IsLocked.ToString())
             {
