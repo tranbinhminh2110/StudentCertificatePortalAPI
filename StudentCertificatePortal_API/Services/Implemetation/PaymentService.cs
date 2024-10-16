@@ -187,7 +187,5 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return wallet.Point >= pointRequest;
 
         }
-
-        // Kie
     }
 }

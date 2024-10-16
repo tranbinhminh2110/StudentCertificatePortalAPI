@@ -14,18 +14,21 @@ namespace StudentCertificatePortal_API.Services.Implemetation
     {
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
+        private readonly IVoucherService _voucherService;
 
         private readonly IValidator<CreateSimulationExamRequest> _addSimulationExamValidator;
         private readonly IValidator<UpdateSimulationExamRequest> _updateSimulationExamValidator;
 
         public SimulationExamService(IUnitOfWork uow, IMapper mapper, 
             IValidator<CreateSimulationExamRequest> addSimulationExamValidator,
-            IValidator<UpdateSimulationExamRequest> updateSimulationExamValidator)
+            IValidator<UpdateSimulationExamRequest> updateSimulationExamValidator,
+            IVoucherService voucherService)
         {
             _uow = uow;
             _mapper = mapper;
             _addSimulationExamValidator = addSimulationExamValidator;
             _updateSimulationExamValidator = updateSimulationExamValidator;
+            _voucherService = voucherService;
         }
 
         public async Task<SimulationExamDto> CreateSimulationExamAsync(CreateSimulationExamRequest request, CancellationToken cancellationToken)
@@ -41,13 +44,20 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new Exception("Certification not found. Simulate creation requires a valid CertId.");
             }
+
+            var voucher = await _voucherService.GetVoucherByIdAsync(request.VoucherId , cancellationToken);
+            if(voucher is null || voucher.VoucherStatus == false)
+            {
+                throw new KeyNotFoundException("Voucher not found or is expired.");
+            }
+            float? percentage = voucher.Percentage ?? 0;
             var exam = new SimulationExam()
             {
                 ExamName = request.ExamName,
                 ExamCode = request.ExamCode,
                 ExamDescription = request.ExamDescription,
                 ExamFee = request.ExamFee,
-                ExamDiscountFee = request.ExamDiscountFee,
+                ExamDiscountFee = (int?)((1 - (float)(voucher.Percentage.Value) / 100f) * request.ExamFee.Value),
                 ExamImage = request.ExamImage,
                 CertId = request.CertId,
             };
@@ -84,11 +94,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new KeyNotFoundException("Simulation Exam not found.");
             }
+
+            var voucher = await _uow.VoucherRepository.FirstOrDefaultAsync(x => x.VoucherId == request.VourcherId);
+            if(voucher is null)
+            {
+                throw new KeyNotFoundException("Voucher not found.");
+            }
             exam.ExamName = request.ExamName;
             exam.ExamDescription = request.ExamDescription;
             exam.ExamCode = request.ExamCode;
             exam.ExamFee = request.ExamFee;
-            exam.ExamDiscountFee = request.ExamDiscountFee;
+            exam.ExamDiscountFee = request.ExamFee*(1-voucher.Percentage);
             exam.ExamImage = request.ExamImage;
             exam.CertId = request.CertId;
             _uow.SimulationExamRepository.Update(exam);

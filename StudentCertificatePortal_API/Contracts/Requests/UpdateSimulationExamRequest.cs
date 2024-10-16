@@ -13,7 +13,7 @@
 
         public int? ExamFee { get; set; }
 
-        public int? ExamDiscountFee { get; set; }
+        public int? VourcherId { get; set; }
 
         public string? ExamImage { get; set; }
     }

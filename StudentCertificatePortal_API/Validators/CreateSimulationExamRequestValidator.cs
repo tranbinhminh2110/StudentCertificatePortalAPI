@@ -26,9 +26,7 @@ namespace StudentCertificatePortal_API.Validators
                 .NotNull().WithMessage("Exam Fee is required.")
                 .GreaterThanOrEqualTo(0).WithMessage("Exam Fee must be a non-negative integer.");
 
-            RuleFor(x => x.ExamDiscountFee)
-                .GreaterThanOrEqualTo(0).WithMessage("Exam Discount Fee must be a non-negative integer.")
-                .LessThanOrEqualTo(x => x.ExamFee).WithMessage("Exam Discount Fee must not exceed the Exam Fee.");
+       
 
             RuleFor(x => x.ExamImage)
                 .Must(BeAValidImageUrl).WithMessage("Exam Image must be a valid URL.");
