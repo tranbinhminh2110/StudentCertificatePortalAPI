@@ -499,14 +499,14 @@ public partial class CipdbContext : DbContext
                     r => r.HasOne<Voucher>().WithMany()
                         .HasForeignKey("VoucherId")
                         .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__Voucher_O__vouch__160F4887"),
+                        .HasConstraintName("FK__Voucher_O__vouch__5F7E2DAC"),
                     l => l.HasOne<SimulationExam>().WithMany()
                         .HasForeignKey("ExamId")
                         .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__Voucher_O__exam___151B244E"),
+                        .HasConstraintName("FK__Voucher_O__exam___5E8A0973"),
                     j =>
                     {
-                        j.HasKey("ExamId", "VoucherId").HasName("PK__Voucher___048714136B473E35");
+                        j.HasKey("ExamId", "VoucherId").HasName("PK__Voucher___048714138B34B5F6");
                         j.ToTable("Voucher_Of_Exam");
                         j.IndexerProperty<int>("ExamId").HasColumnName("exam_id");
                         j.IndexerProperty<int>("VoucherId").HasColumnName("voucher_id");

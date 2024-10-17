@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Exceptions;
@@ -38,6 +39,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new RequestValidationException(validation.Errors);
             }
+
             var certification = await _uow.CertificationRepository.FirstOrDefaultAsync(x => x.CertId == request.CertId, cancellationToken);
 
             if (certification == null)
@@ -45,26 +47,54 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new Exception("Certification not found. Simulate creation requires a valid CertId.");
             }
 
-            var voucher = await _voucherService.GetVoucherByIdAsync(request.VoucherId , cancellationToken);
-            if(voucher is null || voucher.VoucherStatus == false)
-            {
-                throw new KeyNotFoundException("Voucher not found or is expired.");
-            }
-            float? percentage = voucher.Percentage ?? 0;
             var exam = new SimulationExam()
             {
                 ExamName = request.ExamName,
                 ExamCode = request.ExamCode,
                 ExamDescription = request.ExamDescription,
                 ExamFee = request.ExamFee,
-                ExamDiscountFee = (int?)((1 - (float)(voucher.Percentage.Value) / 100f) * request.ExamFee.Value),
                 ExamImage = request.ExamImage,
                 CertId = request.CertId,
             };
+
             var result = await _uow.SimulationExamRepository.AddAsync(exam);
             await _uow.Commit(cancellationToken);
+
+            float? totalDiscount = 1;
+
+            foreach (var voucherId in request.VoucherIds)
+            {
+                if(voucherId > 0)
+                {
+                    var voucher = await _voucherService.GetVoucherByIdAsync(voucherId, cancellationToken);
+                    if (voucher is null || voucher.VoucherStatus == false)
+                    {
+                        throw new KeyNotFoundException("Voucher not found or is expired.");
+                    }
+
+                    var existingVoucher = await _uow.VoucherRepository.FirstOrDefaultAsync(v => v.VoucherId == voucherId, cancellationToken);
+
+                    if (existingVoucher != null)
+                    {
+                        result.Vouchers.Add(existingVoucher);
+                    }
+                    else
+                    {
+                        result.Vouchers.Add(_mapper.Map<Voucher>(voucher));
+                    }
+
+                    totalDiscount = totalDiscount * (1 - voucher.Percentage / 100f);
+                }
+            }
+
+            result.ExamDiscountFee = (int?)(result.ExamFee.Value * totalDiscount);
+
+            _uow.SimulationExamRepository.Update(result);
+            await _uow.Commit(cancellationToken);
+
             return _mapper.Map<SimulationExamDto>(result);
         }
+
 
         public async Task<List<SimulationExamDto>> GetAll()
         {
@@ -104,7 +134,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             exam.ExamDescription = request.ExamDescription;
             exam.ExamCode = request.ExamCode;
             exam.ExamFee = request.ExamFee;
-            exam.ExamDiscountFee = request.ExamFee*(1-voucher.Percentage);
+            exam.ExamDiscountFee = (int?)((1 - (float)(voucher.Percentage.Value) / 100f) * request.ExamFee.Value);
             exam.ExamImage = request.ExamImage;
             exam.CertId = request.CertId;
             _uow.SimulationExamRepository.Update(exam);

@@ -12,7 +12,7 @@
 
         public int? ExamFee { get; set; }
 
-        public int VoucherId { get; set; }
+        public List<int> VoucherIds { get; set; } = new List<int>();    
 
         public string? ExamImage { get; set; }
 
