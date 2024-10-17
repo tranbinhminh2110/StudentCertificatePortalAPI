@@ -40,11 +40,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
             var sessionEntity = new ExamSession()
             {
+                CertId = request.CertId,
                 SessionName = request.SessionName,
                 SessionCode = request.SessionCode,
                 SessionDate = request.SessionDate,
                 SessionAddress = request.SessionAddress,
-                CertId = request.CertId,
                 SessionCreatedAt = request.SessionCreatedAt,
             };
             var result = await _uow.ExamSessionRepository.AddAsync(sessionEntity);
@@ -67,7 +67,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<List<ExamSessionDto>> GetAll()
         {
             var result = await _uow.ExamSessionRepository.GetAll();
-            return _mapper.Map<List<ExamSessionDto>>(result);
+            var sortedResult = result.OrderBy(e => e.CertId)
+                         .ThenByDescending(e => e.SessionDate)
+                         .ToList();
+
+            return _mapper.Map<List<ExamSessionDto>>(sortedResult);
         }
 
         public async Task<ExamSessionDto> GetExamSessionByIdAsync(int sessionId, CancellationToken cancellationToken)
