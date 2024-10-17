@@ -93,28 +93,25 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<List<MajorDto>> GetAll()
         {
-            var result = await _uow.MajorRepository.GetAllAsync(query => 
+            var result = await _uow.MajorRepository.GetAllAsync(query =>
             query.Include(c => c.JobPositions));
 
-            var majorDtos = result.Select(result =>
+            var majorDtos = result.Select(major =>
             {
-                var majorDto = _mapper.Map<MajorDto>(result);
+                var majorDto = _mapper.Map<MajorDto>(major);
 
-                majorDto.JobPositionId = result.JobPositions
-                .Select(majorjob => majorjob.JobPositionId)
-                .ToList();
-                majorDto.JobPositionName = result.JobPositions
-                .Select(majorjob => majorjob.JobPositionName)
-                .ToList();
-                majorDto.JobPositionCode = result.JobPositions
-                .Select (majorjob => majorjob.JobPositionCode) 
-                .ToList();
-                majorDto.JobPositionDescription = result.JobPositions
-                .Select(majorjob => majorjob.JobPositionDescription)
-                .ToList();
+                majorDto.JobPositionDetails = major.JobPositions
+                    .Select(jobPosition => new JobPositionDetailsDto
+                    {
+                        JobPositionId = jobPosition.JobPositionId,
+                        JobPositionName = jobPosition.JobPositionName,
+                        JobPositionCode = jobPosition.JobPositionCode,
+                        JobPositionDescription = jobPosition.JobPositionDescription
+                    }).ToList();
 
                 return majorDto;
             }).ToList();
+
             return majorDtos;
         }
 
@@ -128,18 +125,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
             var majorDto = _mapper.Map<MajorDto>(result);
 
-            majorDto.JobPositionId = result.JobPositions
-            .Select(majorjob => majorjob.JobPositionId)
-            .ToList();
-            majorDto.JobPositionName = result.JobPositions
-            .Select(majorjob => majorjob.JobPositionName)
-            .ToList();
-            majorDto.JobPositionCode = result.JobPositions
-                .Select(majorjob => majorjob.JobPositionCode)
-                .ToList();
-            majorDto.JobPositionDescription = result.JobPositions
-            .Select(majorjob => majorjob.JobPositionDescription)
-            .ToList();
+            majorDto.JobPositionDetails = result.JobPositions
+                .Select(jobPosition => new JobPositionDetailsDto
+                {
+                    JobPositionId = jobPosition.JobPositionId,
+                    JobPositionName = jobPosition.JobPositionName,
+                    JobPositionCode = jobPosition.JobPositionCode,
+                    JobPositionDescription = jobPosition.JobPositionDescription
+                }).ToList();
 
             return majorDto;
         }
@@ -157,18 +150,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             foreach (var majorDto in majorDtos)
             {
                 var major = result.FirstOrDefault(c => c.MajorId == majorDto.MajorId);
-                majorDto.JobPositionId = major.JobPositions
-                .Select(majorjob => majorjob.JobPositionId)
-                .ToList(); 
-                majorDto.JobPositionName = major.JobPositions
-                .Select(majorjob => majorjob.JobPositionName)
-                .ToList(); 
-                majorDto.JobPositionCode = major.JobPositions
-                .Select(majorjob => majorjob.JobPositionCode)
-                .ToList();  
-                majorDto.JobPositionDescription = major.JobPositions
-                .Select(majorjob => majorjob.JobPositionDescription)
-                .ToList();
+                majorDto.JobPositionDetails = major.JobPositions
+                    .Select(jobPosition => new JobPositionDetailsDto
+                    {
+                        JobPositionId = jobPosition.JobPositionId,
+                        JobPositionName = jobPosition.JobPositionName,
+                        JobPositionCode = jobPosition.JobPositionCode,
+                        JobPositionDescription = jobPosition.JobPositionDescription
+                    }).ToList();
             }
             return majorDtos;
         }
