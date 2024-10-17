@@ -114,31 +114,23 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 var jobDto = _mapper.Map<JobPositionDto>(result);
 
-                jobDto.MajorId = result.Majors
-                .Select(majorjob => majorjob.MajorId)
-                .ToList();
-                jobDto.MajorName = result.Majors
-                .Select(majorjob => majorjob.MajorName)
-                .ToList();                        
-                jobDto.MajorCode = result.Majors
-                .Select(majorjob => majorjob.MajorCode)
-                .ToList();                
-                jobDto.MajorDescription = result.Majors
-                .Select(majorjob => majorjob.MajorDescription)
-                .ToList();
+                jobDto.MajorDetails = result.Majors
+                    .Select(major => new MajorDetailsDto
+                    {
+                        MajorId = major.MajorId,
+                        MajorName = major.MajorName,
+                        MajorCode = major.MajorCode,
+                        MajorDescription = major.MajorDescription
+                    }).ToList();
 
-                jobDto.CertId = result.Certs
-                .Select(cert => cert.CertId)
-                .ToList(); 
-                jobDto.CertName = result.Certs
-                .Select(cert => cert.CertName)
-                .ToList();                
-                jobDto.CertCode = result.Certs
-                .Select(cert => cert.CertCode)
-                .ToList();
-                jobDto.CertDescription = result.Certs
-                .Select(cert => cert.CertDescription)
-                .ToList();
+                jobDto.CertificationDetails = result.Certs
+                    .Select(cert => new CertificationDetailsDto
+                    {
+                        CertId = cert.CertId,
+                        CertName = cert.CertName,
+                        CertCode = cert.CertCode,
+                        CertDescription = cert.CertDescription
+                    }).ToList();
 
                 return jobDto;
             }).ToList();
@@ -157,31 +149,23 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
             var jobDto = _mapper.Map<JobPositionDto>(result);
 
-            jobDto.MajorId = result.Majors
-            .Select(majorjob => majorjob.MajorId)
-            .ToList();
-            jobDto.MajorName = result.Majors
-            .Select(majorjob => majorjob.MajorName)
-            .ToList();            
-            jobDto.MajorCode = result.Majors
-            .Select(majorjob => majorjob.MajorCode)
-            .ToList();
-            jobDto.MajorDescription = result.Majors
-            .Select(majorjob => majorjob.MajorDescription)
-            .ToList();
+            jobDto.MajorDetails = result.Majors
+                .Select(major => new MajorDetailsDto
+                {
+                    MajorId = major.MajorId,
+                    MajorName = major.MajorName,
+                    MajorCode = major.MajorCode,
+                    MajorDescription = major.MajorDescription
+                }).ToList();
 
-            jobDto.CertId = result.Certs
-            .Select(cert => cert.CertId)
-            .ToList();
-            jobDto.CertName = result.Certs
-            .Select(cert => cert.CertName)
-            .ToList();            
-            jobDto.CertCode = result.Certs
-            .Select(cert => cert.CertCode)
-            .ToList();
-            jobDto.CertDescription = result.Certs
-            .Select(cert => cert.CertDescription)
-            .ToList();
+            jobDto.CertificationDetails = result.Certs
+                .Select(cert => new CertificationDetailsDto
+                {
+                    CertId = cert.CertId,
+                    CertName = cert.CertName,
+                    CertCode = cert.CertCode,
+                    CertDescription = cert.CertDescription
+                }).ToList();
 
             return jobDto;
         }
@@ -199,32 +183,23 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             foreach (var jobDto in jobDtos)
             {
                 var job = result.FirstOrDefault(c => c.JobPositionId == jobDto.JobPositionId);
-                jobDto.MajorId = job.Majors
-                .Select(majorjob => majorjob.MajorId)
-                .ToList();
-                jobDto.MajorName = job.Majors
-                .Select(majorjob => majorjob.MajorName)
-                .ToList();                
-                jobDto.MajorCode = job.Majors
-                .Select(majorjob => majorjob.MajorCode)
-                .ToList();                
-                jobDto.MajorDescription = job.Majors
-                .Select(majorjob => majorjob.MajorDescription)
-                .ToList();
+                jobDto.MajorDetails = job.Majors
+                    .Select(major => new MajorDetailsDto
+                    {
+                        MajorId = major.MajorId,
+                        MajorName = major.MajorName,
+                        MajorCode = major.MajorCode,
+                        MajorDescription = major.MajorDescription
+                    }).ToList();
 
-                // Map Certs to CertId
-                jobDto.CertId = job.Certs
-                    .Select(cert => cert.CertId)
-                    .ToList();
-                jobDto.CertName = job.Certs
-                    .Select(cert => cert.CertName)
-                    .ToList();                 
-                jobDto.CertCode = job.Certs
-                    .Select(cert => cert.CertCode)
-                    .ToList();                
-                jobDto.CertDescription = job.Certs
-                    .Select(cert => cert.CertDescription)
-                    .ToList();
+                jobDto.CertificationDetails = job.Certs
+                    .Select(cert => new CertificationDetailsDto
+                    {
+                        CertId = cert.CertId,
+                        CertName = cert.CertName,
+                        CertCode = cert.CertCode,
+                        CertDescription = cert.CertDescription
+                    }).ToList();
             }
             return jobDtos;
         }
