@@ -13,7 +13,7 @@
 
         public int? ExamFee { get; set; }
 
-        public int VourcherId { get; set; }
+        public List<int> VoucherIds { get; set; } = new List<int>();
 
         public string? ExamImage { get; set; }
     }
