@@ -8,5 +8,7 @@
         public string? CertCode { get; set; }
 
         public string? CertDescription { get; set; }
+        public string? CertImage { get; set; }
+        public string? TypeName { get; set; }
     }
 }

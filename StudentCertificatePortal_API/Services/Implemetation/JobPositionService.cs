@@ -109,7 +109,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         {
             var result = await _uow.JobPositionRepository.GetAllAsync(query =>
             query.Include(c => c.Majors)
-                 .Include(c => c.Certs));
+                .Include(c => c.Certs)
+                .ThenInclude(cert => cert.Type));
             var jobDtos = result.Select(result =>
             {
                 var jobDto = _mapper.Map<JobPositionDto>(result);
@@ -129,7 +130,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         CertId = cert.CertId,
                         CertName = cert.CertName,
                         CertCode = cert.CertCode,
-                        CertDescription = cert.CertDescription
+                        CertDescription = cert.CertDescription,
+                        CertImage = cert.CertImage,
+                        TypeName = cert.Type?.TypeName
                     }).ToList();
 
                 return jobDto;
@@ -142,7 +145,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var result = await _uow.JobPositionRepository.FirstOrDefaultAsync(x => x.JobPositionId == jobPositionId,
                 cancellationToken: cancellationToken, include: query => query
                 .Include(c => c.Majors)
-                .Include(c => c.Certs));
+                .Include(c => c.Certs)
+                .ThenInclude(cert => cert.Type));
             if (result is null)
             {
                 throw new KeyNotFoundException("JobPosition not found.");
@@ -164,7 +168,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CertId = cert.CertId,
                     CertName = cert.CertName,
                     CertCode = cert.CertCode,
-                    CertDescription = cert.CertDescription
+                    CertDescription = cert.CertDescription,
+                    CertImage = cert.CertImage,
+                    TypeName = cert.Type?.TypeName
                 }).ToList();
 
             return jobDto;
@@ -174,10 +180,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         {
             var result = await _uow.JobPositionRepository.WhereAsync(x => x.JobPositionName.Contains(jobPositionName), cancellationToken,
                 include: query => query.Include(c => c.Majors)
-                                       .Include(c => c.Certs));
+                                       .Include(c => c.Certs)
+                                       .ThenInclude(cert => cert.Type));
             if (result is null || !result.Any())
             {
-                throw new KeyNotFoundException("Major not found.");
+                throw new KeyNotFoundException("Job Position not found.");
             }
             var jobDtos = _mapper.Map<List<JobPositionDto>>(result);
             foreach (var jobDto in jobDtos)
@@ -198,7 +205,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         CertId = cert.CertId,
                         CertName = cert.CertName,
                         CertCode = cert.CertCode,
-                        CertDescription = cert.CertDescription
+                        CertDescription = cert.CertDescription,
+                        CertImage = cert.CertImage,
+                        TypeName = cert.Type?.TypeName
                     }).ToList();
             }
             return jobDtos;
