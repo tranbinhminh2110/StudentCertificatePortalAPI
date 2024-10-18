@@ -71,6 +71,7 @@ namespace StudentCertificatePortal_API.Controllers
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var transaction =await _transactionService.GetTransactionByIdAsync(data.OrderCode,new CancellationToken());
+                await _transactionService.UpdateStatusTransactionAsync(transaction.TransactionId, Enums.EnumTransaction.Success, new CancellationToken());
                 var wallet = await _walletService.GetWalletByWalletIdAsync(transaction.WalletId, new CancellationToken());
                 await _walletService.UpdateWalletAsync(wallet.UserId ?? 0, data.Amount/1000, Enums.EnumWallet.IsUsed, new CancellationToken());
                 return Ok(responseContent);

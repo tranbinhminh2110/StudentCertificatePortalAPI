@@ -92,6 +92,23 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             throw new NotImplementedException();
         }
 
+        public async Task<TransactionDto> UpdateStatusTransactionAsync(int transId, EnumTransaction status, CancellationToken cancellationToken)
+        {
+            var transaction = await _uow.TransactionRepository.FirstOrDefaultAsync(x => x.TransactionId == transId);
+
+            if(transaction == null)
+            {
+                throw new KeyNotFoundException("Transation not found.");
+            }
+
+            transaction.TransStatus = status.ToString();
+            var result = _uow.TransactionRepository.Update(transaction);
+            await _uow.Commit(cancellationToken);
+
+            return _mapper.Map<TransactionDto>(result);
+
+        }
+
         public async Task<TransactionDto> UpdateTransactionAsync(int transId, UpdateTransactionRequest request, CancellationToken cancellationToken)
         {
             var tran = await _uow.TransactionRepository.FirstOrDefaultAsync(x => x.TransactionId == transId);
