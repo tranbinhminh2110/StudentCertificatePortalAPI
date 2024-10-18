@@ -19,5 +19,7 @@ public partial class Voucher
 
     public bool? VoucherStatus { get; set; }
 
+    public virtual ICollection<Course> Courses { get; set; } = new List<Course>();
+
     public virtual ICollection<SimulationExam> Exams { get; set; } = new List<SimulationExam>();
 }

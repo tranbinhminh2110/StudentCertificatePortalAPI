@@ -26,4 +26,8 @@ public partial class Course
     public virtual Certification? Cert { get; set; }
 
     public virtual ICollection<StudentOfCourse> StudentOfCourses { get; set; } = new List<StudentOfCourse>();
+
+    public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
+
+    public virtual ICollection<Voucher> Vouchers { get; set; } = new List<Voucher>();
 }

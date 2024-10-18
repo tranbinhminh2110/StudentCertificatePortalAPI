@@ -13,5 +13,7 @@ public partial class Cart
 
     public virtual User? User { get; set; }
 
+    public virtual ICollection<Course> Courses { get; set; } = new List<Course>();
+
     public virtual ICollection<SimulationExam> Exams { get; set; } = new List<SimulationExam>();
 }

@@ -42,4 +42,6 @@ public partial class Certification
     public virtual ICollection<Certification> Certs { get; set; } = new List<Certification>();
 
     public virtual ICollection<JobPosition> JobPositions { get; set; } = new List<JobPosition>();
+
+    public virtual ICollection<Major> Majors { get; set; } = new List<Major>();
 }

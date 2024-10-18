@@ -92,6 +92,25 @@ public partial class CipdbContext : DbContext
                 .HasForeignKey<Cart>(d => d.UserId)
                 .HasConstraintName("FK__Cart__user_id__0A9D95DB");
 
+            entity.HasMany(d => d.Courses).WithMany(p => p.Carts)
+                .UsingEntity<Dictionary<string, object>>(
+                    "CartDetailCourse",
+                    r => r.HasOne<Course>().WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__Cart_Deta__cours__6AEFE058"),
+                    l => l.HasOne<Cart>().WithMany()
+                        .HasForeignKey("CartId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__Cart_Deta__cart___69FBBC1F"),
+                    j =>
+                    {
+                        j.HasKey("CartId", "CourseId").HasName("PK__Cart_Det__D604C55DF6701621");
+                        j.ToTable("Cart_Detail_Course");
+                        j.IndexerProperty<int>("CartId").HasColumnName("cart_id");
+                        j.IndexerProperty<int>("CourseId").HasColumnName("course_id");
+                    });
+
             entity.HasMany(d => d.Exams).WithMany(p => p.Carts)
                 .UsingEntity<Dictionary<string, object>>(
                     "CartDetail",
@@ -381,6 +400,25 @@ public partial class CipdbContext : DbContext
                 .HasMaxLength(255)
                 .HasColumnName("major_name");
 
+            entity.HasMany(d => d.Certs).WithMany(p => p.Majors)
+                .UsingEntity<Dictionary<string, object>>(
+                    "MajorCert",
+                    r => r.HasOne<Certification>().WithMany()
+                        .HasForeignKey("CertId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__Major_Cer__cert___634EBE90"),
+                    l => l.HasOne<Major>().WithMany()
+                        .HasForeignKey("MajorId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__Major_Cer__major__625A9A57"),
+                    j =>
+                    {
+                        j.HasKey("MajorId", "CertId").HasName("PK__Major_Ce__0C5E77AA71652463");
+                        j.ToTable("Major_Cert");
+                        j.IndexerProperty<int>("MajorId").HasColumnName("major_id");
+                        j.IndexerProperty<int>("CertId").HasColumnName("cert_id");
+                    });
+
             entity.HasMany(d => d.JobPositions).WithMany(p => p.Majors)
                 .UsingEntity<Dictionary<string, object>>(
                     "MajorPosition",
@@ -653,6 +691,25 @@ public partial class CipdbContext : DbContext
                 .HasMaxLength(255)
                 .HasColumnName("voucher_name");
             entity.Property(e => e.VoucherStatus).HasColumnName("voucher_status");
+
+            entity.HasMany(d => d.Courses).WithMany(p => p.Vouchers)
+                .UsingEntity<Dictionary<string, object>>(
+                    "VoucherOfCourse",
+                    r => r.HasOne<Course>().WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__Voucher_O__cours__671F4F74"),
+                    l => l.HasOne<Voucher>().WithMany()
+                        .HasForeignKey("VoucherId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__Voucher_O__vouch__662B2B3B"),
+                    j =>
+                    {
+                        j.HasKey("VoucherId", "CourseId").HasName("PK__Voucher___784710D222096FA1");
+                        j.ToTable("Voucher_Of_Course");
+                        j.IndexerProperty<int>("VoucherId").HasColumnName("voucher_id");
+                        j.IndexerProperty<int>("CourseId").HasColumnName("course_id");
+                    });
         });
 
         modelBuilder.Entity<Wallet>(entity =>
