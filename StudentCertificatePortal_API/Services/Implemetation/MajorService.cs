@@ -7,6 +7,7 @@ using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
+using System.Runtime.ConstrainedExecution;
 
 namespace StudentCertificatePortal_API.Services.Implemetation
 {
@@ -55,6 +56,22 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                 }
             }
+            if (request.CertId != null && request.CertId.Any())
+            {
+                foreach (var certId in request.CertId)
+                {
+                    var certification = await _uow.CertificationRepository.FirstOrDefaultAsync(
+                        x => x.CertId == certId, cancellationToken);
+                    if (certification != null)
+                    {
+                        majorEntity.Certs.Add(certification);
+                    }
+                    else
+                    {
+                        throw new KeyNotFoundException($"Certification with ID {certId} not found.");
+                    }
+                }
+            }
             await _uow.MajorRepository.AddAsync(majorEntity);
             try
             {
@@ -62,6 +79,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 var majorDto = _mapper.Map<MajorDto>(majorEntity);
                 majorDto.JobPositionId = majorEntity.JobPositions
                     .Select(majorjob => majorjob.JobPositionId)
+                    .ToList();
+                majorDto.CertId = majorEntity.Certs
+                    .Select(cert => cert.CertId)
                     .ToList();
                 return majorDto;
             }
@@ -76,13 +96,15 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<MajorDto> DeleteMajorAsync(int majorId, CancellationToken cancellationToken)
         {
             var major = await _uow.MajorRepository.FirstOrDefaultAsync(
-                x => x.MajorId == majorId, 
-                cancellationToken, include: q => q.Include(c => c.JobPositions));
+                x => x.MajorId == majorId,
+                cancellationToken, include: q => q.Include(c => c.JobPositions)
+                                                  .Include(c => c.Certs));
             if (major is null) 
             {
                 throw new KeyNotFoundException("Major not found.");
             }
             major.JobPositions?.Clear();
+            major.Certs?.Clear();
 
             _uow.MajorRepository.Delete(major);
             await _uow.Commit(cancellationToken);
@@ -94,7 +116,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<List<MajorDto>> GetAll()
         {
             var result = await _uow.MajorRepository.GetAllAsync(query =>
-            query.Include(c => c.JobPositions));
+            query.Include(c => c.JobPositions)
+            .Include(c => c.Certs)
+            .ThenInclude(cert => cert.Type));
 
             var majorDtos = result.Select(major =>
             {
@@ -108,6 +132,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         JobPositionCode = jobPosition.JobPositionCode,
                         JobPositionDescription = jobPosition.JobPositionDescription
                     }).ToList();
+                majorDto.CertificationDetails = major.Certs
+                    .Select(cert => new CertificationDetailsDto
+                    {
+                        CertId = cert.CertId,
+                        CertName = cert.CertName,
+                        CertCode = cert.CertCode,
+                        CertDescription = cert.CertDescription,
+                        CertImage = cert.CertImage,
+                        TypeName = cert.Type?.TypeName
+                    }).ToList();
 
                 return majorDto;
             }).ToList();
@@ -118,7 +152,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<MajorDto> GetMajorByIdAsync(int majorId, CancellationToken cancellationToken)
         {
             var result = await _uow.MajorRepository.FirstOrDefaultAsync(
-                x => x.MajorId == majorId, cancellationToken: cancellationToken,include: query => query.Include(c => c.JobPositions));
+                x => x.MajorId == majorId, cancellationToken: cancellationToken,include: query => query.Include(c => c.JobPositions)
+                            .Include(c => c.Certs)
+                            .ThenInclude(cert => cert.Type));
             if (result is null)
             {
                 throw new KeyNotFoundException("Major not found.");
@@ -133,6 +169,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     JobPositionCode = jobPosition.JobPositionCode,
                     JobPositionDescription = jobPosition.JobPositionDescription
                 }).ToList();
+            majorDto.CertificationDetails = result.Certs
+                    .Select(cert => new CertificationDetailsDto
+                    {
+                        CertId = cert.CertId,
+                        CertName = cert.CertName,
+                        CertCode = cert.CertCode,
+                        CertDescription = cert.CertDescription,
+                        CertImage = cert.CertImage,
+                        TypeName = cert.Type?.TypeName
+                    }).ToList();
 
             return majorDto;
         }
@@ -140,7 +186,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<List<MajorDto>> GetMajorByNameAsync(string majorName, CancellationToken cancellationToken)
         {
             var result = await _uow.MajorRepository.WhereAsync(x => x.MajorName.Contains(majorName), cancellationToken,
-                    include: query => query.Include(c => c.JobPositions));
+                    include: query => query.Include(c => c.JobPositions)
+                                .Include(c => c.Certs)
+                                .ThenInclude(cert => cert.Type));
             if (result is null || !result.Any())
             {
                 throw new KeyNotFoundException("Major not found.");
@@ -158,6 +206,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         JobPositionCode = jobPosition.JobPositionCode,
                         JobPositionDescription = jobPosition.JobPositionDescription
                     }).ToList();
+                majorDto.CertificationDetails = major.Certs
+                    .Select(cert => new CertificationDetailsDto
+                    {
+                        CertId = cert.CertId,
+                        CertName = cert.CertName,
+                        CertCode = cert.CertCode,
+                        CertDescription = cert.CertDescription,
+                        CertImage = cert.CertImage,
+                        TypeName = cert.Type?.TypeName
+                    }).ToList();
             }
             return majorDtos;
         }
@@ -171,6 +229,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
             var major = await _uow.MajorRepository
                 .Include(x => x.JobPositions)
+                .Include(c => c.Certs)
                 .FirstOrDefaultAsync(x => x.MajorId == majorId, cancellationToken)
                 .ConfigureAwait(false);
             if (major is null)
@@ -220,6 +279,42 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     }
                 }
             }
+            // Update Certs
+            var existingCertIds = new HashSet<int>(major.Certs.Select(x => x.CertId));
+            var newCertIds = request.CertId ?? new List<int>();
+
+            foreach (var existingCertId in existingCertIds)
+            {
+                if (!newCertIds.Contains(existingCertId))
+                {
+                    var certToRemove = major.Certs.FirstOrDefault(c => c.CertId == existingCertId);
+                    if (certToRemove != null)
+                    {
+                        major.Certs.Remove(certToRemove);
+                    }
+                }
+            }
+
+            foreach (var newCertId in newCertIds)
+            {
+                if (!existingCertIds.Contains(newCertId))
+                {
+                    var certification = await _uow.CertificationRepository
+                        .FirstOrDefaultAsync(x => x.CertId == newCertId, cancellationToken);
+
+                    if (certification != null)
+                    {
+                        if (!major.Certs.Any(c => c.CertId == newCertId))
+                        {
+                            major.Certs.Add(certification);
+                        }
+                    }
+                    else
+                    {
+                        throw new KeyNotFoundException($"Certification with ID {newCertId} not found.");
+                    }
+                }
+            }
 
             // Update the Major in the repository
             _uow.MajorRepository.Update(major);
@@ -231,6 +326,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 // Create the DTO and populate JobPosition details
                 var majorDto = _mapper.Map<MajorDto>(major);
                 majorDto.JobPositionId = major.JobPositions.Select(j => j.JobPositionId).ToList();
+                majorDto.CertId = major.Certs.Select(c => c.CertId).ToList();
 
                 return majorDto;
             }
