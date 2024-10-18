@@ -6,6 +6,5 @@ namespace StudentCertificatePortal_API.Services.Interface
     {
         public Task<CheckoutDto> CreatePaymentLinkAsync(int transId, CancellationToken cancellationToken);
 
-        /*public Task<ResponseCheckoutData> GetInfoLinkPayment(int orderId, CancellationToken cancellationToken);*/
     }
 }

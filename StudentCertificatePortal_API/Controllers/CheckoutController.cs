@@ -12,13 +12,18 @@ namespace StudentCertificatePortal_API.Controllers
         private readonly IConfiguration _configuration;
         private readonly ICheckoutService _service;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IWalletService _walletService;
+        private readonly ITransactionService _transactionService;
 
-        public CheckoutController(ICheckoutService service, IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public CheckoutController(ICheckoutService service, IHttpClientFactory httpClientFactory
+            , IConfiguration configuration, IWalletService walletService, ITransactionService transactionService)
         {
             _service = service;
             _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
             _httpClient = _httpClientFactory.CreateClient();
             _configuration = configuration;
+            _walletService = walletService;
+            _transactionService = transactionService;
         }
 
         [HttpPost("{transactionId}")]
@@ -65,6 +70,9 @@ namespace StudentCertificatePortal_API.Controllers
             if (response.IsSuccessStatusCode)
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
+                var transaction =await _transactionService.GetTransactionByIdAsync(data.OrderCode,new CancellationToken());
+                var wallet = await _walletService.GetWalletByWalletIdAsync(transaction.WalletId, new CancellationToken());
+                await _walletService.UpdateWalletAsync(wallet.UserId ?? 0, data.Amount/1000, Enums.EnumWallet.IsUsed, new CancellationToken());
                 return Ok(responseContent);
             }
             else

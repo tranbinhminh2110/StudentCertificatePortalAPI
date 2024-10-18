@@ -53,9 +53,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 BuyerEmail = user.Email?.Trim() ?? string.Empty,
                 BuyerPhone = user.PhoneNumber?.Trim() ?? string.Empty,
                 BuyerAddress = user.Address?.Trim() ?? string.Empty,
-                CancelUrl = "https://artspectrum.vercel.app/cart",
-                ReturnUrl = "https://artspectrum.vercel.app/checkout-success",
-                ExpiredAt = (int)expirationTime.ToUnixTimeSeconds(), // Set the expiration time to be in the future
+                CancelUrl = "https://uni-cert.vercel.app/",
+                ReturnUrl = "https://uni-cert.vercel.app/",
+                ExpiredAt = (int)expirationTime.ToUnixTimeSeconds(),
                 Signature = "string",
                 Items = new List<WalletRequest>()
             };
