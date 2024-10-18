@@ -52,6 +52,25 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     }
                 }
             }
+            if (request.CourseId != null && request.CourseId.Any())
+            {
+                foreach (var courseId in request.CourseId)
+                {
+                    var course = await _uow.CourseRepository.FirstOrDefaultAsync(
+                        x => x.CourseId == courseId, cancellationToken);
+                    if (course != null)
+                    {
+                        cartEntity.Courses.Add(course);
+
+                        var coursePrice = course.CourseDiscountFee ?? course.CourseFee;
+                        cartEntity.TotalPrice += coursePrice;
+                    }
+                    else
+                    {
+                        throw new KeyNotFoundException($"Course with ID {courseId} not found.");
+                    }
+                }
+            }
 
             await _uow.CartRepository.AddAsync(cartEntity);
 
@@ -63,6 +82,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                 cartDto.ExamId = cartEntity.Exams
                     .Select(exam => exam.ExamId)
+                    .ToList();
+                cartDto.CourseId = cartEntity.Courses
+                    .Select(course => course.CourseId)
                     .ToList();
 
                 return cartDto;
@@ -77,7 +99,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<CartDto> DeleteCartAsync(int userId, CancellationToken cancellationToken)
         {
             var cart = await _uow.CartRepository.FirstOrDefaultAsync(
-        x => x.UserId == userId, cancellationToken, include: q => q.Include(c => c.Exams));
+        x => x.UserId == userId, cancellationToken, include: q => q.Include(c => c.Exams)
+                                                                   .Include(c => c.Courses));
 
             if (cart is null)
             {
@@ -85,6 +108,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
 
             cart.Exams?.Clear();
+            cart.Courses?.Clear();
 
             _uow.CartRepository.Delete(cart);
             await _uow.Commit(cancellationToken);
@@ -95,12 +119,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<List<CartDto>> GetAll(CancellationToken cancellationToken)
         {
-            var result = await _uow.CartRepository.GetAllAsync(query => query.Include(c => c.Exams));
+            var result = await _uow.CartRepository.GetAllAsync(query => query.Include(c => c.Exams)
+            .Include(c => c.Courses));
 
             var cartDtos = result.Select(cart =>
             {
                 var cartDto = _mapper.Map<CartDto>(cart);
                 cartDto.ExamId = cart.Exams.Select(x => x.ExamId).ToList();
+                cartDto.CourseId = cart.Courses.Select(x => x.CourseId).ToList();
                 return cartDto;
             }).ToList();
 
@@ -110,7 +136,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<CartDto> GetCartByIdAsync(int userId, CancellationToken cancellationToken)
         {
             var cart = await _uow.CartRepository.FirstOrDefaultAsync(
-    x => x.UserId == userId, cancellationToken: cancellationToken, include: query => query.Include(c => c.Exams));
+    x => x.UserId == userId, cancellationToken: cancellationToken, include: query => query.Include(c => c.Exams)
+                                                                                          .Include(c => c.Courses));
 
             if (cart is null)
             {
@@ -119,6 +146,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             var cartDto = _mapper.Map<CartDto>(cart);
             cartDto.ExamId = cart.Exams.Select(x => x.ExamId).ToList();
+            cartDto.CourseId = cart.Courses.Select(x => x.CourseId).ToList();
             return cartDto;
         }
 
@@ -126,6 +154,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         {
             var cart = await _uow.CartRepository
                                   .Include(x => x.Exams)
+                                  .Include(x => x.Courses)
                                   .FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
 
             if (cart == null)
@@ -160,9 +189,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     if (exam != null)
                     {
                         cart.Exams.Add(exam);
-
-                        var examPrice = exam.ExamDiscountFee ?? exam.ExamFee;
-                        cart.TotalPrice += examPrice;
                     }
                     else
                     {
@@ -171,13 +197,65 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 }
             }
 
+            var existingCourseIds = cart.Courses.Select(c => c.CourseId).ToList();
+            var newCourseIds = request.CourseId ?? new List<int>();
+
+            foreach (var existingCourseId in existingCourseIds)
+            {
+                if (!newCourseIds.Contains(existingCourseId))
+                {
+                    var courseToRemove = cart.Courses.FirstOrDefault(c => c.CourseId == existingCourseId);
+                    if (courseToRemove != null)
+                    {
+                        cart.Courses.Remove(courseToRemove);
+                    }
+                }
+            }
+
+            foreach (var newCourseId in newCourseIds)
+            {
+                if (!existingCourseIds.Contains(newCourseId))
+                {
+                    var course = await _uow.CourseRepository.FirstOrDefaultAsync(
+                        x => x.CourseId == newCourseId, cancellationToken);
+
+                    if (course != null)
+                    {
+                        cart.Courses.Add(course);
+                    }
+                    else
+                    {
+                        throw new KeyNotFoundException($"Course with ID {newCourseId} not found.");
+                    }
+                }
+            }
+
+            var examPrice = cart.Exams.Sum(e => e.ExamDiscountFee ?? e.ExamFee);
+            var coursePrice = cart.Courses.Sum(c => c.CourseDiscountFee ?? c.CourseFee);
+
+            if (examPrice > 0 && coursePrice > 0)
+            {
+                cart.TotalPrice = (int)examPrice + (int)coursePrice; 
+            }
+            else if (examPrice > 0) 
+            {
+                cart.TotalPrice = (int)examPrice;
+            }
+            else if (coursePrice > 0) 
+            {
+                cart.TotalPrice = (int)coursePrice;
+            }
+
             _uow.CartRepository.Update(cart);
             await _uow.Commit(cancellationToken);
 
             var cartDto = _mapper.Map<CartDto>(cart);
             cartDto.ExamId = cart.Exams.Select(e => e.ExamId).ToList();
+            cartDto.CourseId = cart.Courses.Select(c => c.CourseId).ToList();
 
             return cartDto;
         }
+
+
     }
 }
