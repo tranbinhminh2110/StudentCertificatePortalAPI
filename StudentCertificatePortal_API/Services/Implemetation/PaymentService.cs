@@ -138,9 +138,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 {
                     PaymentDate = DateTime.UtcNow,
                     PaymentPoint = enrollExams.TotalPrice,
-                    PaymentMethod = "Using Point",
-                    PaymentStatus = EnumTransaction.Success.ToString(),
-                    WalletId = wallet.UserId,
+                    PaymentMethod = EnumTransaction.Success.ToString(),
+                    WalletId = wallet.WalletId,
                     ExamEnrollmentId = request.ExamEnrollmentId,
                 };
 

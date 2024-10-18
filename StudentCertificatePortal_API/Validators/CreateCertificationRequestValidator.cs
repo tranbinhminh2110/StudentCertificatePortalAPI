@@ -11,11 +11,11 @@ namespace StudentCertificatePortal_API.Validators
 
             RuleFor(cert => cert.CertName)
                 .NotEmpty().WithMessage("Certification name is required")
-                .Length(1, 100).WithMessage("Certification name must be between 1 and 100 characters");
+                .Length(1, 500).WithMessage("Certification name must be between 1 and 500 characters");
 
             RuleFor(cert => cert.CertCode)
                 .NotEmpty().WithMessage("Certification code is required")
-                .Length(1, 10).WithMessage("Certification code must be between 1 and 10 characters");
+                .Length(1, 50).WithMessage("Certification code must be between 1 and 50 characters");
 
 
             RuleFor(cert => cert.CertCost)
