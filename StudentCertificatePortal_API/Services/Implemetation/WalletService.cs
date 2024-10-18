@@ -96,6 +96,19 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return _mapper.Map<WalletDto>(wallet);
         }
 
+        public async Task<WalletDto> GetWalletByWalletIdAsync(int walletId, CancellationToken cancellationToken)
+        {
+            
+            var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.WalletId == walletId);
+
+            if (wallet == null || wallet.WalletStatus == EnumWallet.IsLocked.ToString())
+            {
+                throw new Exception("Wallet of user not found or is locked. Contact with me to support.");
+            }
+
+            return _mapper.Map<WalletDto>(wallet);
+        }
+
         public async Task<WalletDto> UpdateWalletAsync(int userId, int point, EnumWallet status, CancellationToken cancellationToken)
         {
             var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == userId);

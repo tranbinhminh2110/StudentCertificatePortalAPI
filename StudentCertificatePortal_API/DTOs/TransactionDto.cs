@@ -14,6 +14,7 @@ namespace StudentCertificatePortal_API.DTOs
         public int Point { get; set; }
 
         public int Amount { get; set; }
+        public string TransStatus { get; set; } = null!;
 
         public DateTime CreatedAt { get; set; }
     }

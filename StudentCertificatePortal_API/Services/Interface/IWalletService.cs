@@ -11,5 +11,6 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<WalletDto> GetWalletByIdAsync(int userId, CancellationToken cancellationToken);
         Task<WalletDto> UpdateWalletAsync(int userId,int point , EnumWallet status, CancellationToken cancellationToken);
         Task<WalletDto> DeleteWalletAsync(int userId, CancellationToken cancellationToken);
+        Task<WalletDto> GetWalletByWalletIdAsync(int walletId, CancellationToken cancellationToken);
     }
 }
