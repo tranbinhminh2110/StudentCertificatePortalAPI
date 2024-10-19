@@ -58,6 +58,23 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 }
 
             }
+            if (request.CourseId != null && request.CourseId.Any())
+            {
+                foreach (var courseId in request.CourseId)
+                {
+                    var course = await _uow.CourseRepository.FirstOrDefaultAsync(
+                        x => x.CourseId == courseId, cancellationToken);
+                    if (course != null)
+                    {
+                        voucherEntity.Courses.Add(course);
+                    }
+                    else
+                    {
+                        throw new KeyNotFoundException($"Course with ID {courseId} not found.");
+                    }
+                }
+
+            }
             await _uow.VoucherRepository.AddAsync(voucherEntity);
             try
             {
@@ -65,6 +82,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 var voucherDto = _mapper.Map<VoucherDto>(voucherEntity);
                 voucherDto.ExamId = voucherEntity.Exams
                     .Select(voucherr => voucherr.ExamId)
+                    .ToList();                
+                voucherDto.CourseId = voucherEntity.Courses
+                    .Select(voucherr => voucherr.CourseId)
                     .ToList();
                 return voucherDto;
             }
@@ -80,11 +100,13 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         {
             var voucher = await _uow.VoucherRepository.FirstOrDefaultAsync(
                 x => x.VoucherId == voucherId,
-                cancellationToken, include: q => q.Include(c => c.Exams));
+                cancellationToken, include: q => q.Include(c => c.Exams)
+                .Include(c => c.Courses));
             if (voucher is null) {
                 throw new KeyNotFoundException("Voucher not found.");
             }
             voucher.Exams?.Clear();
+            voucher.Courses?.Clear();
 
             _uow.VoucherRepository.Delete(voucher);
             await _uow.Commit(cancellationToken);
@@ -116,24 +138,30 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             await _uow.Commit(cancellationToken);
 
             var result = await _uow.VoucherRepository.GetAllAsync(query =>
-            query.Include(c => c.Exams));
+            query.Include(c => c.Exams)
+            .Include(c => c.Courses));
 
             var voucherDtos = result.Select(result =>
             {
                 var voucherDto = _mapper.Map<VoucherDto>(result);
 
-                voucherDto.ExamId = result.Exams
-                .Select(x => x.ExamId)
-                .ToList();
-                voucherDto.ExamName = result.Exams
-                .Select(x => x.ExamName)
-                .ToList();
-                voucherDto.ExamCode = result.Exams
-                .Select(x => x.ExamCode)
-                .ToList();
-                voucherDto.ExamFee = result.Exams
-                .Select(x => x.ExamFee)
-                .ToList();
+                voucherDto.ExamDetails = result.Exams
+                    .Select(exam => new ExamDetailsDto
+                    {
+                        ExamId = exam.ExamId,
+                        ExamName = exam.ExamName,
+                        ExamCode = exam.ExamCode,
+                        ExamFee = exam.ExamFee,
+                    }).ToList();
+                voucherDto.CourseDetails = result.Courses
+                    .Select(course => new CourseDetailsDto
+                    {
+                        CourseId = course.CourseId,
+                        CourseName = course.CourseName,
+                        CourseCode = course.CourseCode,
+                        CourseFee = course.CourseFee,
+              
+                    }).ToList();
                 return voucherDto;
             }).ToList();
             return voucherDtos;
@@ -161,24 +189,30 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             await _uow.Commit(cancellationToken);
             var result = await _uow.VoucherRepository.FirstOrDefaultAsync(
-                x => x.VoucherId == voucherId, cancellationToken: cancellationToken, include: query => query.Include(c => c.Exams));
+                x => x.VoucherId == voucherId, cancellationToken: cancellationToken, include: query => query.Include(c => c.Exams)
+                .Include(c => c.Courses));
             if (result is null)
             {
                 throw new KeyNotFoundException("Voucher not founc.");
             }
             var voucherDto = _mapper.Map<VoucherDto>(result);
-            voucherDto.ExamId = result.Exams
-                .Select(x => x.ExamId)
-                .ToList();
-            voucherDto.ExamName = result.Exams
-                .Select(x => x.ExamName)
-                .ToList();
-            voucherDto.ExamCode = result.Exams
-                .Select(x => x.ExamCode)
-                .ToList();
-            voucherDto.ExamFee = result.Exams
-                .Select(x => x.ExamFee)
-                .ToList();
+            voucherDto.ExamDetails = result.Exams
+                    .Select(exam => new ExamDetailsDto
+                    {
+                        ExamId = exam.ExamId,
+                        ExamName = exam.ExamName,
+                        ExamCode = exam.ExamCode,
+                        ExamFee = exam.ExamFee,
+                    }).ToList();
+            voucherDto.CourseDetails = result.Courses
+                .Select(course => new CourseDetailsDto
+                {
+                    CourseId = course.CourseId,
+                    CourseName = course.CourseName,
+                    CourseCode = course.CourseCode,
+                    CourseFee = course.CourseFee,
+
+                }).ToList();
             return voucherDto;
         }
 
@@ -204,7 +238,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             await _uow.Commit(cancellationToken);
             var result = await _uow.VoucherRepository.WhereAsync(x => x.VoucherName.Contains(voucherName), cancellationToken,
-                include: query => query.Include(c => c.Exams));
+                include: query => query.Include(c => c.Exams)
+                .Include(c => c.Courses));
             if (result is null || !result.Any())
             {
                 throw new KeyNotFoundException("Voucher not found.");
@@ -213,14 +248,23 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             foreach (var voucherDto in voucherDtos)
             {
                 var voucher = result.FirstOrDefault(x => x.VoucherId == voucherDto.VoucherId);
-                voucherDto.ExamId = voucher.Exams
-                    .Select(x => x.ExamId).ToList();
-                voucherDto.ExamName = voucher.Exams
-                    .Select(x => x.ExamName).ToList();
-                voucherDto.ExamCode = voucher.Exams
-                    .Select(x => x.ExamCode).ToList();
-                voucherDto.ExamFee = voucher.Exams
-                    .Select(x => x.ExamFee).ToList();
+                voucherDto.ExamDetails = voucher.Exams
+                    .Select(exam => new ExamDetailsDto
+                    {
+                        ExamId = exam.ExamId,
+                        ExamName = exam.ExamName,
+                        ExamCode = exam.ExamCode,
+                        ExamFee = exam.ExamFee,
+                    }).ToList();
+                voucherDto.CourseDetails = voucher.Courses
+                    .Select(course => new CourseDetailsDto
+                    {
+                        CourseId = course.CourseId,
+                        CourseName = course.CourseName,
+                        CourseCode = course.CourseCode,
+                        CourseFee = course.CourseFee,
+
+                    }).ToList();
             }
             return voucherDtos;
         }
@@ -235,6 +279,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             // Find the voucher by ID
             var voucher = await _uow.VoucherRepository
                 .Include(x => x.Exams)
+                .Include(x => x.Courses)
                 .FirstOrDefaultAsync(x => x.VoucherId == voucherId, cancellationToken);
 
             if (voucher == null)
@@ -289,6 +334,45 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     }
                 }
             }
+            var existingCourseIds = voucher.Courses.Select(e => e.CourseId).ToList();
+            var newCourseIds = request.CourseId ?? new List<int>();
+
+            // Remove Exams that are no longer referenced
+            foreach (var existingCourseId in existingCourseIds)
+            {
+                if (!newCourseIds.Contains(existingCourseId))
+                {
+                    var courseToRemove = voucher.Courses.FirstOrDefault(e => e.CourseId == existingCourseId);
+                    if (courseToRemove != null)
+                    {
+                        voucher.Courses.Remove(courseToRemove);
+                    }
+                }
+            }
+
+            // Add new Exams that are not already in the Voucher
+            foreach (var newCourseId in newCourseIds)
+            {
+                if (!existingCourseIds.Contains(newCourseId))
+                {
+                    var course = await _uow.CourseRepository
+                        .FirstOrDefaultAsync(x => x.CourseId == newCourseId, cancellationToken);
+
+                    if (course != null)
+                    {
+                        // Check if this relationship already exists to avoid duplicates
+                        if (!voucher.Courses.Any(e => e.CourseId == newCourseId))
+                        {
+                            voucher.Courses.Add(course);
+                        }
+                    }
+                    else
+                    {
+                        throw new KeyNotFoundException($"Course with ID {newCourseId} not found.");
+                    }
+                }
+            }
+
 
             // Update the Voucher in the repository
             _uow.VoucherRepository.Update(voucher);
@@ -300,6 +384,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 // Create the DTO and populate Exam details
                 var voucherDto = _mapper.Map<VoucherDto>(voucher);
                 voucherDto.ExamId = voucher.Exams.Select(e => e.ExamId).ToList();
+                voucherDto.CourseId = voucher.Courses.Select(e => e.CourseId).ToList();
 
                 return voucherDto;
             }
