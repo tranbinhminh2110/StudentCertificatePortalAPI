@@ -177,11 +177,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<SimulationExamDto> DeleteSimulationExamAsync(int examId, CancellationToken cancellationToken)
         {
-            var exam = await _uow.SimulationExamRepository.FirstOrDefaultAsync(x => x.ExamId == examId, cancellationToken);
+            var exam = await _uow.SimulationExamRepository.FirstOrDefaultAsync(x => x.ExamId == examId,
+                cancellationToken, include: q => q.Include(c => c.Vouchers)
+                .Include(c => c.Carts)
+                .Include(c => c.StudentOfExams));
             if (exam is null)
             {
                 throw new KeyNotFoundException("Simulation Exam not found.");
             }
+            exam.Carts?.Clear();
+            exam.Vouchers?.Clear();
+            exam.StudentOfExams?.Clear();
             _uow.SimulationExamRepository.Delete(exam);
             await _uow.Commit(cancellationToken);
             return _mapper.Map<SimulationExamDto>(exam);

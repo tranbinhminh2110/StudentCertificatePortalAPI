@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Exceptions;
@@ -13,16 +14,18 @@ namespace StudentCertificatePortal_API.Services.Implemetation
     {
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
+        private readonly IVoucherService _voucherService;
 
         private readonly IValidator<CreateCourseRequest> _addCourseValidator;
         private readonly IValidator<UpdateCourseRequest> _updateCourseValidator;
 
-        public CourseService(IUnitOfWork uow, IMapper mapper,IValidator<CreateCourseRequest> addCourseValidator, IValidator<UpdateCourseRequest> updateCourseValidator)
+        public CourseService(IUnitOfWork uow, IMapper mapper,IValidator<CreateCourseRequest> addCourseValidator, IValidator<UpdateCourseRequest> updateCourseValidator, IVoucherService voucherService)
         {
             _uow = uow;
             _mapper = mapper;
             _addCourseValidator = addCourseValidator;
             _updateCourseValidator = updateCourseValidator;
+            _voucherService = voucherService;
         }
 
         public async Task<CourseDto> CreateCourseAsync(CreateCourseRequest request, CancellationToken cancellationToken)
@@ -45,11 +48,42 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CourseTime = request.CourseTime,
                 CourseDescription = request.CourseDescription,
                 CourseFee = request.CourseFee,
-                CourseDiscountFee = request.CourseDiscountFee,
                 CourseImage = request.CourseImage,
                 CertId = request.CertId,
             };
             var result = await _uow.CourseRepository.AddAsync(courseEntity);
+            await _uow.Commit(cancellationToken);
+
+            float? totalDiscount = 1;
+
+            foreach (var voucherId in request.VoucherIds)
+            {
+                if (voucherId > 0)
+                {
+                    var voucher = await _voucherService.GetVoucherByIdAsync(voucherId, cancellationToken);
+                    if (voucher is null || voucher.VoucherStatus == false)
+                    {
+                        throw new KeyNotFoundException("Voucher not found or is expired.");
+                    }
+
+                    var existingVoucher = await _uow.VoucherRepository.FirstOrDefaultAsync(v => v.VoucherId == voucherId, cancellationToken);
+
+                    if (existingVoucher != null)
+                    {
+                        result.Vouchers.Add(existingVoucher);
+                    }
+                    else
+                    {
+                        result.Vouchers.Add(_mapper.Map<Voucher>(voucher));
+                    }
+
+                    totalDiscount = totalDiscount * (1 - voucher.Percentage / 100f);
+                }
+            }
+
+            result.CourseDiscountFee = (int?)(result.CourseFee.Value * totalDiscount);
+
+            _uow.CourseRepository.Update(result);
             await _uow.Commit(cancellationToken);
             return _mapper.Map<CourseDto>(result);
 
@@ -57,14 +91,27 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<CourseDto> DeleteCourseAsync(int courseId, CancellationToken cancellationToken)
         {
-            var course = await _uow.CourseRepository.FirstOrDefaultAsync(x => x.CourseId == courseId, cancellationToken);
+            var course = await _uow.CourseRepository.FirstOrDefaultAsync(
+                x => x.CourseId == courseId,
+                cancellationToken, include: q => q.Include(c => c.Vouchers)
+                .Include(c => c.Carts)
+                .Include(c => c.StudentOfCourses));
+
             if (course is null)
             {
                 throw new KeyNotFoundException("Course not found.");
             }
+
+            // Clear related entities before deleting
+            course.Carts?.Clear();
+            course.Vouchers?.Clear();
+            course.StudentOfCourses?.Clear();
+
             _uow.CourseRepository.Delete(course);
             await _uow.Commit(cancellationToken);
-            return _mapper.Map<CourseDto>(course);
+
+            var courseDto = _mapper.Map<CourseDto>(course);
+            return courseDto;
         }
 
         public async Task<List<CourseDto>> GetAll()
@@ -100,7 +147,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new RequestValidationException(validation.Errors);
             }
-            var course = await _uow.CourseRepository.FirstOrDefaultAsync(x => x.CourseId == courseId, cancellationToken);
+            var course = await _uow.CourseRepository.FirstOrDefaultAsync(x => x.CourseId == courseId
+            , cancellationToken
+            , include: x => x.Include(p => p.Vouchers));
             if (course is null)
             {
                 throw new KeyNotFoundException("Course not found.");
@@ -110,8 +159,42 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             course.CourseTime = request.CourseTime;
             course.CourseDescription = request.CourseDescription;
             course.CourseFee = request.CourseFee;
-            course.CourseDiscountFee = request.CourseDiscountFee;
             course.CourseImage = request.CourseImage;
+            course.CertId = request.CertId;
+
+            float? totalDiscount = 1;
+
+            course.Vouchers.Clear();
+
+            foreach (var voucherId in request.VoucherIds)
+            {
+                if (voucherId > 0)
+                {
+                    var voucher = await _voucherService.GetVoucherByIdAsync(voucherId, cancellationToken);
+                    if (voucher == null || voucher.VoucherStatus == false)
+                    {
+                        throw new KeyNotFoundException("Voucher not found or is expired.");
+                    }
+
+                    var existingVoucher = await _uow.VoucherRepository.FirstOrDefaultAsync(v => v.VoucherId == voucherId, cancellationToken);
+                    if (existingVoucher != null)
+                    {
+                        course.Vouchers.Add(existingVoucher);
+                    }
+                    else
+                    {
+                        course.Vouchers.Add(_mapper.Map<Voucher>(voucher));
+                    }
+
+                    totalDiscount *= (1 - voucher.Percentage / 100f);
+                }
+            }
+
+            if (course.CourseFee.HasValue)
+            {
+                course.CourseDiscountFee = (int?)(course.CourseFee.Value * totalDiscount);
+            }
+
             _uow.CourseRepository.Update(course);
             await _uow.Commit(cancellationToken);
             return _mapper.Map<CourseDto>(course);

@@ -5,7 +5,7 @@ namespace StudentCertificatePortal_API.Validators
 {
     public class UpdateCourseRequestValidator: AbstractValidator<UpdateCourseRequest>
     {
-        public UpdateCourseRequestValidator() 
+        public UpdateCourseRequestValidator()
         {
             RuleLevelCascadeMode = CascadeMode.Stop;
 
@@ -15,12 +15,20 @@ namespace StudentCertificatePortal_API.Validators
                 .NotEmpty().WithMessage("CourseCode is required.");
             RuleFor(x => x.CourseTime)
                 .NotEmpty().WithMessage("CourseTime is required.");
+            RuleFor(x => x.CertId)
+                .NotNull().WithMessage("Certification ID is required.")
+                .GreaterThan(0).WithMessage("Certification ID must be a positive integer.");
+            RuleFor(x => x.CourseDescription)
+                .MaximumLength(500).WithMessage("Course Description must not exceed 500 characters.");
             RuleFor(x => x.CourseFee)
-                .GreaterThanOrEqualTo(0).WithMessage("CourseFee must be a positive number")
-                .GreaterThanOrEqualTo(x => x.CourseDiscountFee).WithMessage("CourseFee must be greater than or equal to CourseDiscountFee.");
-            RuleFor(x => x.CourseDiscountFee)
-                .GreaterThanOrEqualTo(0).WithMessage("CourseFee must be a positive number")
-                .LessThanOrEqualTo(x => x.CourseFee).WithMessage("CourseDiscountFee must be less than or equal to CourseFee.");
+                .GreaterThanOrEqualTo(0).WithMessage("CourseFee must be a positive number");
+            RuleFor(x => x.CourseImage)
+                .Must(BeAValidImageUrl).WithMessage("Course Image must be a valid URL.");
+        }
+
+        private bool BeAValidImageUrl(string? url)
+        {
+            return string.IsNullOrEmpty(url) || Uri.IsWellFormedUriString(url, UriKind.Absolute);
         }
     }
 }
