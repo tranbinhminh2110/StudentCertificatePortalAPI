@@ -51,7 +51,7 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.DeleteTransactionAsync(transId, new CancellationToken());
             return Ok(Result<TransactionDto>.Succeed(result));
         }
-        [HttpGet("/get-by-user/{userId:int}")]
+        [HttpGet("get-by-user/{userId:int}")]
         public async Task<ActionResult<Result<List<TransactionDto>>>> GetTransactionByUserId([FromRoute] int userId)
         {
             var result = await _service.GetTransactionByUserId(userId, new CancellationToken());
