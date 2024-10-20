@@ -117,7 +117,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<List<CourseDto>> GetAll()
         {
             var result = await _uow.CourseRepository.GetAllAsync(query =>
-                query.Include(c => c.Cert)
+                query.Include(c => c.Vouchers)
+                     .Include(c => c.Cert)
                      .ThenInclude(cert => cert.Type));
 
             var courseDtos = result.Select(course =>
@@ -136,6 +137,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 TypeName = course.Cert.Type?.TypeName
             }
             } : new List<CertificationDetailsDto>();
+                courseDto.VoucherDetails = course.Vouchers != null ? course.Vouchers.Select(voucher => new VoucherDetailsDto
+                {
+                    VoucherId = voucher.VoucherId,
+                    VoucherName = voucher.VoucherName,
+                    VoucherDescription = voucher.VoucherDescription,
+                    Percentage = voucher.Percentage,
+                    CreationDate = voucher.CreationDate,
+                    ExpiryDate = voucher.ExpiryDate,
+                    VoucherStatus = voucher.VoucherStatus
+                }).ToList() : new List<VoucherDetailsDto>();
 
                 return courseDto;
             }).ToList();
@@ -147,7 +158,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var result = await _uow.CourseRepository.FirstOrDefaultAsync(
                 x => x.CourseId == courseId,
                 cancellationToken,
-                include: query => query.Include(c => c.Cert).ThenInclude(cert => cert.Type)); 
+                include: query => query.Include(c => c.Vouchers)
+                                      .Include(c => c.Cert)
+                                      .ThenInclude(cert => cert.Type));
 
             if (result is null)
             {
@@ -169,6 +182,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         }
     } : new List<CertificationDetailsDto>();
 
+            courseDto.VoucherDetails = result.Vouchers != null ? result.Vouchers.Select(voucher => new VoucherDetailsDto
+            {
+                VoucherId = voucher.VoucherId,
+                VoucherName = voucher.VoucherName,
+                VoucherDescription = voucher.VoucherDescription,
+                Percentage = voucher.Percentage,
+                CreationDate = voucher.CreationDate,
+                ExpiryDate = voucher.ExpiryDate,
+                VoucherStatus = voucher.VoucherStatus
+            }).ToList() : new List<VoucherDetailsDto>();
+
             return courseDto;
         }
 
@@ -176,9 +200,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<List<CourseDto>> GetCourseByNameAsync(string courseName, CancellationToken cancellationToken)
         {
             var result = await _uow.CourseRepository.WhereAsync(
-                x => x.CourseName.Contains(courseName),
-                cancellationToken,
-                include: query => query.Include(c => c.Cert).ThenInclude(cert => cert.Type)); 
+    x => x.CourseName.Contains(courseName),
+    cancellationToken,
+    include: query => query.Include(c => c.Vouchers)
+                           .Include(c => c.Cert)
+                           .ThenInclude(cert => cert.Type));
 
             if (result is null || !result.Any())
             {
@@ -201,6 +227,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 TypeName = course.Cert.Type?.TypeName
             }
         } : new List<CertificationDetailsDto>();
+
+                courseDto.VoucherDetails = course.Vouchers != null ? course.Vouchers.Select(voucher => new VoucherDetailsDto
+                {
+                    VoucherId = voucher.VoucherId,
+                    VoucherName = voucher.VoucherName,
+                    VoucherDescription = voucher.VoucherDescription,
+                    Percentage = voucher.Percentage,
+                    CreationDate = voucher.CreationDate,
+                    ExpiryDate = voucher.ExpiryDate,
+                    VoucherStatus = voucher.VoucherStatus
+                }).ToList() : new List<VoucherDetailsDto>();
 
                 return courseDto;
             }).ToList();
