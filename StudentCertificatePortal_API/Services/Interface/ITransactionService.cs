@@ -12,5 +12,7 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<TransactionDto> UpdateStatusTransactionAsync(int transId, Enums.EnumTransaction status, CancellationToken cancellationToken);
         Task<TransactionDto> DeleteTransactionAsync(int transId, CancellationToken cancellationToken);
         Task<List<TransactionDto>> GetTransactionByNameAsync(string transName, CancellationToken cancellationToken);
+
+        Task<List<TransactionDto>> GetTransactionByUserId (int userId , CancellationToken cancellationToken);
     }
 }
