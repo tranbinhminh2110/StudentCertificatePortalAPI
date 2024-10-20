@@ -11,6 +11,8 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<ExamSessionDto> GetExamSessionByIdAsync(int sessionId, CancellationToken cancellationToken);
         Task<ExamSessionDto> UpdateExamSessionAsync(int sessionId, UpdateExamSessionRequest request, CancellationToken cancellationToken);
         Task<ExamSessionDto> DeleteExamSessionAsync(int sessionId, CancellationToken cancellationToken);
-        Task<List<ExamSessionDto>> GetExamSessionByNameAsync(string sessionName, CancellationToken cancellationToken);    
+        Task<List<ExamSessionDto>> GetExamSessionByNameAsync(string sessionName, CancellationToken cancellationToken);
+        Task<List<ExamSessionDto>> GetExamSessionBySessionDateAsync(DateTime sessionDate, CancellationToken cancellationToken);
+
     }
 }

@@ -94,6 +94,20 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return _mapper.Map<List<ExamSessionDto>>(result);
         }
 
+        public async Task<List<ExamSessionDto>> GetExamSessionBySessionDateAsync(DateTime sessionDate, CancellationToken cancellationToken)
+        {
+            var result = await _uow.ExamSessionRepository.WhereAsync(
+                x => x.SessionDate.HasValue && x.SessionDate.Value.Date == sessionDate.Date, 
+                cancellationToken);
+
+            if (result is null || !result.Any())
+            {
+                throw new KeyNotFoundException("SessionDate not found.");
+            }
+
+            return _mapper.Map<List<ExamSessionDto>>(result);
+        }
+
         public async Task<ExamSessionDto> UpdateExamSessionAsync(int sessionId, UpdateExamSessionRequest request, CancellationToken cancellationToken)
         {
             var validation = await _updateExamSessionValidator.ValidateAsync(request, cancellationToken);

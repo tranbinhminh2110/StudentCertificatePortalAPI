@@ -20,5 +20,7 @@ namespace StudentCertificatePortal_API.DTOs
         public string? CourseImage { get; set; }
 
         public int? CertId { get; set; }
+        public List<CertificationDetailsDto> CertificationDetails { get; set; } = new List<CertificationDetailsDto>();
+
     }
 }

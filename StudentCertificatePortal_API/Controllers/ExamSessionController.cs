@@ -52,6 +52,12 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.GetExamSessionByNameAsync(sessionName, new CancellationToken());
             return Ok(Result<List<ExamSessionDto>>.Succeed(result));
         }
+        [HttpGet("{sessionDate:DateTime}")]
+        public async Task<ActionResult<Result<List<ExamSessionDto>>>> GetExamSessionBySessionDate([FromRoute] DateTime sessionDate)
+        {
+            var result = await _service.GetExamSessionBySessionDateAsync(sessionDate, new CancellationToken());
+            return Ok(Result<List<ExamSessionDto>>.Succeed(result));
+        }
 
     }
 }
