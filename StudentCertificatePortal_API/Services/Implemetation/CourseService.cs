@@ -116,28 +116,96 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<List<CourseDto>> GetAll()
         {
-            var result = await _uow.CourseRepository.GetAll();
-            return _mapper.Map<List<CourseDto>>(result);
-        }
+            var result = await _uow.CourseRepository.GetAllAsync(query =>
+                query.Include(c => c.Cert)
+                     .ThenInclude(cert => cert.Type));
 
+            var courseDtos = result.Select(course =>
+            {
+                var courseDto = _mapper.Map<CourseDto>(course);
+
+                courseDto.CertificationDetails = course.Cert != null ? new List<CertificationDetailsDto>
+            {
+            new CertificationDetailsDto
+            {
+                CertId = course.Cert.CertId,
+                CertName = course.Cert.CertName,
+                CertCode = course.Cert.CertCode,
+                CertDescription = course.Cert.CertDescription,
+                CertImage = course.Cert.CertImage,
+                TypeName = course.Cert.Type?.TypeName
+            }
+            } : new List<CertificationDetailsDto>();
+
+                return courseDto;
+            }).ToList();
+
+            return courseDtos;
+        }
         public async Task<CourseDto> GetCourseByIdAsync(int courseId, CancellationToken cancellationToken)
         {
-            var result = await _uow.CourseRepository.FirstOrDefaultAsync(x => x.CourseId == courseId, cancellationToken);
+            var result = await _uow.CourseRepository.FirstOrDefaultAsync(
+                x => x.CourseId == courseId,
+                cancellationToken,
+                include: query => query.Include(c => c.Cert).ThenInclude(cert => cert.Type)); 
+
             if (result is null)
             {
                 throw new KeyNotFoundException("Course not found.");
             }
-            return _mapper.Map<CourseDto>(result);
+
+            var courseDto = _mapper.Map<CourseDto>(result);
+
+            courseDto.CertificationDetails = result.Cert != null ? new List<CertificationDetailsDto>
+    {
+        new CertificationDetailsDto
+        {
+            CertId = result.Cert.CertId,
+            CertName = result.Cert.CertName,
+            CertCode = result.Cert.CertCode,
+            CertDescription = result.Cert.CertDescription,
+            CertImage = result.Cert.CertImage,
+            TypeName = result.Cert.Type?.TypeName
         }
+    } : new List<CertificationDetailsDto>();
+
+            return courseDto;
+        }
+
 
         public async Task<List<CourseDto>> GetCourseByNameAsync(string courseName, CancellationToken cancellationToken)
         {
-            var result = await _uow.CourseRepository.WhereAsync(x => x.CourseName.Contains(courseName), cancellationToken);
-            if (result is null)
+            var result = await _uow.CourseRepository.WhereAsync(
+                x => x.CourseName.Contains(courseName),
+                cancellationToken,
+                include: query => query.Include(c => c.Cert).ThenInclude(cert => cert.Type)); 
+
+            if (result is null || !result.Any())
             {
                 throw new KeyNotFoundException("Course not found.");
             }
-            return _mapper.Map<List<CourseDto>>(result);
+
+            var courseDtos = result.Select(course =>
+            {
+                var courseDto = _mapper.Map<CourseDto>(course);
+
+                courseDto.CertificationDetails = course.Cert != null ? new List<CertificationDetailsDto>
+        {
+            new CertificationDetailsDto
+            {
+                CertId = course.Cert.CertId,
+                CertName = course.Cert.CertName,
+                CertCode = course.Cert.CertCode,
+                CertDescription = course.Cert.CertDescription,
+                CertImage = course.Cert.CertImage,
+                TypeName = course.Cert.Type?.TypeName
+            }
+        } : new List<CertificationDetailsDto>();
+
+                return courseDto;
+            }).ToList();
+
+            return courseDtos;
         }
 
         public async Task<CourseDto> UpdateCourseAsync(int courseId, UpdateCourseRequest request, CancellationToken cancellationToken)
