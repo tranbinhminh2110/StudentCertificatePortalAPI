@@ -33,6 +33,7 @@ namespace StudentCertificatePortal_Repository.Implementation
         private IBaseRepository<StudentOfExam>? _studentOfExamRepository;
         private IBaseRepository<StudentOfCourse>? _studentOfCourseRepository;
         private IBaseRepository<Cart>? _cartRepository;
+        private IBaseRepository<Score>? _scoreRepository;
 
         public UnitOfWork(CipdbContext context)
         {
@@ -68,6 +69,8 @@ namespace StudentCertificatePortal_Repository.Implementation
         public IBaseRepository<StudentOfExam> StudentOfExamRepository => _studentOfExamRepository ??= new StudentOfExamRepository(_context);
         public IBaseRepository<StudentOfCourse> StudentOfCourseRepository => _studentOfCourseRepository ??= new StudentOfCourseRepository(_context);
         public IBaseRepository<Cart> CartRepository => _cartRepository ??= new CartRepository(_context);
+
+        public IBaseRepository<Score> ScoreRepository => _scoreRepository ??= new ScoreRepository(_context);
 
         public async Task Commit(CancellationToken cancellationToken)
         {
