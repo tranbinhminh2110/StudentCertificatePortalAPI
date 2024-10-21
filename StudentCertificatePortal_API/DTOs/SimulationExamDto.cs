@@ -20,5 +20,19 @@ namespace StudentCertificatePortal_API.DTOs
         public int? ExamDiscountFee { get; set; }
 
         public string? ExamImage { get; set; }
+
+        public List<ExamList> ListQuestions { get; set; } = new List<ExamList>();
+    }
+    public class ExamList
+    {
+        public int QuestionId { get; set; }
+
+        public string? QuestionName { get; set; }    
+        public List<AnswerList> Answers { get; set; } = new List<AnswerList>();
+    }
+    public class AnswerList
+    {
+        public int AnswerId { get; set; }
+        public string? AnswerText { get;set; }
     }
 }
