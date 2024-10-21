@@ -43,6 +43,8 @@ public partial class CipdbContext : DbContext
 
     public virtual DbSet<Question> Questions { get; set; }
 
+    public virtual DbSet<Score> Scores { get; set; }
+
     public virtual DbSet<SimulationExam> SimulationExams { get; set; }
 
     public virtual DbSet<StudentOfCourse> StudentOfCourses { get; set; }
@@ -502,6 +504,32 @@ public partial class CipdbContext : DbContext
             entity.HasOne(d => d.Exam).WithMany(p => p.Questions)
                 .HasForeignKey(d => d.ExamId)
                 .HasConstraintName("FK__Questions__exam___25518C17");
+        });
+
+        modelBuilder.Entity<Score>(entity =>
+        {
+            entity.HasKey(e => e.ScoreId).HasName("PK__Scores__8CA190509974B921");
+
+            entity.Property(e => e.ScoreId).HasColumnName("score_id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.ExamId).HasColumnName("exam_id");
+            entity.Property(e => e.ScoreValue)
+                .HasColumnType("decimal(5, 2)")
+                .HasColumnName("score_value");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.Exam).WithMany(p => p.Scores)
+                .HasForeignKey(d => d.ExamId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Exam_Scores");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Scores)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_User_Scores");
         });
 
         modelBuilder.Entity<SimulationExam>(entity =>

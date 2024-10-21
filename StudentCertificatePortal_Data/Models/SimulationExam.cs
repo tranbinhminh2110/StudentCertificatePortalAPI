@@ -27,6 +27,8 @@ public partial class SimulationExam
 
     public virtual ICollection<Question> Questions { get; set; } = new List<Question>();
 
+    public virtual ICollection<Score> Scores { get; set; } = new List<Score>();
+
     public virtual ICollection<StudentOfExam> StudentOfExams { get; set; } = new List<StudentOfExam>();
 
     public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
