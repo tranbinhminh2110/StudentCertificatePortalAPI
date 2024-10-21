@@ -104,10 +104,47 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<SimulationExamDto> GetSimulationExamByIdAsync(int examId, CancellationToken cancellationToken)
         {
-            var result = await _uow.SimulationExamRepository.FirstOrDefaultAsync(x => x.ExamId == examId, cancellationToken);
-            if (result is null)
+            var simulation = await _uow.SimulationExamRepository.FirstOrDefaultAsync(x => x.ExamId == examId, cancellationToken);
+            if (simulation is null)
             {
                 throw new KeyNotFoundException("Simulation Exam not found.");
+            }
+
+            var questions = await _uow.QuestionRepository.WhereAsync(x => x.ExamId == simulation.ExamId
+            , cancellationToken
+            , include: i => i.Include(ans => ans.Answers));
+            var result = new SimulationExamDto();
+            result.ExamId = simulation.ExamId;
+            result.ExamName = simulation.ExamName;
+            result.ExamCode = simulation.ExamCode;
+            result.CertId = simulation.CertId;
+            result.ExamDescription = simulation.ExamDescription;
+            result.ExamFee = simulation.ExamFee;
+            result.ExamDiscountFee = simulation.ExamDiscountFee;
+            result.ExamImage = simulation.ExamImage;
+            if (questions != null)
+            {
+                foreach(var question in questions)
+                {
+                    var exam = new ExamList()
+                    {
+                        QuestionId = question.QuestionId,
+                        QuestionName = question.QuestionName,
+                    };
+                    
+
+                    foreach(var answer in question.Answers)
+                    {
+                        var answerExam = new AnswerList()
+                        {
+                            AnswerId = answer.AnswerId,
+                            AnswerText = answer.Text,
+                        };
+                        exam.Answers.Add(answerExam);
+
+                    }
+                    result.ListQuestions.Add(exam);
+                }
             }
             return _mapper.Map<SimulationExamDto>(result);
         }
