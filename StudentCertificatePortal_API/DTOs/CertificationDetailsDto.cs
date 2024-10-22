@@ -10,5 +10,8 @@
         public string? CertDescription { get; set; }
         public string? CertImage { get; set; }
         public string? TypeName { get; set; }
+        public string? OrganizeName { get; set; }
+
+        public string? CertValidity { get; set; }
     }
 }
