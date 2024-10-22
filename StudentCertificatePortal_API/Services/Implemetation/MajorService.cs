@@ -118,7 +118,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var result = await _uow.MajorRepository.GetAllAsync(query =>
             query.Include(c => c.JobPositions)
             .Include(c => c.Certs)
-            .ThenInclude(cert => cert.Type));
+            .ThenInclude(cert => cert.Type)
+            .Include(c => c.Certs)
+            .ThenInclude(cert => cert.Organize));
 
             var majorDtos = result.Select(major =>
             {
@@ -140,7 +142,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         CertCode = cert.CertCode,
                         CertDescription = cert.CertDescription,
                         CertImage = cert.CertImage,
-                        TypeName = cert.Type?.TypeName
+                        TypeName = cert.Type?.TypeName,
+                        CertValidity = cert.CertValidity,
+                        OrganizeName = cert.Organize?.OrganizeName,
                     }).ToList();
 
                 return majorDto;
@@ -154,7 +158,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var result = await _uow.MajorRepository.FirstOrDefaultAsync(
                 x => x.MajorId == majorId, cancellationToken: cancellationToken,include: query => query.Include(c => c.JobPositions)
                             .Include(c => c.Certs)
-                            .ThenInclude(cert => cert.Type));
+                            .ThenInclude(cert => cert.Type)
+                            .Include(c => c.Certs)
+                            .ThenInclude(cert => cert.Organize));
             if (result is null)
             {
                 throw new KeyNotFoundException("Major not found.");
@@ -177,7 +183,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         CertCode = cert.CertCode,
                         CertDescription = cert.CertDescription,
                         CertImage = cert.CertImage,
-                        TypeName = cert.Type?.TypeName
+                        TypeName = cert.Type?.TypeName,
+                        CertValidity = cert.CertValidity,
+                        OrganizeName = cert.Organize?.OrganizeName,
                     }).ToList();
 
             return majorDto;
@@ -188,7 +196,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var result = await _uow.MajorRepository.WhereAsync(x => x.MajorName.Contains(majorName), cancellationToken,
                     include: query => query.Include(c => c.JobPositions)
                                 .Include(c => c.Certs)
-                                .ThenInclude(cert => cert.Type));
+                                .ThenInclude(cert => cert.Type)
+                                .Include(c => c.Certs)
+                                .ThenInclude(cert => cert.Organize));
             if (result is null || !result.Any())
             {
                 throw new KeyNotFoundException("Major not found.");
@@ -214,7 +224,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         CertCode = cert.CertCode,
                         CertDescription = cert.CertDescription,
                         CertImage = cert.CertImage,
-                        TypeName = cert.Type?.TypeName
+                        TypeName = cert.Type?.TypeName,
+                        CertValidity = cert.CertValidity,
+                        OrganizeName = cert.Organize?.OrganizeName,
                     }).ToList();
             }
             return majorDtos;
