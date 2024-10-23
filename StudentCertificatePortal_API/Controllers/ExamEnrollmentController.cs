@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StudentCertificatePortal_API.Commons;
 using StudentCertificatePortal_API.Contracts.Requests;
+using StudentCertificatePortal_API.Contracts.Responses;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Services.Interface;
 
@@ -26,10 +27,10 @@ namespace StudentCertificatePortal_API.Controllers
             return Ok(Result<ExamEnrollmentDto>.Succeed(result));
         }
         [HttpPost]
-        public async Task<ActionResult<Result<ExamEnrollmentDto>>> CreateExamEnrollment([FromBody] CreateExamEnrollmentRequest request)
+        public async Task<ActionResult<Result<ExamEnrollmentResponse>>> CreateExamEnrollment([FromBody] CreateExamEnrollmentRequest request)
         {
             var result = await _service.CreateExamEnrollmentAsync(request, new CancellationToken());
-            return Ok(Result<ExamEnrollmentDto>.Succeed(result));
+            return Ok(Result<ExamEnrollmentResponse>.Succeed(result));
         }
         [HttpPut("{eEnrollmentId:int}")]
         public async Task<ActionResult<Result<ExamEnrollmentDto>>> UpdateExamEnrollment(int eEnrollmentId, UpdateExamEnrollmentRequest request)
