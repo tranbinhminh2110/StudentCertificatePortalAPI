@@ -38,6 +38,33 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
 
             var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken);
+            /*var userEnrollments = await _uow.ExamEnrollmentRepository.WhereAsync(x => x.UserId == request.UserId);
+            var userEnrollmentIds = userEnrollments.Select(x => x.ExamEnrollmentId);
+            *//*
+         
+             
+             *//*
+
+            foreach (var examIdIndex in request.Simulation_Exams)
+            {
+
+                var enrollmentExist = await _uow.ExamEnrollmentRepository.Include(x => x.StudentOfExams)
+                    .Where(a => a.StudentOfExams.Any(s => s.ExamId == examIdIndex && userEnrollmentIds.Contains(s.EnrollmentId))).FirstOrDefaultAsync();
+
+                if (enrollmentExist != null)
+                {
+                    if (enrollmentExist.ExamEnrollmentStatus == Enums.EnumExamEnrollment.Completed.ToString())
+                    {
+                        throw new ConflictException("The user is already enrolled in this simulation (Completed). ");
+                    }
+                    else if (enrollmentExist.ExamEnrollmentStatus == Enums.EnumExamEnrollment.OnGoing.ToString())
+                    {
+                        throw new ConflictException($"The user is currently enrolled in this simulation (OnGoing). Payment is required to continue. ExamEnrollment Id is {enrollmentExist.ExamEnrollmentId}");
+                    }
+                }
+
+            }*/
+
             if (user == null)
             {
                 throw new KeyNotFoundException("User not found. Exam Enrollment creation requires a valid UserId.");
@@ -55,10 +82,18 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             foreach (var simulationId in request.Simulation_Exams)
             {
                 var simulation = await _uow.SimulationExamRepository.FirstOrDefaultAsync(x => x.ExamId == simulationId, cancellationToken);
-                if (simulation != null)
+                if (simulation == null)
                 {
-                    simulations.Add(simulation);
+                    throw new KeyNotFoundException($"Simulation Id {simulationId} not found.");
                 }
+
+                if (simulation.ExamDiscountFee == null)
+                {
+                    simulation.ExamDiscountFee = simulation.ExamFee;
+                    _uow.SimulationExamRepository.Update(simulation);
+                    await _uow.Commit(cancellationToken);
+                }
+                simulations.Add(simulation);
             }
 
             var eEnrollmentEntity = new ExamsEnrollment()
