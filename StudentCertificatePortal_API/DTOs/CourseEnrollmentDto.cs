@@ -14,5 +14,7 @@ namespace StudentCertificatePortal_API.DTOs
         public int? TotalPrice { get; set; }
 
         public int? UserId { get; set; }
+        public List<CourseDetailsDto> CourseDetails { get; set; } = new List<CourseDetailsDto>();
+
     }
 }

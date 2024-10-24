@@ -122,20 +122,58 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<List<CourseEnrollmentDto>> GetAll()
         {
-            var result = await _uow.CourseEnrollmentRepository.GetAll();
-            return _mapper.Map<List<CourseEnrollmentDto>>(result);
+            var result = await _uow.CourseEnrollmentRepository.GetAllAsync(
+                include: q => q.Include(c => c.StudentOfCourses)
+                               .ThenInclude(sc => sc.Course)); 
+            var courseEnrollmentDtos = result.Select(courseEnrollment => new CourseEnrollmentDto
+            {
+                CourseEnrollmentId = courseEnrollment.CourseEnrollmentId,
+                CourseEnrollmentDate = courseEnrollment.CourseEnrollmentDate,
+                TotalPrice = courseEnrollment.TotalPrice,
+                CourseEnrollmentStatus = courseEnrollment.CourseEnrollmentStatus,
+                UserId = courseEnrollment.UserId,
+                CourseDetails = courseEnrollment.StudentOfCourses.Select(sc => new CourseDetailsDto
+                {
+                    CourseId = sc.Course.CourseId,
+                    CourseName = sc.Course.CourseName,
+                    CourseCode = sc.Course.CourseCode,
+                    CourseDiscountFee = sc.Course.CourseDiscountFee,
+                }).ToList()
+            }).ToList();
+
+            return courseEnrollmentDtos;
         }
 
         public async Task<CourseEnrollmentDto> GetCourseEnrollmentByIdAsync(int courseEnrollmentId, CancellationToken cancellationToken)
         {
-            var result = await _uow.CourseEnrollmentRepository.FirstOrDefaultAsync(x => x.CourseEnrollmentId == courseEnrollmentId, cancellationToken);
+            var result = await _uow.CourseEnrollmentRepository.FirstOrDefaultAsync(
+                x => x.CourseEnrollmentId == courseEnrollmentId,
+                cancellationToken,
+                include: q => q.Include(c => c.StudentOfCourses)
+                               .ThenInclude(sc => sc.Course)); 
+
             if (result is null)
             {
                 throw new KeyNotFoundException("Course Enrollment not found.");
             }
-            return _mapper.Map<CourseEnrollmentDto>(result);
-        }
 
+            var courseEnrollmentDto = new CourseEnrollmentDto
+            {
+                CourseEnrollmentId = result.CourseEnrollmentId,
+                CourseEnrollmentDate = result.CourseEnrollmentDate,
+                TotalPrice = result.TotalPrice,
+                UserId = result.UserId,
+                CourseDetails = result.StudentOfCourses.Select(sc => new CourseDetailsDto
+                {
+                    CourseId = sc.Course.CourseId,
+                    CourseName = sc.Course.CourseName,
+                    CourseCode = sc.Course.CourseCode,
+                    CourseDiscountFee = sc.Course.CourseDiscountFee,
+                }).ToList()
+            };
+
+            return courseEnrollmentDto;
+        }
         public async Task<CourseEnrollmentDto> UpdateCourseEnrollmentAsync(int courseEnrollmentId, UpdateCourseEnrollmentRequest request, CancellationToken cancellationToken)
         {
             var validation = await _updateCourseEnrollmentValidator.ValidateAsync(request, cancellationToken);
