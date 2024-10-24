@@ -18,8 +18,8 @@ namespace StudentCertificatePortal_API.Validators
                 .Length(1, 50).WithMessage("Certification code must be between 1 and 50 characters");
 
 
-            RuleFor(cert => cert.CertCost)
-                .GreaterThanOrEqualTo(0).WithMessage("Certification cost must be a positive number");
+            /*RuleFor(cert => cert.CertCost)
+                .GreaterThanOrEqualTo(0).WithMessage("Certification cost must be a positive number");*/
 
             /*RuleFor(cert => cert.CertPointSystem)
                 .MaximumLength(50).WithMessage("Certification point system cannot exceed 50 characters");*/
