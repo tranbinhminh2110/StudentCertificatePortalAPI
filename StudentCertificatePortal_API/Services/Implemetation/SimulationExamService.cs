@@ -217,7 +217,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var exam = await _uow.SimulationExamRepository.FirstOrDefaultAsync(x => x.ExamId == examId,
                 cancellationToken, include: q => q.Include(c => c.Vouchers)
                 .Include(c => c.Carts)
-                .Include(c => c.StudentOfExams));
+                .Include(c => c.StudentOfExams)
+                .Include(c => c.Questions)
+                .Include(c => c.Feedbacks)
+                .Include(c => c.Vouchers)
+                .Include(c => c.Scores)
+                );
             if (exam is null)
             {
                 throw new KeyNotFoundException("Simulation Exam not found.");
@@ -225,6 +230,10 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             exam.Carts?.Clear();
             exam.Vouchers?.Clear();
             exam.StudentOfExams?.Clear();
+            exam.Questions?.Clear();
+            exam.Feedbacks?.Clear();
+            exam.Scores?.Clear();
+
             _uow.SimulationExamRepository.Delete(exam);
             await _uow.Commit(cancellationToken);
             return _mapper.Map<SimulationExamDto>(exam);
