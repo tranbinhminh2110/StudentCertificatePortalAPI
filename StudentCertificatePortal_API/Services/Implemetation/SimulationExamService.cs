@@ -247,5 +247,24 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
             return _mapper.Map<List<SimulationExamDto>>(result);
         }
+
+        public async Task<List<SimulationExamDto>> GetSimulationExamByCertIdAsync(int certId, CancellationToken cancellationToken)
+        {
+            var certification = await _uow.CertificationRepository.FirstOrDefaultAsync(x => x.CertId == certId, cancellationToken);
+
+            if (certification == null)
+            {
+                throw new KeyNotFoundException("Certification not found.");
+            }
+
+            var simulationExam = await _uow.SimulationExamRepository.WhereAsync(x => x.CertId == certId);
+
+            if (simulationExam == null)
+            {
+                throw new KeyNotFoundException("Simulation not found.");
+            }
+
+            return _mapper.Map<List<SimulationExamDto>>(simulationExam);
+        }
     }
 }

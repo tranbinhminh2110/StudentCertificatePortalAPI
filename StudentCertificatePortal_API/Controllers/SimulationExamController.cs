@@ -30,6 +30,12 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.GetSimulationExamByIdAsync(examId, new CancellationToken());
             return Ok(Result<SimulationExamDto>.Succeed(result));
         }
+        [HttpGet("get-by-certId/{certId:int}")]
+        public async Task<ActionResult<Result<List<SimulationExamDto>>>> GetSimulationExamByCertId([FromRoute] int certId)
+        {
+            var result = await _service.GetSimulationExamByCertIdAsync(certId, new CancellationToken());
+            return Ok(Result<List<SimulationExamDto>>.Succeed(result));
+        }
 
         [HttpPost]
         public async Task<ActionResult<Result<SimulationExamDto>>> CreateSimulationExam([FromBody] CreateSimulationExamRequest request)
