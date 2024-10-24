@@ -21,5 +21,8 @@ namespace StudentCertificatePortal_API.Contracts.Requests
 
         public int? OrganizeId { get; set; }
         public List<int>? CertIdPrerequisites { get; set; }
+
+        public List<int>? MajorIds { get; set; }
+        public List<int>? JobIds { get; set; }
     }
 }

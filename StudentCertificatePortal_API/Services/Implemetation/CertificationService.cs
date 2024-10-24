@@ -7,6 +7,7 @@ using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
+using System.Linq;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
 
 namespace StudentCertificatePortal_API.Services.Implemetation
@@ -63,9 +64,36 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         certificationEntity.CertIdPrerequisites.Add(prerequisiteCert);
                         
                     }
-                    await _uow.CertificationRepository.AddAsync(certificationEntity);
+                    
                 }
             }
+
+            if(request.MajorIds.Any()) { 
+                foreach(var majorId in request.MajorIds)
+                {
+                    var major = await _uow.MajorRepository.FirstOrDefaultAsync(x => x.MajorId == majorId);
+                    if(major != null)
+                    {
+                        certificationEntity.Majors.Add(major);
+                    }
+            
+                }
+            }
+
+            if(request.JobIds.Any())
+            {
+                foreach(var jobId in request.JobIds)
+                {
+                    var job = await _uow.JobPositionRepository.FirstOrDefaultAsync(x => x.JobPositionId == jobId);
+                    if(job != null)
+                    {
+                        certificationEntity.JobPositions.Add(job);
+                    }
+                }
+            }
+
+            await _uow.CertificationRepository.AddAsync(certificationEntity);
+
 
             try
             {
@@ -93,6 +121,20 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 certificationDto.CertDescriptionPrerequisite = certificationEntity.CertIdPrerequisites
                     .Select(prerequisite => prerequisite.CertDescription)
                     .ToList();
+
+                // Create the DTO aand populate the major 
+
+                certificationDto.MajorIds = certificationEntity.Majors.Select(major => major.MajorId).ToList();
+                certificationDto.MajorCodes = certificationEntity.Majors.Select(major => major.MajorCode).ToList();
+                certificationDto.MajorNames = certificationEntity.Majors.Select(major => major.MajorName).ToList();
+                certificationDto.MajorDescriptions = certificationEntity.Majors.Select(major => major.MajorDescription).ToList();
+
+                // Create the DTO aand populate the JobPosition 
+
+                certificationDto.JobPositionIds = certificationEntity.JobPositions.Select(job => job.JobPositionId).ToList();
+                certificationDto.JobPositionCodes = certificationEntity.JobPositions.Select(job => job.JobPositionCode).ToList();
+                certificationDto.JobPositionNames = certificationEntity.JobPositions.Select(job => job.JobPositionName).ToList();
+                certificationDto.JobPositionDescriptions = certificationEntity.JobPositions.Select(major => major.JobPositionDescription).ToList();
                 certificationDto.OrganizeId = organize?.OrganizeId;
                 certificationDto.OrganizeName = organize?.OrganizeName;
                 certificationDto.TypeId = type?.TypeId;
@@ -184,7 +226,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<List<CertificationDto>> GetAll()
         {
             var certifications = await _uow.CertificationRepository.GetAllAsync(query =>
-                query.Include(c => c.CertIdPrerequisites)); // Eager loading prerequisites
+                query.Include(c => c.CertIdPrerequisites)
+                .Include(c => c.Majors)
+                .Include(c => c.JobPositions)); // Eager loading prerequisites
 
             var certificationDtos = new List<CertificationDto>();
 
@@ -216,6 +260,20 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     .Select(prerequisite => prerequisite.CertDescription)
                     .ToList();
 
+
+                // Create the DTO aand populate the major 
+
+                certificationDto.MajorIds = certification.Majors.Select(major => major.MajorId).ToList();
+                certificationDto.MajorCodes = certification.Majors.Select(major => major.MajorCode).ToList();
+                certificationDto.MajorNames = certification.Majors.Select(major => major.MajorName).ToList();
+                certificationDto.MajorDescriptions = certification.Majors.Select(major => major.MajorDescription).ToList();
+
+                // Create the DTO aand populate the JobPosition 
+
+                certificationDto.JobPositionIds = certification.JobPositions.Select(job => job.JobPositionId).ToList();
+                certificationDto.JobPositionCodes = certification.JobPositions.Select(job => job.JobPositionCode).ToList();
+                certificationDto.JobPositionNames = certification.JobPositions.Select(job => job.JobPositionName).ToList();
+                certificationDto.JobPositionDescriptions = certification.JobPositions.Select(major => major.JobPositionDescription).ToList();
                 // Add the result to the list
                 certificationDtos.Add(certificationDto);
             }
@@ -232,7 +290,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 .FirstOrDefaultAsync(
                     x => x.CertId == certificationId,
                     cancellationToken: cancellationToken,
-                    include: query => query.Include(c => c.CertIdPrerequisites) // Include prerequisites
+                    include: query => query.Include(c => c.CertIdPrerequisites)
+                                      .Include(c => c.Majors)
+                                      .Include(c => c.JobPositions)// Include prerequisites
                 );
 
             if (certification is null)
@@ -267,6 +327,20 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             certificationDto.CertDescriptionPrerequisite = certification.CertIdPrerequisites
                 .Select(prerequisite => prerequisite.CertDescription)
                 .ToList();
+
+            // Create the DTO aand populate the major 
+
+            certificationDto.MajorIds = certification.Majors.Select(major => major.MajorId).ToList();
+            certificationDto.MajorCodes = certification.Majors.Select(major => major.MajorCode).ToList();
+            certificationDto.MajorNames = certification.Majors.Select(major => major.MajorName).ToList();
+            certificationDto.MajorDescriptions = certification.Majors.Select(major => major.MajorDescription).ToList();
+
+            // Create the DTO aand populate the JobPosition 
+
+            certificationDto.JobPositionIds = certification.JobPositions.Select(job => job.JobPositionId).ToList();
+            certificationDto.JobPositionCodes = certification.JobPositions.Select(job => job.JobPositionCode).ToList();
+            certificationDto.JobPositionNames = certification.JobPositions.Select(job => job.JobPositionName).ToList();
+            certificationDto.JobPositionDescriptions = certification.JobPositions.Select(major => major.JobPositionDescription).ToList();
 
             return certificationDto;
         }
@@ -338,7 +412,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             // Retrieve the existing certification entity including prerequisites
             var certification = await _uow.CertificationRepository
-                .Include(x => x.CertIdPrerequisites) // Ensure prerequisites are included
+                .Include(x => x.CertIdPrerequisites)
+                .Include(c => c.Majors)
+                .Include(c => c.JobPositions)// Ensure prerequisites are included
                 .FirstOrDefaultAsync(x => x.CertId == certificationId, cancellationToken)
                 .ConfigureAwait(false);
 
@@ -362,6 +438,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var existingPrerequisiteIds = certification.CertIdPrerequisites.Select(p => p.CertId).ToList();
             var newPrerequisiteIds = request.CertIdPrerequisites ?? new List<int>();
 
+            var existingMajorIds = certification.Majors.Select(p => p.MajorId).ToList();
+            var newMajorIds = request.MajorIds ?? new List<int>();
+
+            var existingJobPositionIds = certification.JobPositions.Select(p => p.JobPositionId).ToList();
+            var newJobPositionIds = request.JobIds ?? new List<int>();
             // Remove prerequisites that are no longer referenced
             foreach (var existingPrerequisiteId in existingPrerequisiteIds)
             {
@@ -375,6 +456,29 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 }
             }
 
+            foreach (var existingMajorId in existingMajorIds)
+            {
+                if (!newMajorIds.Contains(existingMajorId))
+                {
+                    var prerequisiteToRemove = certification.Majors.FirstOrDefault(p => p.MajorId == existingMajorId);
+                    if (prerequisiteToRemove != null)
+                    {
+                        certification.Majors.Remove(prerequisiteToRemove);
+                    }
+                }
+            }
+
+            foreach (var existingJobPositionId in existingJobPositionIds)
+            {
+                if (!newJobPositionIds.Contains(existingJobPositionId))
+                {
+                    var prerequisiteToRemove = certification.JobPositions.FirstOrDefault(p => p.JobPositionId == existingJobPositionId);
+                    if (prerequisiteToRemove != null)
+                    {
+                        certification.JobPositions.Remove(prerequisiteToRemove);
+                    }
+                }
+            }
             // Add new prerequisites that are not already in the certification
             foreach (var certPreId in newPrerequisiteIds)
             {
@@ -399,6 +503,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 }
             }
 
+            var majorsToAdd = await _uow.MajorRepository
+                .WhereAsync(x => newMajorIds.Contains(x.MajorId) && !existingMajorIds.Contains(x.MajorId));
+
+            var jobPositionsToAdd = await _uow.JobPositionRepository
+                .WhereAsync(x => newJobPositionIds.Contains(x.JobPositionId) && !existingJobPositionIds.Contains(x.JobPositionId));
+
             // Update the certification in the repository
             _uow.CertificationRepository.Update(certification);
 
@@ -421,6 +531,43 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 certificationDto.CertDescriptionPrerequisite = certification.CertIdPrerequisites
                     .Select(prerequisite => prerequisite.CertDescription)
                     .ToList();
+
+                certificationDto.CertDescriptionPrerequisite = certification.CertIdPrerequisites
+                    .Select(prerequisite => prerequisite.CertDescription)
+                    .ToList();
+                // Major information is shown
+
+                certificationDto.MajorIds = certification.Majors
+                    .Select(major => major.MajorId)
+                    .ToList();
+                certificationDto.MajorCodes = certification.Majors
+                    .Select(major => major.MajorCode)
+                    .ToList();
+                certificationDto.MajorDescriptions = certification.Majors
+                    .Select(major => major.MajorDescription)
+                    .ToList();
+
+                certificationDto.MajorNames = certification.Majors
+                    .Select(major => major.MajorName)
+                    .ToList();
+
+
+                // Job Position information is shown
+                certificationDto.JobPositionIds = certification.JobPositions
+                    .Select(job => job.JobPositionId)
+                    .ToList();
+
+                certificationDto.JobPositionCodes = certification.JobPositions
+                    .Select(job => job.JobPositionCode)
+                    .ToList();
+                certificationDto.JobPositionDescriptions = certification.JobPositions
+                    .Select(job => job.JobPositionDescription)
+                    .ToList();
+                certificationDto.JobPositionNames = certification.JobPositions
+                    .Select(job => job.JobPositionName)
+                    .ToList();
+
+
 
                 return certificationDto;
             }
