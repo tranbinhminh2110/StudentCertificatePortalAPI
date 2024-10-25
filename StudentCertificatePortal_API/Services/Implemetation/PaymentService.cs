@@ -38,6 +38,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return _mapper.Map<PaymentDto>(result); 
         }
 
+        
+
         public async Task<PaymentDto> ProcessPayment(CreatePaymentRequest request, CancellationToken cancellation)
         {
             var result = new Payment();
@@ -185,6 +187,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             return wallet.Point >= pointRequest;
 
+        }
+
+        public Task<PaymentDto> GetPaymentByUserIdAsync(int userId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

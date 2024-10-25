@@ -156,11 +156,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         {
             // Retrieve the certification with its prerequisites
             var certification = await _uow.CertificationRepository.FirstOrDefaultAsync(
-        x => x.CertId == certificationId,
-        cancellationToken,
-        include: q => q.Include(c => c.CertIdPrerequisites)
-                        .Include(c => c.Courses)
-                        .Include(c => c.ExamSessions)
+                                        x => x.CertId == certificationId,
+                                        cancellationToken,
+                                        include: q => q.Include(c => c.CertIdPrerequisites)
+                                                       .Include(c => c.Courses)
+                                                       .Include(c => c.ExamSessions)
                         .Include(c => c.JobPositions)
                         .Include(c => c.SimulationExams)
                         .Include(c => c.Majors)
