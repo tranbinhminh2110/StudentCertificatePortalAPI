@@ -97,7 +97,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 if (transactionId > 0)
                 {
                     var transaction = await _uow.TransactionRepository.FirstOrDefaultAsync(x => x.TransactionId == transactionId);
-                    if (transaction != null)
+                    if (transaction != null && transaction.TransStatus == Enums.EnumTransaction.Pending.ToString())
                     {
                         wallet.Point += transaction.Point;
                         _uow.WalletRepository.Update(wallet);
@@ -105,6 +105,20 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
 
                         transaction.TransStatus = Enums.EnumTransaction.Success.ToString();
+                        _uow.TransactionRepository.Update(transaction);
+                        await _uow.Commit(cancellationToken);
+                    }
+                }else if(transactionId == 0)
+                {
+                    var transaction = await _uow.TransactionRepository.FirstOrDefaultAsync(x => x.TransactionId == transactionId);
+                    if (transaction != null && transaction.TransStatus == Enums.EnumTransaction.Pending.ToString())
+                    {
+                        wallet.Point += transaction.Point;
+                        _uow.WalletRepository.Update(wallet);
+                        await _uow.Commit(cancellationToken);
+
+
+                        transaction.TransStatus = Enums.EnumTransaction.Canceled.ToString();
                         _uow.TransactionRepository.Update(transaction);
                         await _uow.Commit(cancellationToken);
                     }
