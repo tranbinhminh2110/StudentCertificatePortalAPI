@@ -53,8 +53,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 BuyerEmail = user.Email?.Trim() ?? string.Empty,
                 BuyerPhone = user.PhoneNumber?.Trim() ?? string.Empty,
                 BuyerAddress = user.Address?.Trim() ?? string.Empty,
-                CancelUrl = $"https://uni-cert.vercel.app/wallet/{0}",
-                ReturnUrl = $"https://uni-cert.vercel.app/wallet/{transId}",
+                CancelUrl = $"http://localhost:3000/wallet/{0}",
+                ReturnUrl = $"http://localhost:3000/wallet/{transId}",
                 ExpiredAt = (int)expirationTime.ToUnixTimeSeconds(),
                 Signature = "string",
                 Items = new List<WalletRequest>()
