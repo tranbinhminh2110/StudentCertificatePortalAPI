@@ -76,7 +76,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 {
                     PaymentDate = DateTime.UtcNow,
                     PaymentPoint = enrollCourses.TotalPrice,
-                    PaymentMethod = EnumTransaction.Success.ToString(),
+                    PaymentMethod = "Using Point",
+                    PaymentStatus = EnumTransaction.Success.ToString(),
                     WalletId = wallet.WalletId,
                     CourseEnrollmentId = request.CourseEnrollmentId,
                 };
@@ -140,7 +141,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 {
                     PaymentDate = DateTime.UtcNow,
                     PaymentPoint = enrollExams.TotalPrice,
-                    PaymentMethod = EnumTransaction.Success.ToString(),
+                    PaymentMethod = "Using Point",
+                    PaymentStatus = EnumTransaction.Success.ToString(),
                     WalletId = wallet.WalletId,
                     ExamEnrollmentId = request.ExamEnrollmentId,
                 };
@@ -189,9 +191,31 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         }
 
-        public Task<PaymentDto> GetPaymentByUserIdAsync(int userId)
+        public async Task<List<PaymentDto>> GetEEnrollPaymentByUserIdAsync(int userId)
         {
-            throw new NotImplementedException();
+            var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == userId);
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found.");
+            }
+            var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.UserId == userId);
+            var payments = await _uow.PaymentRepository.WhereAsync(x => x.WalletId == wallet.WalletId && x.ExamEnrollmentId != null);
+
+            return _mapper.Map<List<PaymentDto>>(payments);
+
+        }
+
+        public async Task<List<PaymentDto>> GetCEnrollPaymentByUserIdAsync(int userId)
+        {
+            var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == userId);
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found.");
+            }
+            var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.UserId == userId);
+            var payments = await _uow.PaymentRepository.WhereAsync(x => x.WalletId == wallet.WalletId && x.CourseEnrollmentId != null);
+
+            return _mapper.Map<List<PaymentDto>>(payments);
         }
     }
 }
