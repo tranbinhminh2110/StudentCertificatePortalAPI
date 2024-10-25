@@ -163,6 +163,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         .Include(c => c.ExamSessions)
                         .Include(c => c.JobPositions)
                         .Include(c => c.SimulationExams)
+                        .Include(c => c.Majors)
     );
 
 
@@ -177,6 +178,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             certification.ExamSessions?.Clear();
             certification.JobPositions?.Clear();
             certification.SimulationExams?.Clear();
+            certification.Majors?.Clear();
 
             // Find dependent certifications that have this certification as a prerequisite
             var dependentCertifications = await _uow.CertificationRepository.WhereAsync(
@@ -191,6 +193,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     x => x.CertId == dependentCert.CertId,
                     cancellationToken,
                     include: q => q.Include(c => c.CertIdPrerequisites)
+                                    .Include(c => c.Majors)
+                                    .Include(c => c.JobPositions)
                 );
 
                 // Remove the specific prerequisite reference
@@ -414,9 +418,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var certification = await _uow.CertificationRepository
                 .Include(x => x.CertIdPrerequisites)
                 .Include(c => c.Majors)
-                .Include(c => c.JobPositions)// Ensure prerequisites are included
-                .FirstOrDefaultAsync(x => x.CertId == certificationId, cancellationToken)
-                .ConfigureAwait(false);
+                .Include(c => c.JobPositions)
+                .FirstOrDefaultAsync(x => x.CertId == certificationId, cancellationToken);
 
             if (certification is null)
             {
@@ -505,9 +508,18 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             var majorsToAdd = await _uow.MajorRepository
                 .WhereAsync(x => newMajorIds.Contains(x.MajorId) && !existingMajorIds.Contains(x.MajorId));
+            foreach (var major in majorsToAdd)
+            {
+                certification.Majors.Add(major);
+            }
 
             var jobPositionsToAdd = await _uow.JobPositionRepository
                 .WhereAsync(x => newJobPositionIds.Contains(x.JobPositionId) && !existingJobPositionIds.Contains(x.JobPositionId));
+
+            foreach (var job in jobPositionsToAdd)
+            {
+                certification.JobPositions.Add(job);
+            }
 
             // Update the certification in the repository
             _uow.CertificationRepository.Update(certification);
