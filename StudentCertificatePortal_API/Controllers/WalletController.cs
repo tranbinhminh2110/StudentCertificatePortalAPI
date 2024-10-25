@@ -23,9 +23,9 @@ namespace StudentCertificatePortal_API.Controllers
         }
 
         [HttpGet("{userId:int}")]
-        public async Task<ActionResult<Result<CourseDto>>> GetWalletById([FromRoute] int userId)
+        public async Task<ActionResult<Result<CourseDto>>> GetWalletById([FromRoute] int userId, [FromQuery] int transId)
         {
-            var result = await _service.GetWalletByIdAsync(userId, new CancellationToken());
+            var result = await _service.GetWalletByIdAsync(userId, transId, new CancellationToken());
             return Ok(Result<WalletDto>.Succeed(result));
         }
 

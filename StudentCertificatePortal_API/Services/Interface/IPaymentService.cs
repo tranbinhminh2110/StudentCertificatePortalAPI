@@ -7,6 +7,7 @@ namespace StudentCertificatePortal_API.Services.Interface
     {
         Task<List<PaymentDto>> GetAll();
         Task<PaymentDto> GetPaymentByIdAsync(int paymentId);
+        Task<PaymentDto> GetPaymentByUserIdAsync(int userId);
         Task<PaymentDto> ProcessPayment(CreatePaymentRequest request, CancellationToken cancellation);
     }
 }
