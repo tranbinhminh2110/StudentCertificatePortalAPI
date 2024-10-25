@@ -22,11 +22,25 @@ namespace StudentCertificatePortal_API.Controllers
             return Ok(Result<List<PaymentDto>>.Succeed(result));
         }
 
-        [HttpGet("{certId:int}")]
-        public async Task<ActionResult<Result<PaymentDto>>> GetCertificationById([FromRoute] int certId)
+        [HttpGet("{paymentId:int}")]
+        public async Task<ActionResult<Result<PaymentDto>>> GetPaymentById([FromRoute] int paymentId)
         {
-            var result = await _service.GetPaymentByIdAsync(certId);
+            var result = await _service.GetPaymentByIdAsync(paymentId);
             return Ok(Result<PaymentDto>.Succeed(result));
+        }
+
+        [HttpGet("get-ExamEnrollment-by-userId/{userId:int}")]
+        public async Task<ActionResult<Result<List<PaymentDto>>>> GetPaymentOfExamEnrollmentById([FromRoute] int userId)
+        {
+            var result = await _service.GetEEnrollPaymentByUserIdAsync(userId);
+            return Ok(Result<List<PaymentDto>>.Succeed(result));
+        }
+
+        [HttpGet("get-CourseEnrollment-by-userId/{userId:int}")]
+        public async Task<ActionResult<Result<List<PaymentDto>>>> GetPaymentOfCourseEnrollmentById([FromRoute] int userId)
+        {
+            var result = await _service.GetCEnrollPaymentByUserIdAsync(userId);
+            return Ok(Result<List<PaymentDto>>.Succeed(result));
         }
 
         [HttpPost]
