@@ -8,6 +8,7 @@
 
         public string? ExamCode { get; set; }
         public int? ExamDiscountFee { get; set; }
+        public string? ExamImage { get; set; }
 
     }
 }

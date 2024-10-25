@@ -229,18 +229,56 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<List<ExamEnrollmentDto>> GetAll()
         {
-            var result = await _uow.ExamEnrollmentRepository.GetAll();
-            return _mapper.Map<List<ExamEnrollmentDto>>(result);
+            var result = await _uow.ExamEnrollmentRepository.GetAllAsync(
+                include: q => q.Include(q => q.StudentOfExams).ThenInclude(se => se.Exam)
+                );
+
+            var examEnrollments = result.Select(ee => new ExamEnrollmentDto()
+            {
+                ExamEnrollmentId = ee.ExamEnrollmentId,
+                ExamEnrollmentDate = ee.ExamEnrollmentDate,
+                ExamEnrollmentStatus = ee.ExamEnrollmentStatus,
+                TotalPrice = ee.TotalPrice,
+                UserId = ee.UserId,
+                SimulationExamDetail = ee.StudentOfExams.Select(se => new ExamDetailsDto()
+                {
+                    ExamId = se.ExamId,
+                    ExamCode = se.Exam.ExamCode,
+                    ExamName = se.Exam.ExamName,
+                    ExamDiscountFee = se.Exam.ExamDiscountFee,
+                }).ToList()
+            }).ToList();    
+
+            return examEnrollments;
         }
 
         public async Task<ExamEnrollmentDto> GetExamEnrollmentById(int examEnrollmentId, CancellationToken cancellationToken)
         {
-            var result = await _uow.ExamEnrollmentRepository.FirstOrDefaultAsync(x => x.ExamEnrollmentId == examEnrollmentId, cancellationToken);
+            var result = await _uow.ExamEnrollmentRepository
+                .FirstOrDefaultAsync(x => x.ExamEnrollmentId == examEnrollmentId, cancellationToken,
+                include: q => q.Include(ee => ee.StudentOfExams).ThenInclude(se => se.Exam));
             if (result is null)
             {
                 throw new KeyNotFoundException("Exam Enrollment not found.");
             }
-            return _mapper.Map<ExamEnrollmentDto>(result);
+
+            var examEnrollment = new ExamEnrollmentDto()
+            {
+                ExamEnrollmentId = result.ExamEnrollmentId,
+                ExamEnrollmentDate = result.ExamEnrollmentDate,
+                ExamEnrollmentStatus = result.ExamEnrollmentStatus,
+                TotalPrice = result.TotalPrice,
+                UserId = result.UserId,
+                SimulationExamDetail = result.StudentOfExams.Select(se => new ExamDetailsDto
+                {
+                    ExamId = se.ExamId,
+                    ExamCode = se.Exam.ExamCode,
+                    ExamName = se.Exam.ExamName,
+                    ExamDiscountFee = se.Exam.ExamDiscountFee,
+                    ExamImage = se.Exam.ExamImage,
+                }).ToList()
+            };
+            return examEnrollment;
         }
 
         /*public async Task<List<ExamEnrollmentDto>> GetExamEnrollmentByNameAsync(string examEnrollmentName, CancellationToken cancellationToken)
