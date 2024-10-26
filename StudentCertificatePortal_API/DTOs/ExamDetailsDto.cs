@@ -10,5 +10,6 @@
         public int? ExamDiscountFee { get; set; }
         public string? ExamImage { get; set; }
 
+
     }
 }
