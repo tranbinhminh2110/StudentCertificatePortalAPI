@@ -152,6 +152,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         ExamName = exam.ExamName,
                         ExamCode = exam.ExamCode,
                         ExamDiscountFee = exam.ExamDiscountFee,
+                        ExamImage = exam.ExamImage,
                     }).ToList();
                 voucherDto.CourseDetails = result.Courses
                     .Select(course => new CourseDetailsDto
@@ -160,6 +161,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         CourseName = course.CourseName,
                         CourseCode = course.CourseCode,
                         CourseDiscountFee = course.CourseDiscountFee,
+                        CourseImage = course.CourseImage,
               
                     }).ToList();
                 return voucherDto;
@@ -203,6 +205,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         ExamName = exam.ExamName,
                         ExamCode = exam.ExamCode,
                         ExamDiscountFee = exam.ExamDiscountFee,
+                        ExamImage = exam.ExamImage,
                     }).ToList();
             voucherDto.CourseDetails = result.Courses
                 .Select(course => new CourseDetailsDto
@@ -211,6 +214,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CourseName = course.CourseName,
                     CourseCode = course.CourseCode,
                     CourseDiscountFee = course.CourseDiscountFee,
+                    CourseImage = course.CourseImage,
 
                 }).ToList();
             return voucherDto;
@@ -255,6 +259,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         ExamName = exam.ExamName,
                         ExamCode = exam.ExamCode,
                         ExamDiscountFee = exam.ExamDiscountFee,
+                        ExamImage = exam.ExamImage,
                     }).ToList();
                 voucherDto.CourseDetails = voucher.Courses
                     .Select(course => new CourseDetailsDto
@@ -263,7 +268,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         CourseName = course.CourseName,
                         CourseCode = course.CourseCode,
                         CourseDiscountFee = course.CourseDiscountFee,
-
+                        CourseImage = course.CourseImage,
                     }).ToList();
             }
             return voucherDtos;

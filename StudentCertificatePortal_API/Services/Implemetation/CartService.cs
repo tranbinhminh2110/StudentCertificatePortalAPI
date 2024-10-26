@@ -125,8 +125,25 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var cartDtos = result.Select(cart =>
             {
                 var cartDto = _mapper.Map<CartDto>(cart);
-                cartDto.ExamId = cart.Exams.Select(x => x.ExamId).ToList();
-                cartDto.CourseId = cart.Courses.Select(x => x.CourseId).ToList();
+                cartDto.ExamDetails = cart.Exams
+                    .Select(exam => new ExamDetailsDto
+                    {
+                        ExamId = exam.ExamId,
+                        ExamName = exam.ExamName,
+                        ExamCode = exam.ExamCode,
+                        ExamDiscountFee = exam.ExamDiscountFee,
+                        ExamImage = exam.ExamImage,
+                    }).ToList();
+                cartDto.CourseDetails = cart.Courses
+                    .Select(course => new CourseDetailsDto
+                    {
+                        CourseId = course.CourseId,
+                        CourseName = course.CourseName,
+                        CourseCode = course.CourseCode,
+                        CourseDiscountFee = course.CourseDiscountFee,
+                        CourseImage = course.CourseImage,
+
+                    }).ToList();
                 return cartDto;
             }).ToList();
 
@@ -145,8 +162,25 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
 
             var cartDto = _mapper.Map<CartDto>(cart);
-            cartDto.ExamId = cart.Exams.Select(x => x.ExamId).ToList();
-            cartDto.CourseId = cart.Courses.Select(x => x.CourseId).ToList();
+            cartDto.ExamDetails = cart.Exams
+                    .Select(exam => new ExamDetailsDto
+                    {
+                        ExamId = exam.ExamId,
+                        ExamName = exam.ExamName,
+                        ExamCode = exam.ExamCode,
+                        ExamDiscountFee = exam.ExamDiscountFee,
+                        ExamImage = exam.ExamImage,
+                    }).ToList();
+            cartDto.CourseDetails = cart.Courses
+                .Select(course => new CourseDetailsDto
+                {
+                    CourseId = course.CourseId,
+                    CourseName = course.CourseName,
+                    CourseCode = course.CourseCode,
+                    CourseDiscountFee = course.CourseDiscountFee,
+                    CourseImage = course.CourseImage,
+
+                }).ToList();
             return cartDto;
         }
 
