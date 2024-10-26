@@ -177,6 +177,9 @@ public partial class CipdbContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("cert_validity");
             entity.Property(e => e.OrganizeId).HasColumnName("organize_id");
+            entity.Property(e => e.Permission)
+                .HasMaxLength(100)
+                .HasColumnName("permission");
             entity.Property(e => e.TypeId).HasColumnName("type_id");
 
             entity.HasOne(d => d.Organize).WithMany(p => p.Certifications)
@@ -261,6 +264,9 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.CourseName)
                 .HasMaxLength(255)
                 .HasColumnName("course_name");
+            entity.Property(e => e.CoursePermission)
+                .HasMaxLength(100)
+                .HasColumnName("course_permission");
             entity.Property(e => e.CourseTime)
                 .HasMaxLength(255)
                 .HasColumnName("course_time");
@@ -385,6 +391,9 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.JobPositionName)
                 .HasMaxLength(255)
                 .HasColumnName("job_position_name");
+            entity.Property(e => e.JobPositionPermission)
+                .HasMaxLength(100)
+                .HasColumnName("job_position_permission");
         });
 
         modelBuilder.Entity<Major>(entity =>
@@ -401,6 +410,9 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.MajorName)
                 .HasMaxLength(255)
                 .HasColumnName("major_name");
+            entity.Property(e => e.MajorPermission)
+                .HasMaxLength(100)
+                .HasColumnName("major_permission");
 
             entity.HasMany(d => d.Certs).WithMany(p => p.Majors)
                 .UsingEntity<Dictionary<string, object>>(
@@ -457,6 +469,9 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.OrganizeName)
                 .HasMaxLength(255)
                 .HasColumnName("organize_name");
+            entity.Property(e => e.OrganizePermission)
+                .HasMaxLength(100)
+                .HasColumnName("organize_permission");
         });
 
         modelBuilder.Entity<Payment>(entity =>
@@ -554,6 +569,9 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.ExamName)
                 .HasMaxLength(255)
                 .HasColumnName("exam_name");
+            entity.Property(e => e.ExamPermission)
+                .HasMaxLength(100)
+                .HasColumnName("exam_permission");
 
             entity.HasOne(d => d.Cert).WithMany(p => p.SimulationExams)
                 .HasForeignKey(d => d.CertId)

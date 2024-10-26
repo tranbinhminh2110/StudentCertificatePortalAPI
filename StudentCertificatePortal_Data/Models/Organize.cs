@@ -13,5 +13,7 @@ public partial class Organize
 
     public string? OrganizeContact { get; set; }
 
+    public string? OrganizePermission { get; set; }
+
     public virtual ICollection<Certification> Certifications { get; set; } = new List<Certification>();
 }
