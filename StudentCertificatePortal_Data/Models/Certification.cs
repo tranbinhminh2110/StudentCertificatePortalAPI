@@ -27,6 +27,8 @@ public partial class Certification
 
     public string? CertDescription { get; set; }
 
+    public string? Permission { get; set; }
+
     public virtual ICollection<Course> Courses { get; set; } = new List<Course>();
 
     public virtual ICollection<ExamSession> ExamSessions { get; set; } = new List<ExamSession>();

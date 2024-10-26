@@ -21,6 +21,8 @@ public partial class SimulationExam
 
     public string? ExamImage { get; set; }
 
+    public string? ExamPermission { get; set; }
+
     public virtual Certification? Cert { get; set; }
 
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
