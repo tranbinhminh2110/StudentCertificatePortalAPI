@@ -176,6 +176,39 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             return courseEnrollmentDto;
         }
+
+        public async Task<List<CourseEnrollmentDto>> GetCourseEnrollmentByUserIdAsync(int userId, CancellationToken cancellationToken)
+        {
+            var result = await _uow.CourseEnrollmentRepository.WhereAsync(
+                x => x.UserId == userId,
+                cancellationToken,
+                include: q => q.Include(c => c.StudentOfCourses)
+                               .ThenInclude(sc => sc.Course));
+
+            if (result is null)
+            {
+                throw new KeyNotFoundException("Course Enrollment not found.");
+            }
+
+            var courseEnrollmentDtos = result.Select(enrollment => new CourseEnrollmentDto
+            {
+                CourseEnrollmentId = enrollment.CourseEnrollmentId,
+                CourseEnrollmentDate = enrollment.CourseEnrollmentDate,
+                TotalPrice = enrollment.TotalPrice,
+                UserId = enrollment.UserId,
+                CourseDetails = enrollment.StudentOfCourses.Select(sc => new CourseDetailsDto
+                {
+                    CourseId = sc.Course.CourseId,
+                    CourseName = sc.Course.CourseName,
+                    CourseCode = sc.Course.CourseCode,
+                    CourseDiscountFee = sc.Course.CourseDiscountFee,
+                    CourseImage = sc.Course.CourseImage,
+                }).ToList()
+            }).ToList();
+
+            return courseEnrollmentDtos;
+        }
+
         public async Task<CourseEnrollmentDto> UpdateCourseEnrollmentAsync(int courseEnrollmentId, UpdateCourseEnrollmentRequest request, CancellationToken cancellationToken)
         {
             var validation = await _updateCourseEnrollmentValidator.ValidateAsync(request, cancellationToken);
