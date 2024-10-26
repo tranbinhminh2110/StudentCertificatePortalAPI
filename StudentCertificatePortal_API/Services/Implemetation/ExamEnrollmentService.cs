@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using StudentCertificatePortal_API.Commons;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.Contracts.Responses;
 using StudentCertificatePortal_API.DTOs;
@@ -246,6 +247,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     ExamCode = se.Exam.ExamCode,
                     ExamName = se.Exam.ExamName,
                     ExamDiscountFee = se.Exam.ExamDiscountFee,
+                    ExamImage = se.Exam.ExamImage,
                 }).ToList()
             }).ToList();    
 
@@ -279,6 +281,35 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 }).ToList()
             };
             return examEnrollment;
+        }
+
+        public async Task<List<ExamEnrollmentDto>> GetExamEnrollmentByUserId(int userId, CancellationToken cancellationToken)
+        {
+            var eEnroll = await _uow.ExamEnrollmentRepository.WhereAsync(x => x.UserId == userId, cancellationToken
+                , include: q => q.Include(se => se.StudentOfExams).ThenInclude(x => x.Exam));
+            if (eEnroll == null)
+            {
+                throw new KeyNotFoundException("Exam enrollment's User Id not found");
+            }
+
+            var examEnrollments = eEnroll.Select(ee => new ExamEnrollmentDto()
+            {
+                ExamEnrollmentId = ee.ExamEnrollmentId,
+                ExamEnrollmentDate = ee.ExamEnrollmentDate,
+                ExamEnrollmentStatus = ee.ExamEnrollmentStatus,
+                TotalPrice = ee.TotalPrice,
+                UserId = ee.UserId,
+                SimulationExamDetail = ee.StudentOfExams.Select(se => new ExamDetailsDto()
+                {
+                    ExamId = se.ExamId,
+                    ExamCode = se.Exam.ExamCode,
+                    ExamName = se.Exam.ExamName,
+                    ExamDiscountFee = se.Exam.ExamDiscountFee,
+                    ExamImage = se.Exam.ExamImage,
+                }).ToList()
+            }).ToList();
+
+            return _mapper.Map<List<ExamEnrollmentDto>>(examEnrollments);
         }
 
         /*public async Task<List<ExamEnrollmentDto>> GetExamEnrollmentByNameAsync(string examEnrollmentName, CancellationToken cancellationToken)

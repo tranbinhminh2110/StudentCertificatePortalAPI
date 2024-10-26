@@ -26,6 +26,13 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.GetExamEnrollmentById(eEnrollmentId, new CancellationToken());
             return Ok(Result<ExamEnrollmentDto>.Succeed(result));
         }
+
+        [HttpGet("get-by-userId/{userId:int}")]
+        public async Task<ActionResult<Result<List<ExamEnrollmentDto>>>> GetExamEnrollmentByUserId([FromRoute] int userId)
+        {
+            var result = await _service.GetExamEnrollmentByUserId(userId, new CancellationToken());
+            return Ok(Result<List<ExamEnrollmentDto>>.Succeed(result));
+        }
         [HttpPost]
         public async Task<ActionResult<Result<ExamEnrollmentResponse>>> CreateExamEnrollment([FromBody] CreateExamEnrollmentRequest request)
         {
