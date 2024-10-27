@@ -137,6 +137,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CourseId = sc.Course.CourseId,
                     CourseName = sc.Course.CourseName,
                     CourseCode = sc.Course.CourseCode,
+                    CourseFee = sc.Course.CourseFee,
                     CourseDiscountFee = sc.Course.CourseDiscountFee,
                     CourseImage = sc.Course.CourseImage,
                 }).ToList()
@@ -169,6 +170,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CourseId = sc.Course.CourseId,
                     CourseName = sc.Course.CourseName,
                     CourseCode = sc.Course.CourseCode,
+                    CourseFee = sc.Course.CourseFee,
                     CourseDiscountFee = sc.Course.CourseDiscountFee,
                     CourseImage = sc.Course.CourseImage,
                 }).ToList()
@@ -201,6 +203,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CourseId = sc.Course.CourseId,
                     CourseName = sc.Course.CourseName,
                     CourseCode = sc.Course.CourseCode,
+                    CourseFee = sc.Course.CourseFee,
                     CourseDiscountFee = sc.Course.CourseDiscountFee,
                     CourseImage = sc.Course.CourseImage,
                 }).ToList()

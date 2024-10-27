@@ -4,6 +4,7 @@ using StudentCertificatePortal_API.Commons;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Services.Interface;
+using StudentCertificatePortal_Data.Models;
 
 namespace StudentCertificatePortal_API.Controllers
 {
@@ -45,6 +46,12 @@ namespace StudentCertificatePortal_API.Controllers
         {
             var result = await _service.DeleteCartAsync(userId, new CancellationToken());
             return Ok(Result<CartDto>.Succeed(result));
+        }
+        [HttpPost("create-carts-for-all-users")]
+        public async Task<ActionResult<Result<List<CartDto>>>> CreateCartsForAllUsersWithoutCarts()
+        {
+            var result = await _service.CreateCartsForAllUsersWithoutCartsAsync(new CancellationToken());
+            return Ok(Result<List<CartDto>>.Succeed(result));
         }
     }
 }

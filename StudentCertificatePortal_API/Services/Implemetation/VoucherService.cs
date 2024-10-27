@@ -151,6 +151,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         ExamId = exam.ExamId,
                         ExamName = exam.ExamName,
                         ExamCode = exam.ExamCode,
+                        ExamFee = exam.ExamFee,
                         ExamDiscountFee = exam.ExamDiscountFee,
                         ExamImage = exam.ExamImage,
                     }).ToList();
@@ -160,6 +161,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         CourseId = course.CourseId,
                         CourseName = course.CourseName,
                         CourseCode = course.CourseCode,
+                        CourseFee = course.CourseFee,
                         CourseDiscountFee = course.CourseDiscountFee,
                         CourseImage = course.CourseImage,
               
@@ -204,6 +206,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         ExamId = exam.ExamId,
                         ExamName = exam.ExamName,
                         ExamCode = exam.ExamCode,
+                        ExamFee = exam.ExamFee,
                         ExamDiscountFee = exam.ExamDiscountFee,
                         ExamImage = exam.ExamImage,
                     }).ToList();
@@ -213,6 +216,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CourseId = course.CourseId,
                     CourseName = course.CourseName,
                     CourseCode = course.CourseCode,
+                    CourseFee = course.CourseFee,
                     CourseDiscountFee = course.CourseDiscountFee,
                     CourseImage = course.CourseImage,
 
@@ -258,6 +262,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         ExamId = exam.ExamId,
                         ExamName = exam.ExamName,
                         ExamCode = exam.ExamCode,
+                        ExamFee = exam.ExamFee,
                         ExamDiscountFee = exam.ExamDiscountFee,
                         ExamImage = exam.ExamImage,
                     }).ToList();
@@ -267,6 +272,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         CourseId = course.CourseId,
                         CourseName = course.CourseName,
                         CourseCode = course.CourseCode,
+                        CourseFee = course.CourseFee,
                         CourseDiscountFee = course.CourseDiscountFee,
                         CourseImage = course.CourseImage,
                     }).ToList();
