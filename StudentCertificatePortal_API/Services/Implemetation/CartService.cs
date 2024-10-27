@@ -26,6 +26,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new Exception("User not found. Cart creation requires a valid UserId.");
             }
+            var existingCart = await _uow.CartRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken);
+
+            if (existingCart != null)
+            {
+                throw new InvalidOperationException($"Cart already exists for user with ID {request.UserId}.");
+            }
 
             var cartEntity = new Cart()
             {
@@ -95,6 +101,37 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new Exception($"An error occurred while saving the entity changes: {innerExceptionMessage}", ex);
             }
         }
+        public async Task<List<CartDto>> CreateCartsForAllUsersWithoutCartsAsync(CancellationToken cancellationToken)
+        {
+            var carts = new List<CartDto>();
+            var users = await _uow.UserRepository.GetAll();
+
+            foreach (var user in users)
+            {
+                var existingCart = await _uow.CartRepository.FirstOrDefaultAsync(x => x.UserId == user.UserId, cancellationToken);
+                if (existingCart == null)
+                {
+                    var cartEntity = new Cart()
+                    {
+                        TotalPrice = 0,
+                        UserId = user.UserId
+                    };
+
+                    await _uow.CartRepository.AddAsync(cartEntity); 
+                    await _uow.Commit(cancellationToken); 
+
+                    carts.Add(new CartDto
+                    {
+                        CartId = cartEntity.CartId, 
+                        TotalPrice = cartEntity.TotalPrice,
+                        UserId = cartEntity.UserId,
+                    });
+                }
+            }
+
+            return carts; 
+        }
+
 
         public async Task<CartDto> DeleteCartAsync(int userId, CancellationToken cancellationToken)
         {

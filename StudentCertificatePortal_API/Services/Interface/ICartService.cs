@@ -10,5 +10,6 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<CartDto> GetCartByIdAsync(int cartId, CancellationToken cancellationToken);
         Task<CartDto> UpdateCartAsync(int cartId, UpdateCartRequest request, CancellationToken cancellationToken);
         Task<CartDto> DeleteCartAsync(int cartId, CancellationToken cancellationToken);
+        Task<List<CartDto>> CreateCartsForAllUsersWithoutCartsAsync(CancellationToken cancellationToken);
     }
 }

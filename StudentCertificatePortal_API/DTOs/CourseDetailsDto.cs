@@ -7,6 +7,7 @@
         public string? CourseName { get; set; }
 
         public string? CourseCode { get; set; }
+        public int? CourseFee { get; set; }
         public int? CourseDiscountFee { get; set; }
         public string? CourseImage { get; set; }
 
