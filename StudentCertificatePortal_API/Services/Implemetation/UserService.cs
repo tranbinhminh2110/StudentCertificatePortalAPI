@@ -14,6 +14,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
     {
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
+        private readonly ICartService _cartservice;
 
         private readonly IValidator<CreateUserRequest> _addUserValidator;
         private readonly IValidator<UpdateUserRequest> _updateUserValidator;
@@ -23,13 +24,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public UserService(IUnitOfWork uow, IMapper mapper,
             IValidator<CreateUserRequest> addUserValidator,
             IValidator<UpdateUserRequest> updateUserValidator,
-            IValidator<CreateRegisterUserRequest> addregisterUserValidator)
+            IValidator<CreateRegisterUserRequest> addregisterUserValidator, ICartService cartservice)
         {
             _uow = uow;
             _mapper = mapper;
             _addUserValidator = addUserValidator;
             _updateUserValidator = updateUserValidator;
             _addregisterUserValidator = addregisterUserValidator;
+            _cartservice = cartservice;
         }
 
         public async Task<UserDto> ChangeStatusAccountAsync(int userId, CancellationToken cancellationToken)
@@ -78,7 +80,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             var addedUser = await _uow.UserRepository.AddAsync(userEntity);
             await _uow.Commit(cancellationToken);
-
+            var cartRequest = new CreateCartRequest { UserId = addedUser.UserId }; 
+            var cartDto = await _cartservice.CreateCartAsync(cartRequest, cancellationToken); 
             return _mapper.Map<UserDto>(addedUser);
         }
 
@@ -111,7 +114,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             var addedUser = await _uow.UserRepository.AddAsync(userEntity);
             await _uow.Commit(cancellationToken);
-
+            var cartRequest = new CreateCartRequest { UserId = addedUser.UserId };
+            var cartDto = await _cartservice.CreateCartAsync(cartRequest, cancellationToken);
             return _mapper.Map<UserDto>(addedUser);
         }
 
@@ -135,7 +139,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             user.Feedbacks?.Clear();
             user.CoursesEnrollments?.Clear();
             user.ExamsEnrollments?.Clear();
-
             var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.UserId == user.UserId);
             if(wallet != null)
             {
