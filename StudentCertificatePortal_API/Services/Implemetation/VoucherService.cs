@@ -39,7 +39,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 Percentage = request.Percentage,
                 CreationDate = request.CreationDate,
                 ExpiryDate = request.ExpiryDate,
-                VoucherStatus = request.VoucherStatus,
+                VoucherStatus = request.ExpiryDate > DateTime.Now 
             };
             if (request.ExamId != null && request.ExamId.Any())
             {
@@ -304,7 +304,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             voucher.Percentage = request.Percentage;
             voucher.CreationDate = request.CreationDate;
             voucher.ExpiryDate = request.ExpiryDate;
-            voucher.VoucherStatus = request.VoucherStatus;
+            voucher.VoucherStatus = request.ExpiryDate > DateTime.Now;
+
 
             // Get existing Exam IDs
             var existingExamIds = voucher.Exams.Select(e => e.ExamId).ToList();
