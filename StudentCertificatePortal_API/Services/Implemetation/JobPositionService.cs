@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
+using StudentCertificatePortal_API.Enums;
 using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_Data.Models;
@@ -39,6 +40,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     JobPositionCode = request.JobPositionCode,
                     JobPositionName = request.JobPositionName,
                     JobPositionDescription = request.JobPositionDescription,
+                    JobPositionPermission = "Pending",
                 };
             if (request.MajorId != null && request.MajorId.Any())
             {
@@ -344,6 +346,25 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 var innerExceptionMessage = ex.InnerException?.Message ?? "No inner exception";
                 throw new Exception($"An unexpected error occurred: {innerExceptionMessage}", ex);
             }
+        }
+
+        public async Task<JobPositionDto> UpdateJobPositionPermissionAsync(int jobPositionId, EnumPermission jobPositionPermission, CancellationToken cancellationToken)
+        {
+            var job = await _uow.JobPositionRepository.FirstOrDefaultAsync(x => x.JobPositionId == jobPositionId, cancellationToken);
+
+            if (job is null)
+            {
+                throw new KeyNotFoundException("Job Position not found.");
+            }
+
+            job.JobPositionPermission = jobPositionPermission.ToString();
+
+            _uow.JobPositionRepository.Update(job);
+            await _uow.Commit(cancellationToken);
+
+            var result = _mapper.Map<JobPositionDto>(job);
+
+            return result;
         }
     }
 }
