@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StudentCertificatePortal_API.Commons;
 using StudentCertificatePortal_API.Contracts.Requests;

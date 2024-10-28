@@ -189,12 +189,12 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = string.Empty;
         c.EnableTryItOutByDefault();
     });
-    app.UseDeveloperExceptionPage(); // Only for development
+    app.UseDeveloperExceptionPage(); 
     
 }
 else
 {
-    app.UseExceptionHandler("/error"); // Use custom error page in production
+    app.UseExceptionHandler("/error"); 
 }
 
 
