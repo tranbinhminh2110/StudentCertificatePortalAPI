@@ -3,11 +3,13 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
+using StudentCertificatePortal_API.Enums;
 using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
 using System.Runtime.ConstrainedExecution;
+using System.Security;
 
 namespace StudentCertificatePortal_API.Services.Implemetation
 {
@@ -38,6 +40,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 MajorCode = request.MajorCode,
                 MajorName = request.MajorName,
                 MajorDescription = request.MajorDescription,
+                MajorPermission = "Pending",
             };
             if (request.JobPositionId != null && request.JobPositionId.Any())
             {
@@ -356,6 +359,25 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 var innerExceptionMessage = ex.InnerException?.Message ?? "No inner exception";
                 throw new Exception($"An unexpected error occurred: {innerExceptionMessage}", ex);
             }
+        }
+
+        public async Task<MajorDto> UpdateMajorPermissionAsync(int majorId, EnumPermission majorPermission, CancellationToken cancellationToken)
+        {
+            var major = await _uow.MajorRepository.FirstOrDefaultAsync(x => x.MajorId == majorId, cancellationToken);
+
+            if (major is null)
+            {
+                throw new KeyNotFoundException("Major not found.");
+            }
+
+            major.MajorPermission = majorPermission.ToString();
+
+            _uow.MajorRepository.Update(major);
+            await _uow.Commit(cancellationToken);
+
+            var result = _mapper.Map<MajorDto>(major);
+
+            return result;
         }
     }
 }
