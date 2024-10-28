@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using StudentCertificatePortal_API.Commons;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
+using StudentCertificatePortal_API.Enums;
+using StudentCertificatePortal_API.Services.Implemetation;
 using StudentCertificatePortal_API.Services.Interface;
 
 namespace StudentCertificatePortal_API.Controllers
@@ -52,6 +54,12 @@ namespace StudentCertificatePortal_API.Controllers
         {
             var result = await _service.GetOrganizeByNameAsync(organizeName, new CancellationToken());
             return Ok(Result<List<OrganizeDto>>.Succeed(result));
+        }
+        [HttpPut("Permission")]
+        public async Task<ActionResult<Result<OrganizeDto>>> UpdateOrganizePermission(int organizeId, [FromQuery] EnumPermission organizePermission)
+        {
+            var result = await _service.UpdateOrganizePermissionAsync(organizeId, organizePermission, new CancellationToken());
+            return Ok(Result<OrganizeDto>.Succeed(result));
         }
     }
 }

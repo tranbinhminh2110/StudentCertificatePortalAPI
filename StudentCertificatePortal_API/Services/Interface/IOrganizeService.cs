@@ -1,5 +1,6 @@
 ﻿using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
+using StudentCertificatePortal_API.Enums;
 
 namespace StudentCertificatePortal_API.Services.Interface
 {
@@ -11,6 +12,8 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<OrganizeDto> UpdateOrganizeAsync(int oragnizeId, UpdateOrganizeRequest request, CancellationToken cancellationToken);
         Task<OrganizeDto> DeleteOrganizeAsync(int organizeId, CancellationToken cancellationToken);
         Task<List<OrganizeDto>> GetOrganizeByNameAsync(string organizeName, CancellationToken cancellationToken);
+        Task<OrganizeDto> UpdateOrganizePermissionAsync(int organizeId, EnumPermission organizePermission, CancellationToken cancellationToken);
+
 
 
     }
