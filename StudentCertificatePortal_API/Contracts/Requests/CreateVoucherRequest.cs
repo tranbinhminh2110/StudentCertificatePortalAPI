@@ -12,7 +12,6 @@
 
         public DateTime? ExpiryDate { get; set; }
 
-        public bool? VoucherStatus { get; set; }
         public List<int>? ExamId { get; set; } = new List<int>();
         public List<int>? CourseId { get; set; } = new List<int>();
 
