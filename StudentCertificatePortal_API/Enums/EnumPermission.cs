@@ -2,8 +2,8 @@
 {
     public enum EnumPermission
     {
-        Pending = 1,
-        Approve = 2,
-        Reject = 3,
+        Pending = 0,
+        Approve = 1,
+        Reject = 2,
     }
 }

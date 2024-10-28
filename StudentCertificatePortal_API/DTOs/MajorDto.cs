@@ -13,6 +13,8 @@ namespace StudentCertificatePortal_API.DTOs
         public string? MajorName { get; set; }
 
         public string? MajorDescription { get; set; }
+        public string? MajorPermission { get; set; }
+
         public List<int>? JobPositionId { get; set; } = new List<int>();
         public List<int>? CertId { get; set; } = new List<int>();
 

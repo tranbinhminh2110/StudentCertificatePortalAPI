@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using StudentCertificatePortal_API.Commons;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
+using StudentCertificatePortal_API.Enums;
 using StudentCertificatePortal_API.Services.Interface;
+using System.Security;
 
 namespace StudentCertificatePortal_API.Controllers
 {
@@ -52,6 +54,12 @@ namespace StudentCertificatePortal_API.Controllers
         {
             var result = await _service.GetMajorByNameAsync(majorName, new CancellationToken());
             return Ok(Result<List<MajorDto>>.Succeed(result));
+        }
+        [HttpPut("Permission")]
+        public async Task<ActionResult<Result<MajorDto>>> UpdateMajorPermission(int majorId, [FromQuery] EnumPermission majorPermission)
+        {
+            var result = await _service.UpdateMajorPermissionAsync(majorId, majorPermission, new CancellationToken());
+            return Ok(Result<MajorDto>.Succeed(result));
         }
     }
 }
