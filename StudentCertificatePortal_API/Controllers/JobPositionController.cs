@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using StudentCertificatePortal_API.Commons;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
+using StudentCertificatePortal_API.Enums;
 using StudentCertificatePortal_API.Services.Interface;
 
 namespace StudentCertificatePortal_API.Controllers
@@ -51,6 +52,12 @@ namespace StudentCertificatePortal_API.Controllers
         {
             var result = await _jobPositionService.GetJobPositionByNameAsync(jobPositionName, new CancellationToken());
             return Ok(Result<List<JobPositionDto>>.Succeed(result));
+        }
+        [HttpPut("Permission")]
+        public async Task<ActionResult<Result<JobPositionDto>>> UpdateJobPositionPermission(int jobPositionId, [FromQuery] EnumPermission jobPositionPermission)
+        {
+            var result = await _jobPositionService.UpdateJobPositionPermissionAsync(jobPositionId, jobPositionPermission, new CancellationToken());
+            return Ok(Result<JobPositionDto>.Succeed(result));
         }
     }
 }
