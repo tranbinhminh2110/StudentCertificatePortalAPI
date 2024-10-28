@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
+using StudentCertificatePortal_API.Enums;
 using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_Data.Models;
@@ -50,6 +51,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CourseFee = request.CourseFee,
                 CourseImage = request.CourseImage,
                 CertId = request.CertId,
+                CoursePermission = "Pending",
             };
             var result = await _uow.CourseRepository.AddAsync(courseEntity);
             await _uow.Commit(cancellationToken);
@@ -305,5 +307,25 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return _mapper.Map<CourseDto>(course);
 
         }
+
+        public async Task<CourseDto> UpdateCoursePermissionAsync(int courseId, EnumPermission coursePermission, CancellationToken cancellationToken)
+        {
+            var course = await _uow.CourseRepository.FirstOrDefaultAsync(x => x.CourseId == courseId, cancellationToken);
+
+            if (course is null)
+            {
+                throw new KeyNotFoundException("Course not found.");
+            }
+
+            course.CoursePermission = coursePermission.ToString();
+
+            _uow.CourseRepository.Update(course);
+            await _uow.Commit(cancellationToken);
+
+            var result = _mapper.Map<CourseDto>(course);
+
+            return result;
+        }
+
     }
 }
