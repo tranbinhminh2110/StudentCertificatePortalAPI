@@ -26,6 +26,7 @@ namespace StudentCertificatePortal_API.DTOs
         public string? OrganizeName { get; set; }
         public int? TypeId { get; set; }
         public string? TypeName { get; set; }
+        public string? Permission { get; set; }
 
 
         // Danh sách ID của các chứng chỉ tiền đề
