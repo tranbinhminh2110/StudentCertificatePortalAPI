@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
+using StudentCertificatePortal_API.Enums;
 using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_Data.Models;
@@ -36,6 +37,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 OrganizeName = request.OrganizeName,
                 OrganizeAddress = request.OrganizeAddress?.Trim(),
                 OrganizeContact = request.OrganizeContact,
+                OrganizePermission = "Pending",
             };
             var result = await _uow.OrganizeRepository.AddAsync(organizeEntity);
             await _uow.Commit(cancellationToken);
@@ -103,6 +105,25 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             await _uow.Commit(cancellationToken);
 
             return _mapper.Map<OrganizeDto>(organize);
+        }
+
+        public async Task<OrganizeDto> UpdateOrganizePermissionAsync(int organizeId, EnumPermission organizePermission, CancellationToken cancellationToken)
+        {
+            var organize = await _uow.OrganizeRepository.FirstOrDefaultAsync(x => x.OrganizeId == organizeId, cancellationToken);
+
+            if (organize is null)
+            {
+                throw new KeyNotFoundException("Organize not found.");
+            }
+
+            organize.OrganizePermission = organizePermission.ToString();
+
+            _uow.OrganizeRepository.Update(organize);
+            await _uow.Commit(cancellationToken);
+
+            var result = _mapper.Map<OrganizeDto>(organize);
+
+            return result;
         }
     }
 }

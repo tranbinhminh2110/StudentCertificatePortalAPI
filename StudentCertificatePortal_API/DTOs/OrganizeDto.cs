@@ -12,6 +12,8 @@ namespace StudentCertificatePortal_API.DTOs
         public string? OrganizeAddress { get; set; }
 
         public string? OrganizeContact { get; set; }
+        public string? OrganizePermission { get; set; }
+
 
     }
 }
