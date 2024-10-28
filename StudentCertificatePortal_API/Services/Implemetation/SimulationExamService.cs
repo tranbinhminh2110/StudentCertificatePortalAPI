@@ -55,6 +55,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 ExamFee = request.ExamFee,
                 ExamImage = request.ExamImage,
                 CertId = request.CertId,
+                ExamPermission = Enums.EnumPermission.Pending.ToString()
             };
 
             var result = await _uow.SimulationExamRepository.AddAsync(exam);

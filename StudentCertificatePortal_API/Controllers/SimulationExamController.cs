@@ -4,6 +4,7 @@ using StudentCertificatePortal_API.Commons;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Services.Interface;
+using StudentCertificatePortal_Data.Models;
 
 namespace StudentCertificatePortal_API.Controllers
 {
@@ -11,11 +12,14 @@ namespace StudentCertificatePortal_API.Controllers
     {
         private readonly ISimulationExamService _service;
         private readonly IMapper _mapper;
+        private readonly IPermissionService<SimulationExam> _simulationExamPermissionService;
 
-        public SimulationExamController(ISimulationExamService service, IMapper mapper)
+        public SimulationExamController(ISimulationExamService service, IMapper mapper, 
+            IPermissionService<SimulationExam> simulationExamPermissionService)
         {
             _service = service;
             _mapper = mapper;
+            _simulationExamPermissionService = simulationExamPermissionService;
         }
 
         [HttpGet]
@@ -60,6 +64,12 @@ namespace StudentCertificatePortal_API.Controllers
         {
             var result = await _service.GetSimulationExamByNameAsync(examName, new CancellationToken());
             return Ok(Result<List<SimulationExamDto>>.Succeed(result));
+        }
+        [HttpPut("update-permission/{examId:int}")]
+        public async Task<ActionResult<Result<CertificationDto>>> UpdatePermissionSimulationExam(int examId, Enums.EnumPermission permission)
+        {
+            var result = await _simulationExamPermissionService.UpdatePermissionAsync(examId, permission, new CancellationToken());
+            return result ? Ok("The Simulation Exam permission has been updated successfully.") : NotFound("The Simulation Exam with the specified ID was not found or the permission update failed.");
         }
     }
 }

@@ -4,6 +4,7 @@ using StudentCertificatePortal_API.Commons;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Services.Interface;
+using StudentCertificatePortal_Data.Models;
 
 namespace StudentCertificatePortal_API.Controllers
 {
@@ -11,11 +12,14 @@ namespace StudentCertificatePortal_API.Controllers
     {
         private readonly ICertificationService _service;
         private readonly IMapper _mapper;
+        private readonly IPermissionService<Certification> _certificationPermissionService;
 
-        public CertificationController(ICertificationService service, IMapper mapper)
+        public CertificationController(ICertificationService service, IMapper mapper,
+            IPermissionService<Certification> certificationPermissionService)
         {
             _service = service;
             _mapper = mapper;
+            _certificationPermissionService = certificationPermissionService;
         }
 
         [HttpGet]
@@ -64,5 +68,13 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.DeleteCertificationAsync(certId, new CancellationToken());
             return Ok(Result<CertificationDto>.Succeed(result));
         }
+
+        [HttpPut("update-permission/{certId:int}")]
+        public async Task<ActionResult<Result<CertificationDto>>> UpdatePermissionCertification(int certId, Enums.EnumPermission permission)
+        {
+            var result = await _certificationPermissionService.UpdatePermissionAsync(certId, permission, new CancellationToken());
+            return result ? Ok("The certification permission has been updated successfully.") : NotFound("The certification with the specified ID was not found or the permission update failed.");
+        }
+
     }
 }

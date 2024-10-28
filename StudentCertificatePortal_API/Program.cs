@@ -124,6 +124,8 @@ builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IVoucherService, VoucherService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IPermissionService<Certification>, PermissionService<Certification>>();
+builder.Services.AddScoped<IPermissionService<SimulationExam>, PermissionService<SimulationExam>>();
 builder.Services.AddSingleton<IRedisService>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
