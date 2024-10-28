@@ -23,6 +23,7 @@ namespace StudentCertificatePortal_API.Controllers
             _certificationPermissionService = certificationPermissionService;
         }
 
+
         [HttpGet]
         public async Task<ActionResult<Result<List<CertificationDto>>>> GetAllCertification()
         {

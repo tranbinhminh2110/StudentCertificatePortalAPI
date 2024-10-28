@@ -293,7 +293,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     cancellationToken: cancellationToken,
                     include: query => query.Include(c => c.CertIdPrerequisites)
                                       .Include(c => c.Majors)
-                                      .Include(c => c.JobPositions)// Include prerequisites
+                                      .Include(c => c.JobPositions)
                 );
 
             if (certification is null)
@@ -305,7 +305,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var type = await _uow.CertTypeRepository.FirstOrDefaultAsync(x => x.TypeId == certification.TypeId);
 
             
-            // Map the certification to DTO
             var certificationDto = _mapper.Map<CertificationDto>(certification);
 
 
@@ -313,7 +312,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             certificationDto.OrganizeName = organize?.OrganizeName;
             certificationDto.TypeId = type?.TypeId;
             certificationDto.TypeName = type?.TypeName;
-            // Populate the prerequisite details
+
+
             certificationDto.CertPrerequisiteId = certification.CertIdPrerequisites
                 .Select(prerequisite => prerequisite.CertId)
                 .ToList();
