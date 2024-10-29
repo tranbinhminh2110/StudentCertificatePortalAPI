@@ -158,6 +158,28 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return _mapper.Map<List<QandADto>>(result);
         }
 
+        public async Task<List<QandADto>> GetQandABySExamIdAsync(int examId, CancellationToken cancellationToken)
+        {
+            var result = new List<QandADto>();
+            var questions = await _uow.QuestionRepository.WhereAsync(x => x.ExamId == examId);
+            if (questions == null)
+            {
+                throw new KeyNotFoundException("Question not found!");
+            }
+            foreach (var question in questions)
+            {
+                var answers = await _uow.AnswerRepository.WhereAsync(x => x.QuestionId == question.QuestionId);
+                result.Add(new QandADto()
+                {
+                    QuestionId = question.QuestionId,
+                    QuestionName = question.QuestionName,
+                    ExamId = question.ExamId,
+                    Answers = _mapper.Map<List<AnswerDto>>(answers)
+                });
+            }
+            return _mapper.Map<List<QandADto>>(result);
+        }
+
         public async Task<QandADto> UpdateQandAAsync(int questionId, UpdateQuestionRequest request, CancellationToken cancellationToken)
         {
             var result = new QandADto();

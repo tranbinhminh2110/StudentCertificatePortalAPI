@@ -23,6 +23,8 @@ namespace StudentCertificatePortal_API.DTOs
         public string? ExamPermission { get; set; }
 
         public List<ExamList> ListQuestions { get; set; } = new List<ExamList>();
+        public List<CertificationDetailsDto> CertificationDetails { get; set; } = new List<CertificationDetailsDto>();
+        public List<VoucherDetailsDto> VoucherDetails { get; set; } = new List<VoucherDetailsDto>();
     }
     public class ExamList
     {

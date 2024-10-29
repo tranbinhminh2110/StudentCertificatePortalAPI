@@ -99,56 +99,110 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<List<SimulationExamDto>> GetAll()
         {
-            var result = await _uow.SimulationExamRepository.GetAll();
-            return _mapper.Map<List<SimulationExamDto>>(result);
+            var result = await _uow.SimulationExamRepository.GetAllAsync(query =>
+                query.Include(c => c.Vouchers)
+                     .Include(c => c.Cert)
+                     .ThenInclude(cert => cert.Type));
+
+            var sExamDto = result.Select(x =>
+            {
+                var examDto = _mapper.Map<SimulationExamDto>(x);
+                examDto.CertificationDetails = x.Cert != null ? new List<CertificationDetailsDto>
+        {
+            new CertificationDetailsDto
+            {
+                CertId = x.Cert.CertId,
+                CertName = x.Cert.CertName,
+                CertCode = x.Cert.CertCode,
+                CertDescription = x.Cert.CertDescription,
+                CertImage = x.Cert.CertImage,
+                TypeName = x.Cert.Type?.TypeName
+            }
+        } : new List<CertificationDetailsDto>();
+
+                examDto.VoucherDetails = x.Vouchers != null ? x.Vouchers.Select(voucher => new VoucherDetailsDto
+                {
+                    VoucherId = voucher.VoucherId,
+                    VoucherName = voucher.VoucherName,
+                    VoucherDescription = voucher.VoucherDescription,
+                    Percentage = voucher.Percentage,
+                    CreationDate = voucher.CreationDate,
+                    ExpiryDate = voucher.ExpiryDate,
+                    VoucherStatus = voucher.VoucherStatus
+                }).ToList() : new List<VoucherDetailsDto>();
+
+                return examDto;
+            }).ToList();
+
+            return sExamDto;
         }
+
 
         public async Task<SimulationExamDto> GetSimulationExamByIdAsync(int examId, CancellationToken cancellationToken)
         {
-            var simulation = await _uow.SimulationExamRepository.FirstOrDefaultAsync(x => x.ExamId == examId, cancellationToken);
+            var simulation = await _uow.SimulationExamRepository.FirstOrDefaultAsync(
+                x => x.ExamId == examId,
+                cancellationToken,
+                query => query.Include(a => a.Vouchers)
+                              .Include(a => a.Cert)
+                              .ThenInclude(cert => cert.Type)
+            );
+
             if (simulation is null)
             {
                 throw new KeyNotFoundException("Simulation Exam not found.");
             }
 
-            var questions = await _uow.QuestionRepository.WhereAsync(x => x.ExamId == simulation.ExamId
-            , cancellationToken
-            , include: i => i.Include(ans => ans.Answers));
-            var result = new SimulationExamDto();
-            result.ExamId = simulation.ExamId;
-            result.ExamName = simulation.ExamName;
-            result.ExamCode = simulation.ExamCode;
-            result.CertId = simulation.CertId;
-            result.ExamDescription = simulation.ExamDescription;
-            result.ExamFee = simulation.ExamFee;
-            result.ExamDiscountFee = simulation.ExamDiscountFee;
-            result.ExamImage = simulation.ExamImage;
+            var questions = await _uow.QuestionRepository.WhereAsync(
+                x => x.ExamId == simulation.ExamId,
+                cancellationToken,
+                include: i => i.Include(ans => ans.Answers)
+            );
+
+            var result = _mapper.Map<SimulationExamDto>(simulation);
+
+            result.CertificationDetails = simulation.Cert != null ? new List<CertificationDetailsDto>
+    {
+        new CertificationDetailsDto
+        {
+            CertId = simulation.Cert.CertId,
+            CertName = simulation.Cert.CertName,
+            CertCode = simulation.Cert.CertCode,
+            CertDescription = simulation.Cert.CertDescription,
+            CertImage = simulation.Cert.CertImage,
+            TypeName = simulation.Cert.Type?.TypeName
+        }
+    } : new List<CertificationDetailsDto>();
+
+            result.VoucherDetails = simulation.Vouchers != null ? simulation.Vouchers.Select(voucher => new VoucherDetailsDto
+            {
+                VoucherId = voucher.VoucherId,
+                VoucherName = voucher.VoucherName,
+                VoucherDescription = voucher.VoucherDescription,
+                Percentage = voucher.Percentage,
+                CreationDate = voucher.CreationDate,
+                ExpiryDate = voucher.ExpiryDate,
+                VoucherStatus = voucher.VoucherStatus
+            }).ToList() : new List<VoucherDetailsDto>();
+
+
             if (questions != null)
             {
-                foreach(var question in questions)
+                result.ListQuestions = questions.Select(question => new ExamList
                 {
-                    var exam = new ExamList()
+                    QuestionId = question.QuestionId,
+                    QuestionName = question.QuestionName,
+                    Answers = question.Answers.Select(answer => new AnswerList
                     {
-                        QuestionId = question.QuestionId,
-                        QuestionName = question.QuestionName,
-                    };
-                    
-
-                    foreach(var answer in question.Answers)
-                    {
-                        var answerExam = new AnswerList()
-                        {
-                            AnswerId = answer.AnswerId,
-                            AnswerText = answer.Text,
-                        };
-                        exam.Answers.Add(answerExam);
-
-                    }
-                    result.ListQuestions.Add(exam);
-                }
+                        AnswerId = answer.AnswerId,
+                        AnswerText = answer.Text
+                    }).ToList()
+                }).ToList();
             }
-            return _mapper.Map<SimulationExamDto>(result);
+
+            return result;
         }
+
 
         public async Task<SimulationExamDto> UpdateSimulationExamAsync(int examId, UpdateSimulationExamRequest request, CancellationToken cancellationToken)
         {
@@ -243,20 +297,60 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<List<SimulationExamDto>> GetSimulationExamByNameAsync(string? examName, CancellationToken cancellationToken)
         {
             IEnumerable<SimulationExam> result;
-            if(string.IsNullOrEmpty(examName))
+
+            if (string.IsNullOrEmpty(examName))
             {
-                result = await _uow.SimulationExamRepository.GetAll();
+                result = await _uow.SimulationExamRepository.GetAllAsync(query =>
+                    query.Include(a => a.Vouchers)
+                         .Include(a => a.Cert));
             }
             else
             {
-                result = await _uow.SimulationExamRepository.WhereAsync(x => x.ExamName.Contains(examName), cancellationToken);
+                result = await _uow.SimulationExamRepository.WhereAsync(
+                    x => x.ExamName.Contains(examName), cancellationToken,
+                    query => query.Include(a => a.Vouchers)
+                                  .Include(a => a.Cert));
+
                 if (!result.Any())
                 {
                     throw new KeyNotFoundException("Simulation Exam not found.");
                 }
             }
-            return _mapper.Map<List<SimulationExamDto>>(result);
+
+            var sExamDto = result.Select(x =>
+            {
+                var examDto = _mapper.Map<SimulationExamDto>(x);
+
+                examDto.CertificationDetails = x.Cert != null ? new List<CertificationDetailsDto>
+        {
+            new CertificationDetailsDto
+            {
+                CertId = x.Cert.CertId,
+                CertName = x.Cert.CertName,
+                CertCode = x.Cert.CertCode,
+                CertDescription = x.Cert.CertDescription,
+                CertImage = x.Cert.CertImage,
+                TypeName = x.Cert.Type?.TypeName
+            }
+        } : new List<CertificationDetailsDto>();
+
+                examDto.VoucherDetails = x.Vouchers != null ? x.Vouchers.Select(voucher => new VoucherDetailsDto
+                {
+                    VoucherId = voucher.VoucherId,
+                    VoucherName = voucher.VoucherName,
+                    VoucherDescription = voucher.VoucherDescription,
+                    Percentage = voucher.Percentage,
+                    CreationDate = voucher.CreationDate,
+                    ExpiryDate = voucher.ExpiryDate,
+                    VoucherStatus = voucher.VoucherStatus
+                }).ToList() : new List<VoucherDetailsDto>();
+
+                return examDto;
+            }).ToList();
+
+            return sExamDto;
         }
+
 
         public async Task<List<SimulationExamDto>> GetSimulationExamByCertIdAsync(int certId, CancellationToken cancellationToken)
         {
