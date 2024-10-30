@@ -13,7 +13,6 @@ namespace StudentCertificatePortal_API.Validators
                 .InclusiveBetween(0, 100).WithMessage("Percentage must be between 0 and 100.");
             RuleFor(x => x.CreationDate)
                .NotEmpty().WithMessage("Creation date is required.")
-               .GreaterThan(DateTime.Now.Date.AddMinutes(-5)).WithMessage("Creation date must be in the present or future.")
                .LessThanOrEqualTo(x => x.ExpiryDate).WithMessage("Creation date must be before or equal to expiry date.");
             RuleFor(x => x.ExpiryDate)
                 .NotEmpty().WithMessage("Expiry date is required.")
