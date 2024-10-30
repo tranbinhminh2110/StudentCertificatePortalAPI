@@ -100,6 +100,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             organize.OrganizeName = request.OrganizeName;
             organize.OrganizeContact = request.OrganizeContact;
             organize.OrganizeAddress = request.OrganizeAddress?.Trim();
+            organize.OrganizePermission = "Pending";
 
             _uow.OrganizeRepository.Update(organize);
             await _uow.Commit(cancellationToken);

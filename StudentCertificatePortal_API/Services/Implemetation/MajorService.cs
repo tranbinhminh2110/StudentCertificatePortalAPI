@@ -254,6 +254,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             major.MajorCode = request.MajorCode;
             major.MajorName = request.MajorName;
             major.MajorDescription = request.MajorDescription;
+            major.MajorPermission = "Pending";
 
             // Get existing JobPosition IDs
             var existingJobPositionIds = major.JobPositions.Select(j => j.JobPositionId).ToList();
