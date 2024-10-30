@@ -268,6 +268,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             course.CourseFee = request.CourseFee;
             course.CourseImage = request.CourseImage;
             course.CertId = request.CertId;
+            course.CoursePermission = "Pending";
+
 
             float? totalDiscount = 1;
 

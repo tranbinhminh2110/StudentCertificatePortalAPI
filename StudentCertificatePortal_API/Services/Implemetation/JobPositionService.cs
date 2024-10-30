@@ -247,6 +247,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             job.JobPositionCode = request.JobPositionCode;
             job.JobPositionName = request.JobPositionName;
             job.JobPositionDescription = request.JobPositionDescription;
+            job.JobPositionPermission = "Pending";
 
             var existingMajorIds = new HashSet<int>(job.Majors.Select(x => x.MajorId));
             var newMajorIds = request.MajorId ?? new List<int>();
