@@ -137,6 +137,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CourseId = sc.Course.CourseId,
                     CourseName = sc.Course.CourseName,
                     CourseCode = sc.Course.CourseCode,
+                    CourseTime  = sc.Course.CourseTime,
                     CourseFee = sc.Course.CourseFee,
                     CourseDiscountFee = sc.Course.CourseDiscountFee,
                     CourseImage = sc.Course.CourseImage,
@@ -163,6 +164,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 CourseEnrollmentId = result.CourseEnrollmentId,
                 CourseEnrollmentDate = result.CourseEnrollmentDate,
+                CourseEnrollmentStatus = result.CourseEnrollmentStatus,
                 TotalPrice = result.TotalPrice,
                 UserId = result.UserId,
                 CourseDetails = result.StudentOfCourses.Select(sc => new CourseDetailsDto
@@ -170,6 +172,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CourseId = sc.Course.CourseId,
                     CourseName = sc.Course.CourseName,
                     CourseCode = sc.Course.CourseCode,
+                    CourseTime = sc.Course.CourseTime,
                     CourseFee = sc.Course.CourseFee,
                     CourseDiscountFee = sc.Course.CourseDiscountFee,
                     CourseImage = sc.Course.CourseImage,
@@ -196,6 +199,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 CourseEnrollmentId = enrollment.CourseEnrollmentId,
                 CourseEnrollmentDate = enrollment.CourseEnrollmentDate,
+                CourseEnrollmentStatus = enrollment.CourseEnrollmentStatus,
                 TotalPrice = enrollment.TotalPrice,
                 UserId = enrollment.UserId,
                 CourseDetails = enrollment.StudentOfCourses.Select(sc => new CourseDetailsDto
@@ -203,6 +207,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CourseId = sc.Course.CourseId,
                     CourseName = sc.Course.CourseName,
                     CourseCode = sc.Course.CourseCode,
+                    CourseTime = sc.Course.CourseTime,
                     CourseFee = sc.Course.CourseFee,
                     CourseDiscountFee = sc.Course.CourseDiscountFee,
                     CourseImage = sc.Course.CourseImage,
