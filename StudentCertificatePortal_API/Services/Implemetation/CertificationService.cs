@@ -120,14 +120,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     .Select(prerequisite => prerequisite.CertDescription)
                     .ToList();
 
-                // Create the DTO aand populate the major 
+                 
 
                 certificationDto.MajorIds = certificationEntity.Majors.Select(major => major.MajorId).ToList();
                 certificationDto.MajorCodes = certificationEntity.Majors.Select(major => major.MajorCode).ToList();
                 certificationDto.MajorNames = certificationEntity.Majors.Select(major => major.MajorName).ToList();
                 certificationDto.MajorDescriptions = certificationEntity.Majors.Select(major => major.MajorDescription).ToList();
 
-                // Create the DTO aand populate the JobPosition 
+                
 
                 certificationDto.JobPositionIds = certificationEntity.JobPositions.Select(job => job.JobPositionId).ToList();
                 certificationDto.JobPositionCodes = certificationEntity.JobPositions.Select(job => job.JobPositionCode).ToList();
@@ -152,7 +152,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<CertificationDto> DeleteCertificationAsync(int certificationId, CancellationToken cancellationToken)
         {
-            // Retrieve the certification with its prerequisites
+            
             var certification = await _uow.CertificationRepository.FirstOrDefaultAsync(
                                         x => x.CertId == certificationId,
                                         cancellationToken,
@@ -170,7 +170,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new KeyNotFoundException("Certification not found.");
             }
 
-            // Remove all prerequisites where this certification is listed as a prerequisite
+            
             certification.CertIdPrerequisites?.Clear();
             certification.Courses?.Clear();
             certification.ExamSessions?.Clear();
@@ -178,7 +178,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             certification.SimulationExams?.Clear();
             certification.Majors?.Clear();
 
-            // Find dependent certifications that have this certification as a prerequisite
+            
             var dependentCertifications = await _uow.CertificationRepository.WhereAsync(
                 x => x.CertIdPrerequisites.Any(p => p.CertId == certificationId),
                 cancellationToken
@@ -186,7 +186,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             foreach (var dependentCert in dependentCertifications)
             {
-                // Reload the dependent certification with its prerequisites if needed
+                
                 var fullDependentCert = await _uow.CertificationRepository.FirstOrDefaultAsync(
                     x => x.CertId == dependentCert.CertId,
                     cancellationToken,
@@ -195,7 +195,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                                     .Include(c => c.JobPositions)
                 );
 
-                // Remove the specific prerequisite reference
+               
                 var prerequisitesToRemove = fullDependentCert.CertIdPrerequisites
                     .Where(p => p.CertId == certificationId)
                     .ToList();
@@ -205,18 +205,18 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     fullDependentCert.CertIdPrerequisites.Remove(prerequisite);
                 }
 
-                // Save the changes for each dependent certification
+                
                 _uow.CertificationRepository.Update(fullDependentCert);
             }
 
-            // Commit changes to remove all prerequisites and dependent relationships first
+            
             await _uow.Commit(cancellationToken);
 
-            // Now delete the main certification
+            
             _uow.CertificationRepository.Delete(certification);
             await _uow.Commit(cancellationToken);
 
-            // Map the deleted certification to DTO
+            
             var certificationDto = _mapper.Map<CertificationDto>(certification);
             return certificationDto;
         }
@@ -286,7 +286,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<CertificationDto> GetCertificationById(int certificationId, CancellationToken cancellationToken)
         {
-            // Eager load the prerequisite certifications using Include
+
             var certification = await _uow.CertificationRepository
                 .FirstOrDefaultAsync(
                     x => x.CertId == certificationId,
@@ -329,14 +329,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 .Select(prerequisite => prerequisite.CertDescription)
                 .ToList();
 
-            // Create the DTO aand populate the major 
+            
 
             certificationDto.MajorIds = certification.Majors.Select(major => major.MajorId).ToList();
             certificationDto.MajorCodes = certification.Majors.Select(major => major.MajorCode).ToList();
             certificationDto.MajorNames = certification.Majors.Select(major => major.MajorName).ToList();
             certificationDto.MajorDescriptions = certification.Majors.Select(major => major.MajorDescription).ToList();
 
-            // Create the DTO aand populate the JobPosition 
+             
 
             certificationDto.JobPositionIds = certification.JobPositions.Select(job => job.JobPositionId).ToList();
             certificationDto.JobPositionCodes = certification.JobPositions.Select(job => job.JobPositionCode).ToList();
@@ -348,7 +348,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<List<CertificationDto>> GetCertificationByNameAsync(string certName, CancellationToken cancellationToken)
         {
-            // Fetch certifications including prerequisites
+            
             var certifications = await _uow.CertificationRepository
                 .WhereAsync(
                     x => x.CertName.Contains(certName),
@@ -356,25 +356,25 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     include: query => query.Include(c => c.CertIdPrerequisites)
                 );
 
-            // If no certifications found, throw an exception
+            
             if (certifications == null || !certifications.Any())
             {
                 throw new KeyNotFoundException("No certifications found with the given name.");
             }
 
-            // Map the certifications to DTOs
+            
             var certificationDtos = _mapper.Map<List<CertificationDto>>(certifications);
 
             foreach (var certificationDto in certificationDtos)
             {
-                // Find the original certification entity
+                
                 var certification = certifications.First(c => c.CertId == certificationDto.CertId);
 
-                // Fetch related organize and cert type
+                
                 var organize = await _uow.OrganizeRepository.FirstOrDefaultAsync(x => x.OrganizeId == certification.OrganizeId);
                 var type = await _uow.CertTypeRepository.FirstOrDefaultAsync(x => x.TypeId == certification.TypeId);
 
-                // Fill in prerequisite details
+                
                 certificationDto.CertPrerequisiteId = certification.CertIdPrerequisites
                     .Select(prerequisite => prerequisite.CertId)
                     .ToList();
@@ -390,7 +390,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     .Select(prerequisite => prerequisite.CertDescription)
                     .ToList();
 
-                // Include organization and type details in DTO
+                
                 certificationDto.OrganizeId = organize?.OrganizeId;
                 certificationDto.OrganizeName = organize?.OrganizeName;
                 certificationDto.TypeId = type?.TypeId;
@@ -404,14 +404,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<CertificationDto> UpdateCertificationAsync(int certificationId, UpdateCertificationRequest request, CancellationToken cancellationToken)
         {
-            // Validate the request
+            
             var validation = await _updateCertificationValidator.ValidateAsync(request, cancellationToken);
             if (!validation.IsValid)
             {
                 throw new RequestValidationException(validation.Errors);
             }
 
-            // Retrieve the existing certification entity including prerequisites
+            
             var certification = await _uow.CertificationRepository
                 .Include(x => x.CertIdPrerequisites)
                 .Include(c => c.Majors)
@@ -423,7 +423,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new KeyNotFoundException("Certification not found.");
             }
 
-            // Update main certification properties with new values
+            
             certification.CertName = request.CertName;
             certification.CertCode = request.CertCode;
             certification.CertDescription = request.CertDescription;
@@ -433,8 +433,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             certification.CertValidity = request.CertValidity;
             certification.TypeId = request.TypeId;
             certification.OrganizeId = request.OrganizeId;
+            certification.Permission = Enums.EnumPermission.Pending.ToString();
 
-            // Get existing prerequisite IDs
+            
             var existingPrerequisiteIds = certification.CertIdPrerequisites.Select(p => p.CertId).ToList();
             var newPrerequisiteIds = request.CertIdPrerequisites ?? new List<int>();
 
@@ -443,7 +444,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             var existingJobPositionIds = certification.JobPositions.Select(p => p.JobPositionId).ToList();
             var newJobPositionIds = request.JobIds ?? new List<int>();
-            // Remove prerequisites that are no longer referenced
+            
             foreach (var existingPrerequisiteId in existingPrerequisiteIds)
             {
                 if (!newPrerequisiteIds.Contains(existingPrerequisiteId))
@@ -479,7 +480,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     }
                 }
             }
-            // Add new prerequisites that are not already in the certification
+            
             foreach (var certPreId in newPrerequisiteIds)
             {
                 if (!existingPrerequisiteIds.Contains(certPreId))
@@ -489,9 +490,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                     if (prerequisiteCert != null)
                     {
-                        // Check if this relationship already exists to avoid duplicates
+                        
                         var exists = certification.CertIdPrerequisites.Any(p => p.CertId == certPreId);
-                        if (!exists) // Only add if it doesn't already exist
+                        if (!exists) 
                         {
                             certification.CertIdPrerequisites.Add(prerequisiteCert);
                         }
@@ -518,17 +519,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 certification.JobPositions.Add(job);
             }
 
-            // Update the certification in the repository
+            
             _uow.CertificationRepository.Update(certification);
 
             try
             {
                 await _uow.Commit(cancellationToken);
 
-                // Create the DTO and populate the prerequisite details
+                
                 var certificationDto = _mapper.Map<CertificationDto>(certification);
 
-                // Populate the prerequisite details for the DTO
+                
                 certificationDto.CertPrerequisite = certification.CertIdPrerequisites
                     .Select(prerequisite => prerequisite.CertName)
                     .ToList();
@@ -544,7 +545,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 certificationDto.CertDescriptionPrerequisite = certification.CertIdPrerequisites
                     .Select(prerequisite => prerequisite.CertDescription)
                     .ToList();
-                // Major information is shown
+                
 
                 certificationDto.MajorIds = certification.Majors
                     .Select(major => major.MajorId)
@@ -561,7 +562,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     .ToList();
 
 
-                // Job Position information is shown
+                
                 certificationDto.JobPositionIds = certification.JobPositions
                     .Select(job => job.JobPositionId)
                     .ToList();

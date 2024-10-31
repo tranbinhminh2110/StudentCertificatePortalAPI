@@ -226,6 +226,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             exam.ExamFee = request.ExamFee;
             exam.ExamImage = request.ExamImage;
             exam.CertId = request.CertId;
+            exam.ExamPermission = Enums.EnumPermission.Pending.ToString();
 
             float? totalDiscount = 1;
 
