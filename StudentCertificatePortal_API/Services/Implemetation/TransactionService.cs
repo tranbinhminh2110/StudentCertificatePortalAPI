@@ -96,10 +96,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         {
             var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.UserId == userId);
             if (wallet == null) throw new KeyNotFoundException("Wallet not found!");
-            var transaction = await _uow.TransactionRepository.WhereAsync(x => x.WalletId == wallet.WalletId);
 
-            return _mapper.Map<List<TransactionDto>>(transaction);
+            var transactions = await _uow.TransactionRepository
+                .WhereAsync(x => x.WalletId == wallet.WalletId);
+
+            var sortedTransactions = transactions.OrderByDescending(x => x.CreatedAt);
+
+            return _mapper.Map<List<TransactionDto>>(sortedTransactions);
         }
+
+
 
         public async Task<TransactionDto> UpdateStatusTransactionAsync(int transId, EnumTransaction status, CancellationToken cancellationToken)
         {
