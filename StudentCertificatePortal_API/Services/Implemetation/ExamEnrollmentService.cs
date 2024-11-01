@@ -219,10 +219,15 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 cancellationToken,
                 include: p => p.Include(q => q.StudentOfExams)
                                .Include(q => q.Payments));
+
+            
+
             if (examEnrollment is null)
             {
                 throw new KeyNotFoundException("Exam Enrollment not found.");
             }
+            examEnrollment?.StudentOfExams.Clear();
+            examEnrollment?.Payments.Clear();
             _uow.ExamEnrollmentRepository.Delete(examEnrollment);
             await _uow.Commit(cancellationToken);
             return _mapper.Map<ExamEnrollmentDto>(examEnrollment);
