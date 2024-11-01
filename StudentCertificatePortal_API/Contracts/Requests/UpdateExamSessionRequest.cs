@@ -9,5 +9,7 @@
         public DateTime? SessionDate { get; set; }
 
         public string? SessionAddress { get; set; }
+        public string? SessionTime { get; set; }
+
     }
 }

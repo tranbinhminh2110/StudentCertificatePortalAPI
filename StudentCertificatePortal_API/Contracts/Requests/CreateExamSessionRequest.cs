@@ -13,5 +13,7 @@
         public string? SessionAddress { get; set; }
 
         public DateTime? SessionCreatedAt { get; set; }
+        public string? SessionTime { get; set; }
+
     }
 }

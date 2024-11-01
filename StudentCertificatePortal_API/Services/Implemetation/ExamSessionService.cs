@@ -46,6 +46,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 SessionDate = request.SessionDate,
                 SessionAddress = request.SessionAddress,
                 SessionCreatedAt = request.SessionCreatedAt,
+                SessionTime = request.SessionTime,
             };
             var result = await _uow.ExamSessionRepository.AddAsync(sessionEntity);
             await _uow.Commit(cancellationToken);
@@ -124,6 +125,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             session.SessionCode = request.SessionCode;
             session.SessionDate = request.SessionDate;
             session.SessionAddress = request.SessionAddress;
+            session.SessionTime = request.SessionTime;
             _uow.ExamSessionRepository.Update(session);
             await _uow.Commit(cancellationToken);
             return _mapper.Map<ExamSessionDto>(session);
