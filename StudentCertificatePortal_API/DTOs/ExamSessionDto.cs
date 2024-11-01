@@ -18,5 +18,7 @@ namespace StudentCertificatePortal_API.DTOs
         public int? CertId { get; set; }
 
         public DateTime? SessionCreatedAt { get; set; }
+        public string? SessionTime { get; set; }
+
     }
 }

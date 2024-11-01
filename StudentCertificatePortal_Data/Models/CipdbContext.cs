@@ -320,6 +320,9 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.SessionName)
                 .HasMaxLength(255)
                 .HasColumnName("session_name");
+            entity.Property(e => e.SessionTime)
+                .HasMaxLength(255)
+                .HasColumnName("session_time");
 
             entity.HasOne(d => d.Cert).WithMany(p => p.ExamSessions)
                 .HasForeignKey(d => d.CertId)

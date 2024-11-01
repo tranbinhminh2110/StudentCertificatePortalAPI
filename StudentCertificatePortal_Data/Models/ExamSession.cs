@@ -19,5 +19,7 @@ public partial class ExamSession
 
     public DateTime? SessionCreatedAt { get; set; }
 
+    public string? SessionTime { get; set; }
+
     public virtual Certification? Cert { get; set; }
 }
