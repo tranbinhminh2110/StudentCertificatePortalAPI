@@ -13,5 +13,6 @@
         public string? OrganizeName { get; set; }
 
         public string? CertValidity { get; set; }
+        public string? Permission { get; set; }
     }
 }
