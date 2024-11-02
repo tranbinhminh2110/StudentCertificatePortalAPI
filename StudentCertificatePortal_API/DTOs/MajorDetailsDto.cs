@@ -9,5 +9,7 @@
         public string? MajorName { get; set; }
 
         public string? MajorDescription { get; set; }
+        public string? MajorPermission { get; set; }
+
     }
 }

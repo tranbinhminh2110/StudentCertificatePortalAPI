@@ -136,7 +136,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         JobPositionId = jobPosition.JobPositionId,
                         JobPositionName = jobPosition.JobPositionName,
                         JobPositionCode = jobPosition.JobPositionCode,
-                        JobPositionDescription = jobPosition.JobPositionDescription
+                        JobPositionDescription = jobPosition.JobPositionDescription,
+                        JobPositionPermission = jobPosition.JobPositionPermission,
                     }).ToList();
                 majorDto.CertificationDetails = major.Certs
                     .Select(cert => new CertificationDetailsDto
@@ -149,6 +150,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         TypeName = cert.Type?.TypeName,
                         CertValidity = cert.CertValidity,
                         OrganizeName = cert.Organize?.OrganizeName,
+                        Permission = cert.Permission,
                     }).ToList();
 
                 return majorDto;
@@ -177,7 +179,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     JobPositionId = jobPosition.JobPositionId,
                     JobPositionName = jobPosition.JobPositionName,
                     JobPositionCode = jobPosition.JobPositionCode,
-                    JobPositionDescription = jobPosition.JobPositionDescription
+                    JobPositionDescription = jobPosition.JobPositionDescription,
+                    JobPositionPermission = jobPosition.JobPositionPermission,
+                    
                 }).ToList();
             majorDto.CertificationDetails = result.Certs
                     .Select(cert => new CertificationDetailsDto
@@ -190,6 +194,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         TypeName = cert.Type?.TypeName,
                         CertValidity = cert.CertValidity,
                         OrganizeName = cert.Organize?.OrganizeName,
+                        Permission = cert.Permission,
                     }).ToList();
 
             return majorDto;
@@ -218,7 +223,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         JobPositionId = jobPosition.JobPositionId,
                         JobPositionName = jobPosition.JobPositionName,
                         JobPositionCode = jobPosition.JobPositionCode,
-                        JobPositionDescription = jobPosition.JobPositionDescription
+                        JobPositionDescription = jobPosition.JobPositionDescription,
+                        JobPositionPermission = jobPosition.JobPositionPermission
                     }).ToList();
                 majorDto.CertificationDetails = major.Certs
                     .Select(cert => new CertificationDetailsDto
@@ -231,6 +237,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         TypeName = cert.Type?.TypeName,
                         CertValidity = cert.CertValidity,
                         OrganizeName = cert.Organize?.OrganizeName,
+                        Permission = cert.Permission,
                     }).ToList();
             }
             return majorDtos;
