@@ -12,7 +12,7 @@ namespace StudentCertificatePortal_API.DTOs
         public string? JobPositionName { get; set; }
 
         public string? JobPositionDescription { get; set; }
-
+        public string? JobPositionPermission { get; set; }
 
 
     }

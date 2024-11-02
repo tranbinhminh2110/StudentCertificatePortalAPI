@@ -126,7 +126,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         MajorId = major.MajorId,
                         MajorName = major.MajorName,
                         MajorCode = major.MajorCode,
-                        MajorDescription = major.MajorDescription
+                        MajorDescription = major.MajorDescription,
+                        MajorPermission = major.MajorPermission,
                     }).ToList();
 
                 jobDto.CertificationDetails = result.Certs
@@ -140,6 +141,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         TypeName = cert.Type?.TypeName,
                         CertValidity = cert.CertValidity,
                         OrganizeName = cert.Organize?.OrganizeName,
+                        Permission = cert.Permission,
                     }).ToList();
 
                 return jobDto;
@@ -168,7 +170,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     MajorId = major.MajorId,
                     MajorName = major.MajorName,
                     MajorCode = major.MajorCode,
-                    MajorDescription = major.MajorDescription
+                    MajorDescription = major.MajorDescription,
+                    MajorPermission = major.MajorPermission,
                 }).ToList();
 
             jobDto.CertificationDetails = result.Certs
@@ -182,6 +185,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     TypeName = cert.Type?.TypeName,
                     CertValidity = cert.CertValidity,
                     OrganizeName = cert.Organize?.OrganizeName,
+                    Permission = cert.Permission,
                 }).ToList();
 
             return jobDto;
@@ -209,7 +213,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         MajorId = major.MajorId,
                         MajorName = major.MajorName,
                         MajorCode = major.MajorCode,
-                        MajorDescription = major.MajorDescription
+                        MajorDescription = major.MajorDescription,
+                        MajorPermission = major.MajorPermission,
                     }).ToList();
 
                 jobDto.CertificationDetails = job.Certs
@@ -223,6 +228,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         TypeName = cert.Type?.TypeName,
                         CertValidity = cert.CertValidity,
                         OrganizeName = cert.Organize?.OrganizeName,
+                        Permission = cert.Permission,
                     }).ToList();
             }
             return jobDtos;
