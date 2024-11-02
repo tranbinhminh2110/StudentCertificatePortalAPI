@@ -40,6 +40,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 MajorCode = request.MajorCode,
                 MajorName = request.MajorName,
                 MajorDescription = request.MajorDescription,
+                MajorImage = request.MajorImage,
                 MajorPermission = "Pending",
             };
             if (request.JobPositionId != null && request.JobPositionId.Any())
@@ -254,6 +255,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             major.MajorCode = request.MajorCode;
             major.MajorName = request.MajorName;
             major.MajorDescription = request.MajorDescription;
+            major.MajorImage = request.MajorImage;
             major.MajorPermission = "Pending";
 
             // Get existing JobPosition IDs

@@ -15,6 +15,8 @@ public partial class Major
 
     public string? MajorPermission { get; set; }
 
+    public string? MajorImage { get; set; }
+
     public virtual ICollection<Certification> Certs { get; set; } = new List<Certification>();
 
     public virtual ICollection<JobPosition> JobPositions { get; set; } = new List<JobPosition>();

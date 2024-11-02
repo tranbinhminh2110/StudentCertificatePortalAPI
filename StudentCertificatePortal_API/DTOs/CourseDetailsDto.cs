@@ -13,5 +13,6 @@
         public int? CourseDiscountFee { get; set; }
         public string? CourseImage { get; set; }
 
+
     }
 }
