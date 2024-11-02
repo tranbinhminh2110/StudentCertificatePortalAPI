@@ -410,6 +410,9 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.MajorDescription)
                 .HasColumnType("text")
                 .HasColumnName("major_description");
+            entity.Property(e => e.MajorImage)
+                .HasColumnType("text")
+                .HasColumnName("major_image");
             entity.Property(e => e.MajorName)
                 .HasMaxLength(255)
                 .HasColumnName("major_name");
