@@ -136,7 +136,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CertCode = course.Cert.CertCode,
                 CertDescription = course.Cert.CertDescription,
                 CertImage = course.Cert.CertImage,
-                TypeName = course.Cert.Type?.TypeName
+                TypeName = course.Cert.Type?.TypeName,
+                Permission = course.Cert.Permission,
             }
             } : new List<CertificationDetailsDto>();
                 courseDto.VoucherDetails = course.Vouchers != null ? course.Vouchers.Select(voucher => new VoucherDetailsDto
@@ -180,7 +181,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             CertCode = result.Cert.CertCode,
             CertDescription = result.Cert.CertDescription,
             CertImage = result.Cert.CertImage,
-            TypeName = result.Cert.Type?.TypeName
+            TypeName = result.Cert.Type?.TypeName,
+            Permission = result.Cert.Permission,
         }
     } : new List<CertificationDetailsDto>();
 
@@ -226,7 +228,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CertCode = course.Cert.CertCode,
                 CertDescription = course.Cert.CertDescription,
                 CertImage = course.Cert.CertImage,
-                TypeName = course.Cert.Type?.TypeName
+                TypeName = course.Cert.Type?.TypeName,
+                Permission = course.Cert.Permission,
             }
         } : new List<CertificationDetailsDto>();
 
