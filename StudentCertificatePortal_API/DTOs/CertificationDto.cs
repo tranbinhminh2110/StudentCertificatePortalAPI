@@ -27,6 +27,8 @@ namespace StudentCertificatePortal_API.DTOs
         public int? TypeId { get; set; }
         public string? TypeName { get; set; }
         public string? Permission { get; set; }
+        
+        
 
 
         // Danh sách ID của các chứng chỉ tiền đề
@@ -34,18 +36,21 @@ namespace StudentCertificatePortal_API.DTOs
         public List<string>? CertPrerequisite { get; set; } = new List<string>();
         public List<string>? CertCodePrerequisite { get; set; } = new List<string>();
         public List<string>? CertDescriptionPrerequisite { get; set; } = new List<string>();
+        
 
         // Danh sách ID của JobPositions 
         public List<int>? JobPositionIds { get; set; } = new List<int>();
         public List<string>? JobPositionCodes { get; set; } = new List<string>();
         public List<string>? JobPositionNames { get; set; } = new List<string>();
         public List<string>? JobPositionDescriptions { get; set; } = new List<string>();
+        public List<string>? JobPositionPermission { get; set; } = new List<string>();
 
         // Danh sách ID của Majors
         public List<int>? MajorIds { get; set; } = new List<int>();
         public List<string>? MajorCodes { get; set; } = new List<string>();
         public List<string>? MajorNames { get; set; } = new List<string>();
         public List<string>? MajorDescriptions { get; set; } = new List<string>();
+        public List<string>? MajorPermission { get; set; } = new List<string>();
 
     }
 }

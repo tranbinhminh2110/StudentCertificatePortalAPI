@@ -268,6 +268,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 certificationDto.MajorCodes = certification.Majors.Select(major => major.MajorCode).ToList();
                 certificationDto.MajorNames = certification.Majors.Select(major => major.MajorName).ToList();
                 certificationDto.MajorDescriptions = certification.Majors.Select(major => major.MajorDescription).ToList();
+                certificationDto.MajorPermission = certification.Majors.Select(major => major.MajorPermission).ToList();
 
 
 
@@ -275,6 +276,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 certificationDto.JobPositionCodes = certification.JobPositions.Select(job => job.JobPositionCode).ToList();
                 certificationDto.JobPositionNames = certification.JobPositions.Select(job => job.JobPositionName).ToList();
                 certificationDto.JobPositionDescriptions = certification.JobPositions.Select(major => major.JobPositionDescription).ToList();
+                certificationDto.JobPositionPermission = certification.JobPositions.Select(major => major.JobPositionPermission).ToList();
 
                 certificationDtos.Add(certificationDto);
             }
@@ -335,13 +337,15 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             certificationDto.MajorCodes = certification.Majors.Select(major => major.MajorCode).ToList();
             certificationDto.MajorNames = certification.Majors.Select(major => major.MajorName).ToList();
             certificationDto.MajorDescriptions = certification.Majors.Select(major => major.MajorDescription).ToList();
+            certificationDto.MajorPermission = certification.Majors.Select(major => major.MajorPermission).ToList();
 
-             
+
 
             certificationDto.JobPositionIds = certification.JobPositions.Select(job => job.JobPositionId).ToList();
             certificationDto.JobPositionCodes = certification.JobPositions.Select(job => job.JobPositionCode).ToList();
             certificationDto.JobPositionNames = certification.JobPositions.Select(job => job.JobPositionName).ToList();
             certificationDto.JobPositionDescriptions = certification.JobPositions.Select(major => major.JobPositionDescription).ToList();
+            certificationDto.JobPositionPermission = certification.JobPositions.Select(major => major.JobPositionPermission).ToList();
 
             return certificationDto;
         }

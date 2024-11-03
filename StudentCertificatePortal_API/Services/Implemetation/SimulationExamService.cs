@@ -116,7 +116,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CertCode = x.Cert.CertCode,
                 CertDescription = x.Cert.CertDescription,
                 CertImage = x.Cert.CertImage,
-                TypeName = x.Cert.Type?.TypeName
+                TypeName = x.Cert.Type?.TypeName,
+                CertValidity = x.Cert.CertValidity,
+                Permission = x.Cert.Permission,
             }
         } : new List<CertificationDetailsDto>();
 
@@ -170,7 +172,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             CertCode = simulation.Cert.CertCode,
             CertDescription = simulation.Cert.CertDescription,
             CertImage = simulation.Cert.CertImage,
-            TypeName = simulation.Cert.Type?.TypeName
+            TypeName = simulation.Cert.Type?.TypeName,
+            CertValidity = simulation.Cert.CertValidity,
+                Permission = simulation.Cert.Permission,
         }
     } : new List<CertificationDetailsDto>();
 
@@ -331,7 +335,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CertCode = x.Cert.CertCode,
                 CertDescription = x.Cert.CertDescription,
                 CertImage = x.Cert.CertImage,
-                TypeName = x.Cert.Type?.TypeName
+                TypeName = x.Cert.Type?.TypeName,
+                CertValidity = x.Cert.CertValidity,
+                Permission = x.Cert.Permission,
             }
         } : new List<CertificationDetailsDto>();
 
