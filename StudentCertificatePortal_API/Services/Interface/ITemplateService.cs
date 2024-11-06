@@ -3,6 +3,6 @@
     public interface ITemplateService
     {
         byte[] GenerateExamTemplate();
-        Task AddQuestionsFromExcelAsync(Stream fileStream, CancellationToken cancellationToken);
+        Task AddQuestionsFromExcelAsync(int examId, Stream fileStream, CancellationToken cancellationToken);
     }
 }

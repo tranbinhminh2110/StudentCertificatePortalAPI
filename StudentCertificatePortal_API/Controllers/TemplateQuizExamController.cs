@@ -16,8 +16,8 @@ namespace StudentCertificatePortal_API.Controllers
 
             return File(fileContents, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ExamTemplate.xlsx");
         }
-        [HttpPost("upload-exam-template")]
-        public async Task<IActionResult> UploadExamTemplate(IFormFile file)
+        [HttpPost("upload-exam-template/{examId:int}")]
+        public async Task<IActionResult> UploadExamTemplate(IFormFile file, [FromRoute] int examId)
         {
             if (file.Length <= 0)
                 return BadRequest("File không hợp lệ.");
@@ -26,7 +26,7 @@ namespace StudentCertificatePortal_API.Controllers
             {
                 await file.CopyToAsync(stream);
                 stream.Position = 0;
-                await _service.AddQuestionsFromExcelAsync(stream, new CancellationToken());
+                await _service.AddQuestionsFromExcelAsync(examId, stream, new CancellationToken());
             }
 
             return Ok("Đề thi đã được thêm thành công.");
