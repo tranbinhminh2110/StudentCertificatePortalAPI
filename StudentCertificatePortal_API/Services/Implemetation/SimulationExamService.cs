@@ -55,6 +55,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 ExamFee = request.ExamFee,
                 ExamImage = request.ExamImage,
                 CertId = request.CertId,
+                Duration = request.Duration,
+                QuestionCount = request.QuestionCount,
                 ExamPermission = Enums.EnumPermission.Pending.ToString()
             };
 
@@ -195,7 +197,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 result.ListQuestions = questions.Select(question => new ExamList
                 {
                     QuestionId = question.QuestionId,
-                    QuestionName = question.QuestionName,
+                    QuestionName = question.QuestionText,
                     Answers = question.Answers.Select(answer => new AnswerList
                     {
                         AnswerId = answer.AnswerId,
@@ -230,6 +232,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             exam.ExamFee = request.ExamFee;
             exam.ExamImage = request.ExamImage;
             exam.CertId = request.CertId;
+            exam.Duration = request.Duration;
+            exam.QuestionCount = request.QuestionCount;
             exam.ExamPermission = Enums.EnumPermission.Pending.ToString();
 
             float? totalDiscount = 1;

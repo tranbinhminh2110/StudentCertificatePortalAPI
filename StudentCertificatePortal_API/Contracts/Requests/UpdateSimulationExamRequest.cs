@@ -12,6 +12,8 @@
         public string? ExamDescription { get; set; }
 
         public int? ExamFee { get; set; }
+        public int? QuestionCount { get; set; }
+        public int? Duration { get; set; }
 
         public List<int> VoucherIds { get; set; } = new List<int>();
 
