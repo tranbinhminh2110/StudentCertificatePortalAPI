@@ -71,7 +71,7 @@ public partial class CipdbContext : DbContext
 
             entity.Property(e => e.AnswerId).HasColumnName("answer_id");
             entity.Property(e => e.QuestionId).HasColumnName("question_id");
-            entity.Property(e => e.Text).HasMaxLength(255);
+            entity.Property(e => e.Text).HasColumnType("text");
 
             entity.HasOne(d => d.Question).WithMany(p => p.Answers)
                 .HasForeignKey(d => d.QuestionId)
@@ -518,9 +518,9 @@ public partial class CipdbContext : DbContext
 
             entity.Property(e => e.QuestionId).HasColumnName("question_id");
             entity.Property(e => e.ExamId).HasColumnName("exam_id");
-            entity.Property(e => e.QuestionName)
-                .HasMaxLength(255)
-                .HasColumnName("question_name");
+            entity.Property(e => e.QuestionText)
+                .HasColumnType("text")
+                .HasColumnName("question_text");
 
             entity.HasOne(d => d.Exam).WithMany(p => p.Questions)
                 .HasForeignKey(d => d.ExamId)
@@ -561,6 +561,7 @@ public partial class CipdbContext : DbContext
 
             entity.Property(e => e.ExamId).HasColumnName("exam_id");
             entity.Property(e => e.CertId).HasColumnName("cert_id");
+            entity.Property(e => e.Duration).HasColumnName("duration");
             entity.Property(e => e.ExamCode)
                 .HasMaxLength(255)
                 .HasColumnName("exam_code");
@@ -578,6 +579,7 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.ExamPermission)
                 .HasMaxLength(100)
                 .HasColumnName("exam_permission");
+            entity.Property(e => e.QuestionCount).HasColumnName("question_count");
 
             entity.HasOne(d => d.Cert).WithMany(p => p.SimulationExams)
                 .HasForeignKey(d => d.CertId)

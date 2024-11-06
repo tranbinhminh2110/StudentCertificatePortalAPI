@@ -21,6 +21,8 @@ namespace StudentCertificatePortal_API.DTOs
 
         public string? ExamImage { get; set; }
         public string? ExamPermission { get; set; }
+        public int? Duration { get; set; }
+        public int? QuestionCount { get; set; }
 
         public List<ExamList> ListQuestions { get; set; } = new List<ExamList>();
         public List<CertificationDetailsDto> CertificationDetails { get; set; } = new List<CertificationDetailsDto>();

@@ -40,7 +40,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
             var questionEntity = new Question()
             {
-                QuestionName = request.QuestionName,
+                QuestionText = request.QuestionName,
                 ExamId = request.ExamId,
                 
             };
@@ -49,7 +49,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var result = new QandADto()
             {
                 QuestionId = questionResult.QuestionId,
-                QuestionName = questionResult.QuestionName,
+                QuestionName = questionResult.QuestionText,
                 ExamId = questionResult.ExamId,
                 Answers = new List<AnswerDto>()
             };
@@ -111,7 +111,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 result.Add(new QandADto()
                 {
                     QuestionId = question.QuestionId,
-                    QuestionName = question.QuestionName,
+                    QuestionName = question.QuestionText,
                     ExamId = question.ExamId,
                     Answers = _mapper.Map<List<AnswerDto>>(answers)
                 });
@@ -129,7 +129,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
 
             result.QuestionId = question.QuestionId;
-            result.QuestionName = question.QuestionName;
+            result.QuestionName = question.QuestionText;
             result.ExamId = question.ExamId;
             var answers = await _uow.AnswerRepository.WhereAsync(x => x.QuestionId == question.QuestionId);
             result.Answers = _mapper.Map<List<AnswerDto>>(answers);
@@ -139,7 +139,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<List<QandADto>> GetQandAByNameAsync(string questionName, CancellationToken cancellationToken)
         {
             var result = new List<QandADto>();
-            var questions = await _uow.QuestionRepository.WhereAsync(x => x.QuestionName.Contains(questionName));
+            var questions = await _uow.QuestionRepository.WhereAsync(x => x.QuestionText.Contains(questionName));
             if(questions == null)
             {
                 throw new KeyNotFoundException("Question not found!");
@@ -150,7 +150,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 result.Add(new QandADto()
                 {
                     QuestionId = question.QuestionId,
-                    QuestionName = question.QuestionName,
+                    QuestionName = question.QuestionText,
                     ExamId = question.ExamId,
                     Answers = _mapper.Map<List<AnswerDto>>(answers)
                 });
@@ -172,7 +172,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 result.Add(new QandADto()
                 {
                     QuestionId = question.QuestionId,
-                    QuestionName = question.QuestionName,
+                    QuestionName = question.QuestionText,
                     ExamId = question.ExamId,
                     Answers = _mapper.Map<List<AnswerDto>>(answers)
                 });
@@ -190,7 +190,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new KeyNotFoundException("Question not found!");
             }
 
-            question.QuestionName = request.QuestionName;
+            question.QuestionText = request.QuestionName;
             question.ExamId = request.ExamId;
             
 
@@ -199,7 +199,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
 
             result.QuestionId = question.QuestionId;
-            result.QuestionName = question.QuestionName;
+            result.QuestionName = question.QuestionText;
             result.ExamId = question.ExamId;
             result.Answers = new List<AnswerDto>();
 
