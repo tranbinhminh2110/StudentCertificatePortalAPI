@@ -161,15 +161,28 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<List<QandADto>> GetQandABySExamIdAsync(int examId, CancellationToken cancellationToken)
         {
             var result = new List<QandADto>();
+            var exam = await _uow.SimulationExamRepository.FirstOrDefaultAsync(x => x.ExamId == examId);
+            if (exam is null) throw new KeyNotFoundException("Simulation not found!");
             var questions = await _uow.QuestionRepository.WhereAsync(x => x.ExamId == examId);
             if (questions == null)
             {
                 throw new KeyNotFoundException("Question not found!");
             }
-            foreach (var question in questions)
+            int questionCount = exam.QuestionCount ?? throw new Exception("Not enough questions available.");
+            if (questions.Count() < questionCount)
+            {
+                throw new Exception("Not enough questions available.");
+            }
+            var random = new Random();
+            var randomQuestions = questions
+                .OrderBy(x => random.Next())
+                .Take(questionCount)
+                .ToList();
+
+            foreach (var question in randomQuestions)
             {
                 var answers = await _uow.AnswerRepository.WhereAsync(x => x.QuestionId == question.QuestionId);
-                result.Add(new QandADto()
+                result.Add(new QandADto
                 {
                     QuestionId = question.QuestionId,
                     QuestionName = question.QuestionText,
@@ -177,6 +190,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     Answers = _mapper.Map<List<AnswerDto>>(answers)
                 });
             }
+
             return _mapper.Map<List<QandADto>>(result);
         }
 

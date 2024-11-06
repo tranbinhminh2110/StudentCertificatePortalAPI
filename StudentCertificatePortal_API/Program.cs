@@ -127,6 +127,7 @@ builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IPermissionService<Certification>, PermissionService<Certification>>();
 builder.Services.AddScoped<IPermissionService<SimulationExam>, PermissionService<SimulationExam>>();
 builder.Services.AddScoped<ITemplateService, TemplateService>();
+builder.Services.AddScoped<IScoreService, ScoreService>();
 builder.Services.AddSingleton<IRedisService>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();

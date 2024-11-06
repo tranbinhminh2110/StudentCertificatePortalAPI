@@ -22,7 +22,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<ScoreDto> Scoring(UserAnswerRequest request, CancellationToken cancellationToken)
         {
             int countQuestionCorrect = 0;
-            var numberQuestion = request.QuestionRequests.Count;
+            var exam = await _uow.SimulationExamRepository.FirstOrDefaultAsync(x => x.ExamId == request.ExamId);
+            var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId);
+            if (user is null) throw new KeyNotFoundException("User not found!");
+            if (exam == null) throw new KeyNotFoundException("Simulation not found!");
+
+            var enroll = await _uow.ExamEnrollmentRepository.WhereAsync(x => x.UserId == user.UserId && x.StudentOfExams.Any(x => x.ExamId == exam.ExamId));
+            if (!enroll.Any())
+            {
+                throw new InvalidOperationException("User is not enrolled in this exam.");
+            }
+            var numberQuestion = exam.QuestionCount ?? 0;
             foreach (var model in request.QuestionRequests)
             {
                 bool checkQuestion = await CheckAnswerCorrect(model.QuestionId, model.UserAnswerId, cancellationToken);

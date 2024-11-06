@@ -22,6 +22,13 @@ namespace StudentCertificatePortal_API.Controllers
             return Ok(Result<QandADto>.Succeed(result));
         }
 
+        [HttpGet("get-by-exam/{examId:int}")]
+        public async Task<ActionResult<Result<List<QandADto>>>> GetQuestionByExamId([FromRoute] int examId)
+        {
+            var result = await _service.GetQandABySExamIdAsync(examId, new CancellationToken());
+            return Ok(Result<List<QandADto>>.Succeed(result));
+        }
+
         [HttpPost]
         public async Task<ActionResult<Result<QandADto>>> CreateQandA([FromBody] CreateQuestionRequest request)
         {
