@@ -16,5 +16,7 @@ namespace StudentCertificatePortal_API.DTOs
         public DateTime? FeedbackCreatedAt { get; set; }
 
         public string? FeedbackImage { get; set; }
+        public UserDetailsDto? UserDetails { get; set; }
+
     }
 }
