@@ -109,5 +109,22 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
             return false;
         }
+
+        public async Task<List<ScoreDto>> GetScoreByUserId(int userId, int? examId, CancellationToken cancellationToken)
+        {
+            var query = await _uow.ScoreRepository.WhereAsync(x => x.UserId == userId);
+
+            if (examId.HasValue)
+            {
+                query = query.Where(x => x.ExamId == examId.Value);
+            }
+
+            if (!query.Any())
+            {
+                throw new KeyNotFoundException("Score not found.");
+            }
+
+            return _mapper.Map<List<ScoreDto>>(query);
+        }
     }
 }
