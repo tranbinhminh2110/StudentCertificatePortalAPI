@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Exceptions;
@@ -71,38 +72,103 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<List<FeedbackDto>> GetAll()
         {
-            var result = await _uow.FeedbackRepository.GetAll();
-            return _mapper.Map<List<FeedbackDto>>(result);
+            var result = await _uow.FeedbackRepository.GetAllAsync(query =>
+                query.Include(f => f.User)); // Bao gồm thông tin User của mỗi feedback
+
+            var feedbackDtos = result.Select(feedback =>
+            {
+                var feedbackDto = _mapper.Map<FeedbackDto>(feedback);
+
+                // Ánh xạ thông tin UserDetailsDto vào FeedbackDto
+                feedbackDto.UserDetails = feedback.User != null ? new UserDetailsDto
+                {
+                    UserId = feedback.User.UserId,
+                    Username = feedback.User.Username,
+                    UserImage = feedback.User.UserImage
+                } : null;
+
+                return feedbackDto;
+            }).ToList();
+
+            return feedbackDtos;
         }
 
         public async Task<List<FeedbackDto>> GetFeedbackByExamIdAsync(int examId, CancellationToken cancellationToken)
         {
-            var result = await _uow.FeedbackRepository.WhereAsync(x => x.ExamId == examId, cancellationToken);
-            if (result is null)
+            var result = await _uow.FeedbackRepository.WhereAsync(
+                x => x.ExamId == examId,
+                cancellationToken: cancellationToken,
+                include: query => query.Include(f => f.User));
+
+            if (result == null || !result.Any())
             {
                 throw new KeyNotFoundException("Feedback not found.");
             }
-            return _mapper.Map<List<FeedbackDto>>(result);
+
+            var feedbackDtos = result.Select(feedback =>
+            {
+                var feedbackDto = _mapper.Map<FeedbackDto>(feedback);
+                feedbackDto.UserDetails = feedback.User != null ? new UserDetailsDto
+                {
+                    UserId = feedback.User.UserId,
+                    Username = feedback.User.Username,
+                    UserImage = feedback.User.UserImage
+                } : null;
+                return feedbackDto;
+            }).ToList();
+
+            return feedbackDtos;
         }
 
         public async Task<FeedbackDto> GetFeedbackByIdAsync(int feedbackId, CancellationToken cancellationToken)
         {
-            var result = await _uow.FeedbackRepository.FirstOrDefaultAsync(x => x.FeedbackId == feedbackId, cancellationToken);
-            if (result is null)
+            var result = await _uow.FeedbackRepository.FirstOrDefaultAsync(
+                x => x.FeedbackId == feedbackId,
+                cancellationToken: cancellationToken,
+                include: query => query.Include(f => f.User));
+
+            if (result == null)
             {
                 throw new KeyNotFoundException("Feedback not found.");
             }
-            return _mapper.Map<FeedbackDto>(result);
+
+            var feedbackDto = _mapper.Map<FeedbackDto>(result);
+
+            feedbackDto.UserDetails = result.User != null ? new UserDetailsDto
+            {
+                UserId = result.User.UserId,
+                Username = result.User.Username,
+                UserImage = result.User.UserImage
+            } : null;
+
+            return feedbackDto;
         }
 
         public async Task<List<FeedbackDto>> GetFeedbackByUserIdAsync(int userId, CancellationToken cancellationToken)
         {
-            var result = await _uow.FeedbackRepository.WhereAsync(x => x.UserId == userId, cancellationToken);
-            if (result is null)
+            var result = await _uow.FeedbackRepository.WhereAsync(
+                x => x.UserId == userId,
+                cancellationToken: cancellationToken,
+                include: query => query.Include(f => f.User));
+
+            if (result == null || !result.Any())
             {
                 throw new KeyNotFoundException("Feedback not found.");
             }
-            return _mapper.Map<List<FeedbackDto>>(result);
+
+            var feedbackDtos = result.Select(feedback =>
+            {
+                var feedbackDto = _mapper.Map<FeedbackDto>(feedback);
+                feedbackDto.UserDetails = feedback.User != null ? new UserDetailsDto
+                {
+                    UserId = feedback.User.UserId,
+                    Username = feedback.User.Username,
+                    UserImage = feedback.User.UserImage
+                } : null;
+                return feedbackDto;
+            }).ToList();
+
+            return feedbackDtos;
         }
 
         public async Task<FeedbackDto> UpdateFeedbackAsync(int feedbackId, UpdateFeedbackRequest request, CancellationToken cancellationToken)
