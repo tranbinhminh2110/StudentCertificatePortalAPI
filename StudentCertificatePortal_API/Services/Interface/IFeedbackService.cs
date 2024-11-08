@@ -12,6 +12,7 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<FeedbackDto> DeleteFeedbackAsync(int feedbackId, CancellationToken cancellationToken);
         Task<List<FeedbackDto>> GetFeedbackByUserIdAsync(int userId, CancellationToken cancellationToken);
         Task<List<FeedbackDto>> GetFeedbackByExamIdAsync(int examId, CancellationToken cancellationToken);
+        Task<List<FeedbackDto>> GetFeedbackByCertIdAsync(int certId, CancellationToken cancellationToken);
 
     }
 }

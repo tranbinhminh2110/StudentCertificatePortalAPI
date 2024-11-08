@@ -170,6 +170,34 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             return feedbackDtos;
         }
+        public async Task<List<FeedbackDto>> GetFeedbackByCertIdAsync(int certId, CancellationToken cancellationToken)
+        {
+            var result = await _uow.FeedbackRepository.WhereAsync(
+                x => x.Exam != null && x.Exam.CertId == certId, cancellationToken,
+                include: query => query.Include(f => f.Exam)
+                                       .ThenInclude(e => e.Cert)
+                                       .Include(f => f.User) 
+            );
+
+            if (result == null || !result.Any())
+            {
+                throw new KeyNotFoundException("No feedback found for the specified certification.");
+            }
+
+            var feedbackDtos = result.Select(feedback =>
+            {
+                var feedbackDto = _mapper.Map<FeedbackDto>(feedback);
+                feedbackDto.UserDetails = new UserDetailsDto
+                {
+                    UserId = feedback.User.UserId,
+                    Username = feedback.User.Username,
+                    UserImage = feedback.User.UserImage
+                };
+                return feedbackDto;
+            }).ToList();
+
+            return feedbackDtos;
+        }
 
         public async Task<FeedbackDto> UpdateFeedbackAsync(int feedbackId, UpdateFeedbackRequest request, CancellationToken cancellationToken)
         {
