@@ -5,6 +5,8 @@ using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.Services.Implemetation;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_API.Utils;
+using StudentCertificatePortal_API.Commons;
+using StudentCertificatePortal_API.DTOs;
 
 namespace StudentCertificatePortal_API.Controllers
 {
@@ -33,19 +35,16 @@ namespace StudentCertificatePortal_API.Controllers
             }
 
             var token = _otp.GenerateNumericToken();
-
-            // Lưu token vào Redis với thời gian hết hạn (ví dụ 10 phút)
             await _redisService.SaveResetTokenAsync(user.UserId, token, TimeSpan.FromMinutes(10));
 
-            // Gửi token qua email
-            bool emailSent = await _emailService.SendEmailAsync(user.Email, "Mã đổi mật khẩu", $"Mã của bạn là: {token}");
+            bool emailSent = await _emailService.SendEmailAsync(user.Email, "Password change code", $"Your code is: {token}");
 
             if (!emailSent)
             {
-                return StatusCode(500, "Không thể gửi email. Vui lòng thử lại.");
+                return StatusCode(500, "Email could not be sent. Please try again.");
             }
 
-            return Ok("Mã đổi mật khẩu đã được gửi qua email.");
+            return Ok("Password change code has been sent via email.");
         }
 
 
@@ -56,29 +55,32 @@ namespace StudentCertificatePortal_API.Controllers
             var user = await _service.FindByEmailAsync(request.Email);
             if (user == null)
             {
-                return BadRequest("Email không tồn tại.");
+                return BadRequest("Email does not exist.");
             }
 
-            // Lấy token từ Redis
             var storedToken = await _redisService.GetResetTokenAsync(user.UserId);
 
-            // Kiểm tra token có hợp lệ không
             if (storedToken == null || storedToken != request.ResetCode)
             {
-                return BadRequest("Mã không hợp lệ hoặc đã hết hạn.");
+                return BadRequest("Code is invalid or expired.");
             }
 
-            // Đổi mật khẩu
             var result = await _service.ResetPasswordAsync(user.Email, request.NewPassword);
             if (!result.Succeeded)
             {
-                return BadRequest("Đổi mật khẩu thất bại.");
+                return BadRequest("Password change failed.");
             }
-
-            // Xóa token sau khi sử dụng
             await _redisService.DeleteResetTokenAsync(user.UserId);
 
-            return Ok("Đổi mật khẩu thành công.");
+            return Ok("Password changed successfully.");
+        }
+
+        [HttpPost("change-password/{userId:int}")]
+        public async Task<IActionResult> ChangePassword([FromRoute] int userId, [FromBody] ChangePasswordRequest request)
+        {
+            var result = await _service.ChangePasswordAsync(userId, request, new CancellationToken());
+            if (result is null) return BadRequest("Password change failed.");
+            return Ok(Result<string>.Succeed("Password changed successfully."));
         }
     }
 }

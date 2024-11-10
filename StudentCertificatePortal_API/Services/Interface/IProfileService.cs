@@ -10,5 +10,7 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<IdentityResult> ResetPasswordAsync(string email, string newPassword);
         Task<UserDto> GetProfileByIdAsync(int userId, CancellationToken cancellationToken);
         Task<UserDto> UpdateProfileAsync(int userId, UpdateProfileRequest request, CancellationToken cancellationToken);
+
+        Task<UserDto> ChangePasswordAsync(int userId, ChangePasswordRequest request, CancellationToken cancellationToken);
     }
 }
