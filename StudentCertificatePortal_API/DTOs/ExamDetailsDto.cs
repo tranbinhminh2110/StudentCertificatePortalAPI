@@ -12,7 +12,7 @@
         public int? ExamDiscountFee { get; set; }
         public string? ExamImage { get; set; }
 
-
+        public string? ExamPermission { get; set; }
 
     }
 }
