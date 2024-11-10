@@ -62,9 +62,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 case TimePeriod.Month:
                     if (!startDate.HasValue || !endDate.HasValue)
                     {
-                        var currentMonthStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-                        var currentMonthEnd = currentMonthStart.AddMonths(1).AddDays(-1);
-                        query = query.Where(p => p.PaymentDate >= currentMonthStart && p.PaymentDate <= currentMonthEnd);
+                        var monthStartDate = startDate.Value;
+                        var monthEndDate = monthStartDate.AddMonths(1).AddDays(-1);
+                        query = query.Where(p => p.PaymentDate >= monthStartDate && p.PaymentDate <= monthEndDate);
                     }
                     else if (!isValidDateRange(startDate, endDate))
                     {
@@ -79,8 +79,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 case TimePeriod.Year:
                     if (!startDate.HasValue || !endDate.HasValue)
                     {
-                        var currentYearStart = new DateTime(DateTime.Now.Year, 1, 1);
-                        var currentYearEnd = new DateTime(DateTime.Now.Year, 12, 31);
+                        var currentYearStart = startDate.Value;
+                        var currentYearEnd = currentYearStart.AddYears(1).AddDays(-1);
                         query = query.Where(p => p.PaymentDate >= currentYearStart && p.PaymentDate <= currentYearEnd);
                     }
                     else if (startDate.Value.Year != endDate.Value.Year)
