@@ -61,5 +61,12 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.UpdateMajorPermissionAsync(majorId, majorPermission, new CancellationToken());
             return Ok(Result<MajorDto>.Succeed(result));
         }
+        [HttpGet("{majorId:int}/jobPosition/{jobPositionId:int}")]
+        public async Task<ActionResult<Result<List<MajorDto>>>> GetMajorListById(int majorId, int jobPositionId)
+        {
+            var result = await _service.GetMajorByTwoIdAsync(majorId, jobPositionId, new CancellationToken());
+            return Ok(Result<List<MajorDto>>.Succeed(result));
+        }
+
     }
 }

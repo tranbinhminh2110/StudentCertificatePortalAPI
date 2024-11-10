@@ -14,6 +14,8 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<MajorDto> DeleteMajorAsync(int majorId, CancellationToken cancellationToken);
         Task<List<MajorDto>> GetMajorByNameAsync(string majorName, CancellationToken cancellationToken);
         Task<MajorDto> UpdateMajorPermissionAsync(int majorId, EnumPermission majorPermission, CancellationToken cancellationToken);
+        Task<List<MajorDto>> GetMajorByTwoIdAsync(int majorId, int jobPositionId, CancellationToken cancellationToken);
+
 
     }
 }

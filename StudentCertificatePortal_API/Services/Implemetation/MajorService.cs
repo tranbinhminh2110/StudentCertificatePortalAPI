@@ -242,6 +242,49 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
             return majorDtos;
         }
+        public async Task<List<MajorDto>> GetMajorByTwoIdAsync(int majorId, int jobPositionId, CancellationToken cancellationToken)
+        {
+            var results = await _uow.MajorRepository.WhereAsync(
+                x => x.MajorId == majorId,
+                cancellationToken: cancellationToken,
+                include: query => query.Include(c => c.Certs)
+                                       .ThenInclude(cert => cert.JobPositions)
+                                       .Include(c => c.Certs)
+                                       .ThenInclude(cert => cert.Type)
+                                       .Include(c => c.Certs)
+                                       .ThenInclude(cert => cert.Organize));
+
+            if (results == null || !results.Any())
+            {
+                throw new KeyNotFoundException("No majors found.");
+            }
+
+            var majorDtoList = results.Select(result =>
+            {
+                var majorDto = _mapper.Map<MajorDto>(result);
+
+                majorDto.CertificationDetails = result.Certs
+                    .Where(cert => cert.Majors.Any(m => m.MajorId == majorId) &&
+                                   cert.JobPositions.Any(j => j.JobPositionId == jobPositionId))
+                    .Select(cert => new CertificationDetailsDto
+                    {
+                        CertId = cert.CertId,
+                        CertName = cert.CertName,
+                        CertCode = cert.CertCode,
+                        CertDescription = cert.CertDescription,
+                        CertImage = cert.CertImage,
+                        TypeName = cert.Type?.TypeName,
+                        CertValidity = cert.CertValidity,
+                        OrganizeName = cert.Organize?.OrganizeName,
+                        Permission = cert.Permission,
+                    }).ToList();
+
+                return majorDto;
+            }).ToList();
+
+            return majorDtoList;
+        }
+
 
         public async Task<MajorDto> UpdateMajorAsync(int majorId, UpdateMajorRequest request, CancellationToken cancellationToken)
         {
