@@ -254,7 +254,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     ExamDiscountFee = se.Exam.ExamDiscountFee,
                     ExamImage = se.Exam.ExamImage,
                     ExamFee = se.Exam.ExamFee,
-                    ExamDescription = se.Exam.ExamDescription
+                    ExamDescription = se.Exam.ExamDescription,
+                    ExamPermission = se.Exam.ExamPermission
+                    
                 }).ToList()
             }).ToList();    
 
@@ -286,7 +288,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     ExamDiscountFee = se.Exam.ExamDiscountFee,
                     ExamImage = se.Exam.ExamImage,
                     ExamFee = se.Exam.ExamFee,
-                    ExamDescription = se.Exam.ExamDescription
+                    ExamDescription = se.Exam.ExamDescription,
+                    ExamPermission = se.Exam.ExamPermission
                 }).ToList()
             };
             return examEnrollment;
@@ -316,7 +319,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     ExamDiscountFee = se.Exam.ExamDiscountFee,
                     ExamImage = se.Exam.ExamImage,
                     ExamFee = se.Exam.ExamFee,
-                    ExamDescription = se.Exam.ExamDescription
+                    ExamDescription = se.Exam.ExamDescription,
+                    ExamPermission = se.Exam.ExamPermission
                 }).ToList()
             }).ToList();
 
