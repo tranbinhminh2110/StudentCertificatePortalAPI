@@ -103,12 +103,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         {
             var result = await _uow.SimulationExamRepository.GetAllAsync(query =>
                 query.Include(c => c.Vouchers)
+                     .Include(c => c.Feedbacks)
                      .Include(c => c.Cert)
                      .ThenInclude(cert => cert.Type));
 
             var sExamDto = result.Select(x =>
             {
                 var examDto = _mapper.Map<SimulationExamDto>(x);
+                examDto.FeedbackCount = x.Feedbacks.GroupBy(feedback => feedback.ExamId)
+                                           .Select(group => group.Count())
+                                           .Sum();
                 examDto.CertificationDetails = x.Cert != null ? new List<CertificationDetailsDto>
         {
             new CertificationDetailsDto
@@ -138,6 +142,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 return examDto;
             }).ToList();
 
+            
             return sExamDto;
         }
 
@@ -148,6 +153,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 x => x.ExamId == examId,
                 cancellationToken,
                 query => query.Include(a => a.Vouchers)
+                               .Include(a => a.Feedbacks)
                               .Include(a => a.Cert)
                               .ThenInclude(cert => cert.Type)
             );
@@ -205,7 +211,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     }).ToList()
                 }).ToList();
             }
-
+            result.FeedbackCount = simulation.Feedbacks?.Count() ?? 0;
             return result;
         }
 
