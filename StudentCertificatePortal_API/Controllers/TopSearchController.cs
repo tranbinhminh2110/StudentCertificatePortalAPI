@@ -13,7 +13,7 @@ namespace StudentCertificatePortal_API.Controllers
         {
             _service = service;
         }
-        [HttpGet("top-search/{topN:int}")]
+        [HttpGet("{topN:int}")]
         public async Task<IActionResult> TopSearchCertification([FromRoute] int topN)
         {
             var result = await _service.GetCertificationByTopSearchAsync(topN);
