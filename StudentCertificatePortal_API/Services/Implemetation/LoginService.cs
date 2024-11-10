@@ -25,7 +25,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             if (user == null)
             {
-                throw new ConflictException("User not found!");
+                throw new ConflictException("Login Failed!");
             }else if(user.Status == false)
             {
                 throw new UserAuthenticationException("Account is disabled. Please contact support.");
