@@ -108,8 +108,10 @@ namespace StudentCertificatePortal_Repository.Implementation
             }
             return query;
         }
-        
 
-
+        public virtual async Task<int> CountAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.Set<T>().CountAsync(cancellationToken);
+        }
     }
 }

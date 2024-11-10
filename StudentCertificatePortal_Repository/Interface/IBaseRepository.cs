@@ -24,5 +24,7 @@ namespace StudentCertificatePortal_Repository.Interface
         Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken, Func<IQueryable<T>, IQueryable<T>> include = null);
         IQueryable<T> Include(params Expression<Func<T, object>>[] includes);
         Task<IEnumerable<T>> WhereAsync(Expression<Func<T, bool>> predicate,CancellationToken cancellationToken, Func<IQueryable<T>, IQueryable<T>> include = null);
+
+        Task<int> CountAsync(CancellationToken cancellationToken = default);
     }
 }
