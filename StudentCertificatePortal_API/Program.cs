@@ -128,6 +128,7 @@ builder.Services.AddScoped<IPermissionService<Certification>, PermissionService<
 builder.Services.AddScoped<IPermissionService<SimulationExam>, PermissionService<SimulationExam>>();
 builder.Services.AddScoped<ITemplateService, TemplateService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<ITopSearchService, TopSearchService>();
 builder.Services.AddScoped<IScoreService, ScoreService>();
 builder.Services.AddSingleton<IRedisService>(provider =>
 {
