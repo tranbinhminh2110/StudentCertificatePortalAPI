@@ -23,6 +23,25 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             _updateUserValidator = updateUserValidator;
         }
 
+        public async Task<UserDto> ChangePasswordAsync(int userId, ChangePasswordRequest request, CancellationToken cancellationToken)
+        {
+            var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == userId);
+            if (user == null) throw new KeyNotFoundException("User not found.");
+
+
+            if (user.Password == "" || user.Password.Equals(request.OldPassword))
+            {
+                user.Password = request.NewPassword;
+                _uow.UserRepository.Update(user);
+                await _uow.Commit(cancellationToken);
+            }
+            else
+            {
+                throw new KeyNotFoundException("The provided old password is incorrect.");
+            }
+            return _mapper.Map<UserDto>(user);
+        }
+
         public async Task<UserDto> FindByEmailAsync(string email)
         {
             if (email == null) throw new ArgumentNullException("email");
