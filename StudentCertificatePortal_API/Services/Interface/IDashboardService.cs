@@ -7,5 +7,8 @@ namespace StudentCertificatePortal_API.Services.Interface
     {
         Task<DashboardSummaryDto> GetDashboardSummaryAsync(CancellationToken cancellationToken);
         Task<decimal> GetTotalAmountAsync(TimePeriod period, DateTime? startDate = null, DateTime? endDate = null, CancellationToken cancellationToken = default);
+        Task<Dictionary<int, decimal>> GetMonthlyRevenueAsync(int year, CancellationToken cancellationToken = default);
+        Task<Dictionary<int, decimal>> GetWeeklyRevenueAsync(int year, int month, CancellationToken cancellationToken = default);
+
     }
 }
