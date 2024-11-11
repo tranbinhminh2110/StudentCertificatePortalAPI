@@ -85,6 +85,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     NotificationImage = imageUrl,
                     CreationDate = DateTime.UtcNow,
                     Role = "Staff",
+                    IsRead = false,
                 };
 
                 await _uow.NotificationRepository.AddAsync(notification);

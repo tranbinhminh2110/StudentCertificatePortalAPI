@@ -47,7 +47,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 NotificationDescription = $"A new organization '{request.OrganizeName}' has been created and is pending approval.",
                 NotificationImage = null, 
                 CreationDate = DateTime.UtcNow,
-                Role = "Manager"  
+                Role = "Manager",
+                IsRead = false,
+
             };
             await _uow.NotificationRepository.AddAsync(notification);
             await _uow.Commit(cancellationToken);
@@ -122,7 +124,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 NotificationDescription = $"The organization '{organize.OrganizeName}' has been updated and is pending approval.",
                 NotificationImage = null,
                 CreationDate = DateTime.UtcNow,
-                Role = "Manager"
+                Role = "Manager",
+                IsRead = false,
+
             };
 
             // Add the notification to the repository
@@ -150,7 +154,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 NotificationName = "Organize Permission Update",
                 NotificationDescription = $"The organization '{organize.OrganizeName}' has been {organizePermission}.",
                 CreationDate = DateTime.UtcNow,
-                Role = "Staff"
+                Role = "Staff",
+                IsRead = false,
+
             };
 
             await _uow.NotificationRepository.AddAsync(notification);

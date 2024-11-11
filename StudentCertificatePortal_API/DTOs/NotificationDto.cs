@@ -16,5 +16,7 @@ namespace StudentCertificatePortal_API.DTOs
         public DateTime? CreationDate { get; set; }
 
         public string? Role { get; set; }
+        public bool? IsRead { get; set; }
+
     }
 }
