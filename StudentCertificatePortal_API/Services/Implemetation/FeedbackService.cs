@@ -73,12 +73,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<List<FeedbackDto>> GetAll()
         {
             var result = await _uow.FeedbackRepository.GetAllAsync(query =>
-                query.Include(f => f.User)); // Bao gồm thông tin User của mỗi feedback
+                query.Include(f => f.User).Include(f => f.Exam));
 
             var feedbackDtos = result.Select(feedback =>
             {
                 var feedbackDto = _mapper.Map<FeedbackDto>(feedback);
-
+                
                 // Ánh xạ thông tin UserDetailsDto vào FeedbackDto
                 feedbackDto.UserDetails = feedback.User != null ? new UserDetailsDto
                 {
@@ -86,6 +86,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     Username = feedback.User.Username,
                     UserImage = feedback.User.UserImage
                 } : null;
+                feedbackDto.ExamPermission = feedback.Exam?.ExamPermission;
 
                 return feedbackDto;
             }).ToList();
@@ -98,7 +99,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var result = await _uow.FeedbackRepository.WhereAsync(
                 x => x.ExamId == examId,
                 cancellationToken: cancellationToken,
-                include: query => query.Include(f => f.User));
+                include: query => query.Include(f => f.User)
+                .Include(f => f.Exam));
 
             if (result == null || !result.Any())
             {
@@ -114,6 +116,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     Username = feedback.User.Username,
                     UserImage = feedback.User.UserImage
                 } : null;
+                feedbackDto.ExamPermission = feedback.Exam?.ExamPermission;
                 return feedbackDto;
             }).ToList();
 
@@ -125,7 +128,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var result = await _uow.FeedbackRepository.FirstOrDefaultAsync(
                 x => x.FeedbackId == feedbackId,
                 cancellationToken: cancellationToken,
-                include: query => query.Include(f => f.User));
+                include: query => query.Include(f => f.User).Include(f => f.Exam));
 
             if (result == null)
             {
@@ -140,6 +143,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 Username = result.User.Username,
                 UserImage = result.User.UserImage
             } : null;
+            feedbackDto.ExamPermission = result.Exam?.ExamPermission;
 
             return feedbackDto;
         }
@@ -149,7 +153,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var result = await _uow.FeedbackRepository.WhereAsync(
                 x => x.UserId == userId,
                 cancellationToken: cancellationToken,
-                include: query => query.Include(f => f.User));
+                include: query => query.Include(f => f.User).Include(f => f.Exam));
 
             if (result == null || !result.Any())
             {
@@ -165,6 +169,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     Username = feedback.User.Username,
                     UserImage = feedback.User.UserImage
                 } : null;
+                feedbackDto.ExamPermission = feedback.Exam?.ExamPermission;
                 return feedbackDto;
             }).ToList();
 
@@ -193,6 +198,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     Username = feedback.User.Username,
                     UserImage = feedback.User.UserImage
                 };
+                feedbackDto.ExamPermission = feedback.Exam?.ExamPermission;
                 return feedbackDto;
             }).ToList();
 
