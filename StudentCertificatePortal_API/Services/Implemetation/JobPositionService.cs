@@ -394,7 +394,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var notification = new Notification
             {
                 NotificationName = "Job Position Permission Update",
-                NotificationDescription = $"The job position '{job.JobPositionName}' has been {jobPositionPermission} for approval.",
+                NotificationDescription = $"The job position '{job.JobPositionName}' has been {jobPositionPermission}.",
                 CreationDate = DateTime.UtcNow,
                 Role = "Staff" 
             };

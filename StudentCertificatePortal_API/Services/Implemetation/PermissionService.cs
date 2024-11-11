@@ -57,6 +57,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                 repository.Update(entity);
                 await _uow.Commit(cancellationToken);
+                string entityName = null;
+                if (typeof(T) == typeof(Certification))
+                {
+                    var nameProperty = typeof(Certification).GetProperty("CertName");
+                    entityName = nameProperty?.GetValue(entity)?.ToString();
+                }
+                else if (typeof(T) == typeof(SimulationExam))
+                {
+                    var nameProperty = typeof(SimulationExam).GetProperty("ExamName");
+                    entityName = nameProperty?.GetValue(entity)?.ToString();
+                }
                 string imageUrl = null;
                 if (_imageFieldMapping.TryGetValue(typeof(T), out string imageField))
                 {
@@ -70,7 +81,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 var notification = new Notification
                 {
                     NotificationName = $"{typeof(T).Name} Permission Update",
-                    NotificationDescription = $"{typeof(T).Name} with ID {id} has been {newPermission} for approval.",
+                    NotificationDescription = $"{entityName} has been {newPermission}.",
                     NotificationImage = imageUrl,
                     CreationDate = DateTime.UtcNow,
                     Role = "Staff",

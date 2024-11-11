@@ -450,7 +450,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var notification = new Notification
             {
                 NotificationName = "Major Permission Update",
-                NotificationDescription = $"The major '{major.MajorName}' has been {majorPermission} for approval.",
+                NotificationDescription = $"The major '{major.MajorName}' has been {majorPermission}.",
                 NotificationImage = major.MajorImage, 
                 CreationDate = DateTime.UtcNow,
                 Role = "Staff" 

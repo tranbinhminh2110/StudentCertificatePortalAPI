@@ -353,7 +353,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var notification = new Notification
             {
                 NotificationName = "Course Permission Update",
-                NotificationDescription = $"The course '{course.CourseName}' has been {coursePermission} for approval.",
+                NotificationDescription = $"The course '{course.CourseName}' has been {coursePermission}.",
                 NotificationImage = course.CourseImage,
                 CreationDate = DateTime.UtcNow,
                 Role = "Staff"
