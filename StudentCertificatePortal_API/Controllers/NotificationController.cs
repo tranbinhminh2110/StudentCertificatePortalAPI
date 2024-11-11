@@ -41,5 +41,11 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.DeleteNotificationAsync(notificationId, new CancellationToken());
             return Ok(Result<NotificationDto>.Succeed(result));
         }
+        [HttpPut("IsRead")]
+        public async Task<ActionResult<Result<List<NotificationDto>>>> UpdateNotificationIsRead(string role)
+        {
+            var result = await _service.UpdateNotificationIsReadAsync(role, new CancellationToken());
+            return Ok(Result<List<NotificationDto>>.Succeed(result));
+        }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using StudentCertificatePortal_API.Commons;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Services.Interface;
+using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
 
 namespace StudentCertificatePortal_API.Services.Implemetation
@@ -55,6 +57,23 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new KeyNotFoundException("Notification not found.");
             }
             return _mapper.Map<List<NotificationDto>>(result);
+        }
+
+        public async Task<List<NotificationDto>> UpdateNotificationIsReadAsync(string role, CancellationToken cancellationToken)
+        {
+            var notifications = await _uow.NotificationRepository.WhereAsync(
+                x => x.Role == role, cancellationToken);
+            if (notifications == null || !notifications.Any())
+            {
+                throw new KeyNotFoundException("No unread notifications found for this role.");
+            }
+            foreach (var notification in notifications)
+            {
+                notification.IsRead = true;
+            }
+            await _uow.Commit(cancellationToken);
+            return _mapper.Map<List<NotificationDto>>(notifications);
+
         }
     }
 }

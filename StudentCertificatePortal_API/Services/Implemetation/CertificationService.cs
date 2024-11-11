@@ -98,7 +98,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 NotificationDescription = $"A new certification '{request.CertName}' has been created and is pending approval.",
                 NotificationImage = request.CertImage,
                 CreationDate = DateTime.UtcNow,
-                Role = "Manager"
+                Role = "Manager",
+                IsRead = false,
             };
             await _uow.NotificationRepository.AddAsync(notification);
 
@@ -543,7 +544,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     NotificationDescription = $"The certification '{certification.CertName}' has been updated and is pending approval.",
                     NotificationImage = request.CertImage,
                     CreationDate = DateTime.UtcNow,
-                    Role = "Manager"
+                    Role = "Manager",
+                    IsRead = false,
                 };
                 await _uow.NotificationRepository.AddAsync(notification);
                 await _uow.Commit(cancellationToken);

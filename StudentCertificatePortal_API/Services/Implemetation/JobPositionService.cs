@@ -86,7 +86,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 NotificationDescription = $"A new job position '{request.JobPositionName}' has been created and is pending approval.",
                 NotificationImage = null,
                 CreationDate = DateTime.UtcNow,
-                Role = "Manager"
+                Role = "Manager",
+                IsRead = false,
+
             };
             await _uow.NotificationRepository.AddAsync(notification);
 
@@ -349,7 +351,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     NotificationDescription = $"The job position '{job.JobPositionName}' has been updated and is pending approval.",
                     NotificationImage = null,  
                     CreationDate = DateTime.UtcNow,
-                    Role = "Manager"
+                    Role = "Manager",
+                    IsRead = false,
+
                 };
 
                 // Add the notification
@@ -396,7 +400,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 NotificationName = "Job Position Permission Update",
                 NotificationDescription = $"The job position '{job.JobPositionName}' has been {jobPositionPermission}.",
                 CreationDate = DateTime.UtcNow,
-                Role = "Staff" 
+                Role = "Staff",
+                IsRead = false,
             };
 
             await _uow.NotificationRepository.AddAsync(notification);
