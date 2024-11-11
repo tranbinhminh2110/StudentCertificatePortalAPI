@@ -42,4 +42,36 @@ namespace StudentCertificatePortal_API.Controllers
                 return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message });
             }
         }
-}}
+        [HttpGet("monthly-revenue/{year}")]
+        public async Task<IActionResult> GetMonthlyRevenue(int year, CancellationToken cancellationToken)
+        {
+            try
+            {
+                Dictionary<int, decimal> monthlyRevenue = await _service.GetMonthlyRevenueAsync(year, cancellationToken);
+
+                return Ok(Result<Dictionary<int, decimal>>.Succeed(monthlyRevenue));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while calculating monthly revenue." + ex.Message);
+            }
+        }
+
+        [HttpGet("weekly-revenue/{year}/{month}")]
+        public async Task<IActionResult> GetWeeklyRevenue(int year, int month, CancellationToken cancellationToken)
+        {
+            try
+            {
+                
+                Dictionary<int, decimal> weeklyRevenue = await _service.GetWeeklyRevenueAsync(year, month, cancellationToken);
+
+                return Ok(Result<Dictionary<int, decimal>>.Succeed(weeklyRevenue));
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, "An error occurred while calculating weekly revenue." + ex.Message);
+            }
+        }
+    }
+}

@@ -36,6 +36,28 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         }
 
+        public async Task<Dictionary<int, decimal>> GetMonthlyRevenueAsync(int year, CancellationToken cancellationToken = default)
+        {
+            IEnumerable<Payment> query = await _uow.PaymentRepository.GetAll();
+
+            query = query.Where(p => p.PaymentDate.HasValue && p.PaymentDate.Value.Year == year);
+
+            var monthlyRevenue = new Dictionary<int, decimal>();
+
+            for (int month = 1; month <= 12; month++)
+            {
+                var monthStart = new DateTime(year, month, 1);
+                var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+
+                decimal totalForMonth = query
+                    .Where(p => p.PaymentDate >= monthStart && p.PaymentDate <= monthEnd)
+                    .Sum(p => p.PaymentPoint ?? 0);
+                monthlyRevenue[month] = totalForMonth;
+            }
+
+            return monthlyRevenue;
+        }
+
         public async Task<decimal> GetTotalAmountAsync(TimePeriod period, DateTime? startDate = null, DateTime? endDate = null, CancellationToken cancellationToken = default)
         {
             IEnumerable<Payment> query = await _uow.PaymentRepository.GetAll();
@@ -107,5 +129,38 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return query.Sum(p => p.PaymentPoint ?? 0);
         }
 
+        public async Task<Dictionary<int, decimal>> GetWeeklyRevenueAsync(int year, int month, CancellationToken cancellationToken = default)
+        {
+            IEnumerable<Payment> query = await _uow.PaymentRepository.GetAll();
+
+            query = query.Where(p => p.PaymentDate.HasValue &&
+                                     p.PaymentDate.Value.Year == year &&
+                                     p.PaymentDate.Value.Month == month);
+
+            var weeklyRevenue = new Dictionary<int, decimal>();
+
+            int currentWeek = 1;
+            DateTime weekStart = new DateTime(year, month, 1);
+
+            while (weekStart.Month == month)
+            {
+                DateTime weekEnd = weekStart.AddDays(6);
+                if (weekEnd.Month != month)
+                {
+                    weekEnd = new DateTime(year, month, DateTime.DaysInMonth(year, month));
+                }
+
+                decimal totalForWeek = query
+                    .Where(p => p.PaymentDate >= weekStart && p.PaymentDate <= weekEnd)
+                    .Sum(p => p.PaymentPoint ?? 0);
+
+                weeklyRevenue[currentWeek] = totalForWeek;
+
+                weekStart = weekStart.AddDays(7);
+                currentWeek++;
+            }
+
+            return weeklyRevenue;
+        }
     }
 }
