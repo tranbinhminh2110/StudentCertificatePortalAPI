@@ -34,6 +34,7 @@ namespace StudentCertificatePortal_Repository.Interface
         IBaseRepository<StudentOfCourse> StudentOfCourseRepository { get; }
         IBaseRepository<Cart> CartRepository { get; }
         IBaseRepository<Score> ScoreRepository { get; }
+        IBaseRepository<Notification> NotificationRepository { get; }
 
         Task Commit(CancellationToken cancellationToken);
     }

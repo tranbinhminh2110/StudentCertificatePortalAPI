@@ -41,6 +41,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             };
             var result = await _uow.OrganizeRepository.AddAsync(organizeEntity);
             await _uow.Commit(cancellationToken);
+            var notification = new Notification()
+            {
+                NotificationName = "New Organize Created",
+                NotificationDescription = $"A new organization '{request.OrganizeName}' has been created and is pending approval.",
+                NotificationImage = null, 
+                CreationDate = DateTime.UtcNow,
+                Role = "Manager"  
+            };
+            await _uow.NotificationRepository.AddAsync(notification);
+            await _uow.Commit(cancellationToken);
             return _mapper.Map<OrganizeDto>(result);
         }
 
@@ -105,6 +115,20 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             _uow.OrganizeRepository.Update(organize);
             await _uow.Commit(cancellationToken);
 
+            // Create the notification
+            var notification = new Notification
+            {
+                NotificationName = "Organization Updated",
+                NotificationDescription = $"The organization '{organize.OrganizeName}' has been updated and is pending approval.",
+                NotificationImage = null,
+                CreationDate = DateTime.UtcNow,
+                Role = "Manager"
+            };
+
+            // Add the notification to the repository
+            await _uow.NotificationRepository.AddAsync(notification);
+            await _uow.Commit(cancellationToken);
+
             return _mapper.Map<OrganizeDto>(organize);
         }
 
@@ -121,7 +145,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             _uow.OrganizeRepository.Update(organize);
             await _uow.Commit(cancellationToken);
+            var notification = new Notification
+            {
+                NotificationName = "Organize Permission Update",
+                NotificationDescription = $"The organization '{organize.OrganizeName}' has been {organizePermission} for approval.",
+                CreationDate = DateTime.UtcNow,
+                Role = "Staff"
+            };
 
+            await _uow.NotificationRepository.AddAsync(notification);
+            await _uow.Commit(cancellationToken);
             var result = _mapper.Map<OrganizeDto>(organize);
 
             return result;

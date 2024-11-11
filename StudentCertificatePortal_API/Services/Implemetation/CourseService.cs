@@ -87,6 +87,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             _uow.CourseRepository.Update(result);
             await _uow.Commit(cancellationToken);
+            var notification = new Notification()
+            {
+                NotificationName = "New Course Created",
+                NotificationDescription = $"A new course '{request.CourseName}' has been created and is pending approval.",
+                NotificationImage = request.CourseImage,
+                CreationDate = DateTime.UtcNow,
+                Role = "Manager"
+            };
+            await _uow.NotificationRepository.AddAsync(notification);
+
+            await _uow.Commit(cancellationToken);
             return _mapper.Map<CourseDto>(result);
 
         }
@@ -308,7 +319,20 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
 
             _uow.CourseRepository.Update(course);
+            // Create and add notification for certification update
+            var notification = new Notification
+            {
+                NotificationName = "Course Updated",
+                NotificationDescription = $"The certification '{course.CourseName}' has been updated and is pending approval.",
+                NotificationImage = request.CourseImage,
+                CreationDate = DateTime.UtcNow,
+                Role = "Manager"
+            };
+            await _uow.NotificationRepository.AddAsync(notification);
+
+            // Commit changes to database
             await _uow.Commit(cancellationToken);
+
             return _mapper.Map<CourseDto>(course);
 
         }
@@ -325,6 +349,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             course.CoursePermission = coursePermission.ToString();
 
             _uow.CourseRepository.Update(course);
+            await _uow.Commit(cancellationToken);
+            var notification = new Notification
+            {
+                NotificationName = "Course Permission Update",
+                NotificationDescription = $"The course '{course.CourseName}' has been {coursePermission} for approval.",
+                NotificationImage = course.CourseImage,
+                CreationDate = DateTime.UtcNow,
+                Role = "Staff"
+            };
+
+            await _uow.NotificationRepository.AddAsync(notification);
             await _uow.Commit(cancellationToken);
 
             var result = _mapper.Map<CourseDto>(course);
