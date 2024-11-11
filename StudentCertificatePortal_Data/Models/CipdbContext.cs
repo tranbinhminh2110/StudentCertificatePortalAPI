@@ -37,6 +37,8 @@ public partial class CipdbContext : DbContext
 
     public virtual DbSet<Major> Majors { get; set; }
 
+    public virtual DbSet<Notification> Notifications { get; set; }
+
     public virtual DbSet<Organize> Organizes { get; set; }
 
     public virtual DbSet<Payment> Payments { get; set; }
@@ -459,6 +461,28 @@ public partial class CipdbContext : DbContext
                     });
         });
 
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(e => e.NotificationId).HasName("PK__Notifica__E059842F80C115B7");
+
+            entity.Property(e => e.NotificationId).HasColumnName("notification_id");
+            entity.Property(e => e.CreationDate)
+                .HasColumnType("datetime")
+                .HasColumnName("creation_date");
+            entity.Property(e => e.NotificationDescription)
+                .HasColumnType("text")
+                .HasColumnName("notification_description");
+            entity.Property(e => e.NotificationImage)
+                .HasColumnType("text")
+                .HasColumnName("notification_image");
+            entity.Property(e => e.NotificationName)
+                .HasMaxLength(500)
+                .HasColumnName("notification_name");
+            entity.Property(e => e.Role)
+                .HasMaxLength(255)
+                .HasColumnName("role");
+        });
+
         modelBuilder.Entity<Organize>(entity =>
         {
             entity.HasKey(e => e.OrganizeId).HasName("PK__Organize__C5D74862AEFD8049");
@@ -544,12 +568,10 @@ public partial class CipdbContext : DbContext
 
             entity.HasOne(d => d.Exam).WithMany(p => p.Scores)
                 .HasForeignKey(d => d.ExamId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Exam_Scores");
 
             entity.HasOne(d => d.User).WithMany(p => p.Scores)
                 .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_User_Scores");
         });
 

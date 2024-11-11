@@ -7,15 +7,15 @@ public partial class Score
 {
     public int ScoreId { get; set; }
 
-    public int UserId { get; set; }
+    public int? UserId { get; set; }
 
-    public int ExamId { get; set; }
+    public int? ExamId { get; set; }
 
     public decimal ScoreValue { get; set; }
 
     public DateTime CreatedAt { get; set; }
 
-    public virtual SimulationExam Exam { get; set; } = null!;
+    public virtual SimulationExam? Exam { get; set; }
 
-    public virtual User User { get; set; } = null!;
+    public virtual User? User { get; set; }
 }
