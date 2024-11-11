@@ -20,6 +20,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {typeof(Certification) , "CertId"},
             {typeof(SimulationExam) , "ExamId"}
         };
+        private readonly Dictionary<Type, string> _imageFieldMapping = new Dictionary<Type, string>()
+    {
+        { typeof(Certification), "CertImage" }, 
+        { typeof(SimulationExam), "ExamImage" }  
+    };
         public PermissionService(IUnitOfWork uow)
         {
             _uow = uow;
@@ -50,8 +55,29 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     return false;
                 }
 
-                 repository.Update(entity);
-                await _uow.Commit(cancellationToken); 
+                repository.Update(entity);
+                await _uow.Commit(cancellationToken);
+                string imageUrl = null;
+                if (_imageFieldMapping.TryGetValue(typeof(T), out string imageField))
+                {
+                    var imageProperty = typeof(T).GetProperty(imageField);
+                    if (imageProperty != null)
+                    {
+                        imageUrl = imageProperty.GetValue(entity)?.ToString();
+                    }
+                }
+
+                var notification = new Notification
+                {
+                    NotificationName = $"{typeof(T).Name} Permission Update",
+                    NotificationDescription = $"{typeof(T).Name} with ID {id} has been {newPermission} for approval.",
+                    NotificationImage = imageUrl,
+                    CreationDate = DateTime.UtcNow,
+                    Role = "Staff",
+                };
+
+                await _uow.NotificationRepository.AddAsync(notification);
+                await _uow.Commit(cancellationToken);
                 return true;
             }
             return false;

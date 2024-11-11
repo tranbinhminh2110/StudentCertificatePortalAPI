@@ -94,6 +94,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             _uow.SimulationExamRepository.Update(result);
             await _uow.Commit(cancellationToken);
+            var notification = new Notification()
+            {
+                NotificationName = "New Simulation Exam Created",
+                NotificationDescription = $"A new simulation exam '{request.ExamName}' has been created and is pending approval.",
+                NotificationImage = request.ExamImage,
+                CreationDate = DateTime.UtcNow,
+                Role = "Manager"
+            };
+            await _uow.NotificationRepository.AddAsync(notification);
+            await _uow.Commit(cancellationToken);
 
             return _mapper.Map<SimulationExamDto>(result);
         }
@@ -276,6 +286,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
 
             _uow.SimulationExamRepository.Update(exam);
+            await _uow.Commit(cancellationToken);
+            var notification = new Notification
+            {
+                NotificationName = "Simulation Exam Updated",
+                NotificationDescription = $"The simulation exam '{exam.ExamName}' has been updated and is pending approval.",
+                NotificationImage = request.ExamImage,  
+                CreationDate = DateTime.UtcNow,
+                Role = "Manager"
+            };
+
+            await _uow.NotificationRepository.AddAsync(notification);
             await _uow.Commit(cancellationToken);
 
             return _mapper.Map<SimulationExamDto>(exam);

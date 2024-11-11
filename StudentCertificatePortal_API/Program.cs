@@ -97,6 +97,7 @@ builder.Services.AddTransient<IBaseRepository<Transaction>, TransactionRepositor
 builder.Services.AddTransient<IBaseRepository<Voucher>, VoucherRepository>();
 builder.Services.AddTransient<IBaseRepository<Payment>, PaymentRepository>();
 builder.Services.AddTransient<IBaseRepository<Cart>, CartRepository>();
+builder.Services.AddTransient<IBaseRepository<Notification>, NotificationRepository>();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
 
@@ -130,6 +131,7 @@ builder.Services.AddScoped<ITemplateService, TemplateService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ITopSearchService, TopSearchService>();
 builder.Services.AddScoped<IScoreService, ScoreService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddSingleton<IRedisService>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();

@@ -87,6 +87,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 majorDto.CertId = majorEntity.Certs
                     .Select(cert => cert.CertId)
                     .ToList();
+                var notification = new Notification()
+                {
+                    NotificationName = "New Major Created",
+                    NotificationDescription = $"A new major '{request.MajorName}' has been created and is pending approval.",
+                    NotificationImage = request.MajorImage,
+                    CreationDate = DateTime.UtcNow,
+                    Role = "Manager"
+                };
+                await _uow.NotificationRepository.AddAsync(notification);
+                await _uow.Commit(cancellationToken);
                 return majorDto;
             }
             catch (Exception ex)
@@ -390,6 +400,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             try
             {
                 await _uow.Commit(cancellationToken);
+                var notification = new Notification()
+                {
+                    NotificationName = "Major Updated",
+                    NotificationDescription = $"The major '{major.MajorName}' has been updated and is pending approval.",
+                    NotificationImage = request.MajorImage,
+                    CreationDate = DateTime.UtcNow,
+                    Role = "Manager"
+                };
+                await _uow.NotificationRepository.AddAsync(notification);
+                await _uow.Commit(cancellationToken);
 
                 // Create the DTO and populate JobPosition details
                 var majorDto = _mapper.Map<MajorDto>(major);
@@ -426,6 +446,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             major.MajorPermission = majorPermission.ToString();
 
             _uow.MajorRepository.Update(major);
+            await _uow.Commit(cancellationToken);
+            var notification = new Notification
+            {
+                NotificationName = "Major Permission Update",
+                NotificationDescription = $"The major '{major.MajorName}' has been {majorPermission} for approval.",
+                NotificationImage = major.MajorImage, 
+                CreationDate = DateTime.UtcNow,
+                Role = "Staff" 
+            };
+
+            await _uow.NotificationRepository.AddAsync(notification);
             await _uow.Commit(cancellationToken);
 
             var result = _mapper.Map<MajorDto>(major);

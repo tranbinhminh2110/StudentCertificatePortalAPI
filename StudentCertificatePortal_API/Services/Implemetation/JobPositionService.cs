@@ -80,6 +80,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             // Save the job position to the repository
             await _uow.JobPositionRepository.AddAsync(jobEntity);
             await _uow.Commit(cancellationToken);
+            var notification = new Notification()
+            {
+                NotificationName = "New Job Position Created",
+                NotificationDescription = $"A new job position '{request.JobPositionName}' has been created and is pending approval.",
+                NotificationImage = null,
+                CreationDate = DateTime.UtcNow,
+                Role = "Manager"
+            };
+            await _uow.NotificationRepository.AddAsync(notification);
+
+            await _uow.Commit(cancellationToken);
             // Map the result to a DTO and return it
             var jobPositionDto = _mapper.Map<JobPositionDto>(jobEntity);
             jobPositionDto.MajorId = jobEntity.Majors.Select(m => m.MajorId).ToList();
@@ -332,6 +343,18 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             try
             {
                 await _uow.Commit(cancellationToken);
+                var notification = new Notification
+                {
+                    NotificationName = "Job Position Updated",
+                    NotificationDescription = $"The job position '{job.JobPositionName}' has been updated and is pending approval.",
+                    NotificationImage = null,  
+                    CreationDate = DateTime.UtcNow,
+                    Role = "Manager"
+                };
+
+                // Add the notification
+                await _uow.NotificationRepository.AddAsync(notification);
+                await _uow.Commit(cancellationToken);
 
                 var jobPositionDto = _mapper.Map<JobPositionDto>(job);
                 jobPositionDto.MajorId = job.Majors.Select(m => m.MajorId).ToList();
@@ -367,6 +390,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             job.JobPositionPermission = jobPositionPermission.ToString();
 
             _uow.JobPositionRepository.Update(job);
+            await _uow.Commit(cancellationToken);
+            var notification = new Notification
+            {
+                NotificationName = "Job Position Permission Update",
+                NotificationDescription = $"The job position '{job.JobPositionName}' has been {jobPositionPermission} for approval.",
+                CreationDate = DateTime.UtcNow,
+                Role = "Staff" 
+            };
+
+            await _uow.NotificationRepository.AddAsync(notification);
             await _uow.Commit(cancellationToken);
 
             var result = _mapper.Map<JobPositionDto>(job);

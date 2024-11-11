@@ -92,7 +92,15 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
 
             await _uow.CertificationRepository.AddAsync(certificationEntity);
-
+            var notification = new Notification()
+            {
+                NotificationName = "New Certification Created",
+                NotificationDescription = $"A new certification '{request.CertName}' has been created and is pending approval.",
+                NotificationImage = request.CertImage,
+                CreationDate = DateTime.UtcNow,
+                Role = "Manager"
+            };
+            await _uow.NotificationRepository.AddAsync(notification);
 
             try
             {
@@ -529,8 +537,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             try
             {
                 await _uow.Commit(cancellationToken);
+                var notification = new Notification()
+                {
+                    NotificationName = "Certification Updated",
+                    NotificationDescription = $"The certification '{certification.CertName}' has been updated and is pending approval.",
+                    NotificationImage = request.CertImage,
+                    CreationDate = DateTime.UtcNow,
+                    Role = "Manager"
+                };
+                await _uow.NotificationRepository.AddAsync(notification);
+                await _uow.Commit(cancellationToken);
 
-                
                 var certificationDto = _mapper.Map<CertificationDto>(certification);
 
                 
