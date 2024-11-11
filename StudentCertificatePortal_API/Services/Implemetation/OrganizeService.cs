@@ -148,7 +148,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var notification = new Notification
             {
                 NotificationName = "Organize Permission Update",
-                NotificationDescription = $"The organization '{organize.OrganizeName}' has been {organizePermission} for approval.",
+                NotificationDescription = $"The organization '{organize.OrganizeName}' has been {organizePermission}.",
                 CreationDate = DateTime.UtcNow,
                 Role = "Staff"
             };
