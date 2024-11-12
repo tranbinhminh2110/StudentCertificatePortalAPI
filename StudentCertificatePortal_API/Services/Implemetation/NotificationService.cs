@@ -36,7 +36,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<List<NotificationDto>> GetAll()
         {
             var result = await _uow.NotificationRepository.GetAll();
-            return _mapper.Map<List<NotificationDto>>(result);
+            var sortedResult = result.OrderByDescending(x => x.CreationDate);
+            return _mapper.Map<List<NotificationDto>>(sortedResult);
         }
 
         public async Task<NotificationDto> GetNotificationByIdAsync(int notificationId, CancellationToken cancellationToken)
@@ -56,7 +57,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new KeyNotFoundException("Notification not found.");
             }
-            return _mapper.Map<List<NotificationDto>>(result);
+            var sortedResult = result.OrderByDescending(x => x.CreationDate); 
+            return _mapper.Map<List<NotificationDto>>(sortedResult);
         }
 
         public async Task<List<NotificationDto>> UpdateNotificationIsReadAsync(string role, CancellationToken cancellationToken)
@@ -72,7 +74,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 notification.IsRead = true;
             }
             await _uow.Commit(cancellationToken);
-            return _mapper.Map<List<NotificationDto>>(notifications);
+            var sortedResult = notifications.OrderByDescending(x => x.CreationDate); 
+            return _mapper.Map<List<NotificationDto>>(sortedResult);
 
         }
     }
