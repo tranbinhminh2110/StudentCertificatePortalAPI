@@ -20,7 +20,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<List<CertificationDto>> GetCertificationByTopSearchAsync(int topN)
         {
-            var certifications = await _uow.CertificationRepository.GetAllAsync(query => query.Include(a => a.Organize));
+            var certifications = await _uow.CertificationRepository.GetAllAsync(query => query.Where(cert => cert.Permission == Enums.EnumPermission.Approve.ToString())
+            .Include(a => a.Organize));
 
             var topCertifications = certifications
         .Select(certification => new
