@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_Data.Models;
@@ -19,7 +20,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<List<CertificationDto>> GetCertificationByTopSearchAsync(int topN)
         {
-            var certifications = await _uow.CertificationRepository.GetAllAsync();
+            var certifications = await _uow.CertificationRepository.GetAllAsync(query => query.Include(a => a.Organize));
 
             var topCertifications = certifications
         .Select(certification => new
@@ -37,6 +38,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         .Select(cert => cert.Certification)
         .ToList();
             var certificationDtos = _mapper.Map<List<CertificationDto>>(topCertifications);
+            foreach (var dto in certificationDtos)
+            {
+                var certification = topCertifications.FirstOrDefault(c => c.CertId == dto.CertId);
+                if (certification != null)
+                {
+                    dto.OrganizeName = certification.Organize?.OrganizeName;
+                }
+            }
             return certificationDtos;
         }
         
