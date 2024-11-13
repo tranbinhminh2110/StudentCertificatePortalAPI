@@ -9,5 +9,6 @@
         public int TotalJobsPosition { get; set; }
         public int TotalSimulationExams { get; set; }
         public int TotalStudents { get; set; }
+        public int TotalPoint {  get; set; }
     }
 }
