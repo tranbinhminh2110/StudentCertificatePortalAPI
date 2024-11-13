@@ -23,6 +23,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var totalSimulationExam = await _uow.SimulationExamRepository.CountAsync(cancellationToken);
             var students = await _uow.UserRepository.WhereAsync(x => x.Role == "Student");
             var totalStudents = students.Count();
+            var totalPoint = (await _uow.PaymentRepository.GetAll()).Select(p => p.PaymentPoint).Sum();
 
             return new DashboardSummaryDto()
             {
@@ -32,6 +33,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 TotalMajor = totalMajor,
                 TotalSimulationExams = totalSimulationExam,
                 TotalStudents = totalStudents,
+                TotalPoint = totalPoint ?? 0
             };
 
         }
