@@ -24,6 +24,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var students = await _uow.UserRepository.WhereAsync(x => x.Role == "Student");
             var totalStudents = students.Count();
             var totalPoint = (await _uow.PaymentRepository.GetAll()).Select(p => p.PaymentPoint).Sum();
+            var totalAmountOfTopUp = (await _uow.TransactionRepository.WhereAsync(x => x.TransStatus == Enums.EnumTransaction.Success.ToString())).Select(t => t.Amount).Sum();
 
             return new DashboardSummaryDto()
             {
@@ -33,10 +34,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 TotalMajor = totalMajor,
                 TotalSimulationExams = totalSimulationExam,
                 TotalStudents = totalStudents,
-                TotalPoint = totalPoint ?? 0
+                TotalPoint = totalPoint ?? 0,
+                TotalAmountOfTopUp = totalAmountOfTopUp
             };
 
         }
+
 
         public async Task<Dictionary<int, decimal>> GetMonthlyRevenueAsync(int year, CancellationToken cancellationToken = default)
         {
