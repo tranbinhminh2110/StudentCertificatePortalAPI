@@ -43,11 +43,13 @@ builder.Services.AddAuthentication(options =>
 });
 
 
+builder.Services.AddSignalR();
+
 // Thêm chính sách CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost",
-           builder => builder.WithOrigins("http://localhost:3000", "https://uni-cert.vercel.app/", "https://uni-cert.vercel.app")
+           builder => builder.WithOrigins("http://localhost:3000", "https://uni-cert.vercel.app/", "https://uni-cert.vercel.app", "http://127.0.0.1:5500")
                              .AllowCredentials()
                              .AllowAnyHeader()
                              .AllowAnyMethod());
@@ -206,6 +208,7 @@ else
 
 app.UseRouting();
 app.UseCors("AllowLocalhost");
+app.MapHub<NotificationHub>("/notificationHub");
 app.UseHttpsRedirection();
 
 app.UseSwagger();

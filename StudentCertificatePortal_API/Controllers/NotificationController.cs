@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using StudentCertificatePortal_API.Commons;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Services.Interface;
+using StudentCertificatePortal_API.Utils;
 
 namespace StudentCertificatePortal_API.Controllers
 {
@@ -10,11 +12,13 @@ namespace StudentCertificatePortal_API.Controllers
     {
         private readonly INotificationService _service;
         private readonly IMapper _mapper;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public NotificationController(INotificationService service, IMapper mapper)
+        public NotificationController(INotificationService service, IMapper mapper, IHubContext<NotificationHub> hubContext)
         {
             _service = service;
             _mapper = mapper;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -46,6 +50,13 @@ namespace StudentCertificatePortal_API.Controllers
         {
             var result = await _service.UpdateNotificationIsReadAsync(role, new CancellationToken());
             return Ok(Result<List<NotificationDto>>.Succeed(result));
+        }
+
+        [HttpPost("send")]
+        public async Task<IActionResult> SendNotification(string message)
+        {
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", message);
+            return Ok(new { Message = "Notification sent successfully" });
         }
     }
 }

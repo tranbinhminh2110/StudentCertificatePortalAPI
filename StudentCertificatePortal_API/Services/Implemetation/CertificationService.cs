@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
+using StudentCertificatePortal_API.Utils;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
 using System.Linq;
@@ -20,14 +22,21 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         private readonly IValidator<CreateCertificationRequest> _addCertificationValidator;
         private readonly IValidator<UpdateCertificationRequest> _updateCertificationValidator;
 
+
+        private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly INotificationService _notificationService;
+
         public CertificationService(IUnitOfWork uow, IMapper mapper,
             IValidator<CreateCertificationRequest> addCertificationValidator,
-            IValidator<UpdateCertificationRequest> updateCertificationValidator)
+            IValidator<UpdateCertificationRequest> updateCertificationValidator, 
+            IHubContext<NotificationHub> hubContext, INotificationService notificationService)
         {
             _uow = uow;
             _mapper = mapper;
             _addCertificationValidator = addCertificationValidator;
             _updateCertificationValidator = updateCertificationValidator;
+            _hubContext = hubContext;
+            _notificationService = notificationService;
         }
 
         public async Task<CertificationDto> CreateCertificationAsync(CreateCertificationRequest request, CancellationToken cancellationToken)
@@ -102,10 +111,13 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 IsRead = false,
             };
             await _uow.NotificationRepository.AddAsync(notification);
+            await _uow.Commit(cancellationToken);
+            var notifications = await _notificationService.GetNotificationByRoleAsync("manager", new CancellationToken());
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
 
             try
             {
-                await _uow.Commit(cancellationToken);
+                
 
                 var organize = await _uow.OrganizeRepository.FirstOrDefaultAsync(x => x.OrganizeId == certificationEntity.OrganizeId);
 
@@ -549,6 +561,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 };
                 await _uow.NotificationRepository.AddAsync(notification);
                 await _uow.Commit(cancellationToken);
+
+                var notifications = await _notificationService.GetNotificationByRoleAsync("manager", new CancellationToken());
+                await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
 
                 var certificationDto = _mapper.Map<CertificationDto>(certification);
 
