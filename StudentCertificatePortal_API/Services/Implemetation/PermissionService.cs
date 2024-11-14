@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Services.Interface;
+using StudentCertificatePortal_API.Utils;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Implementation;
 using StudentCertificatePortal_Repository.Interface;
@@ -25,9 +27,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         { typeof(Certification), "CertImage" }, 
         { typeof(SimulationExam), "ExamImage" }  
     };
-        public PermissionService(IUnitOfWork uow)
+
+
+        private readonly IHubContext<NotificationHub> _hubContext;
+
+        private readonly INotificationService _notificationService;
+        public PermissionService(IUnitOfWork uow, IHubContext<NotificationHub> hubContext, INotificationService notificationService)
         {
             _uow = uow;
+            _hubContext = hubContext;
+            _notificationService = notificationService;
         }
         public async Task<bool> UpdatePermissionAsync(int id, Enums.EnumPermission newPermission, CancellationToken cancellationToken)
         {
@@ -90,6 +99,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                 await _uow.NotificationRepository.AddAsync(notification);
                 await _uow.Commit(cancellationToken);
+
+                var notifications = await _notificationService.GetNotificationByRoleAsync("staff", new CancellationToken());
+                await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
                 return true;
             }
             return false;
