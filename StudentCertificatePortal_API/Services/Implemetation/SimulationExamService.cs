@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
+using StudentCertificatePortal_API.Utils;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
 using System.Threading;
@@ -20,16 +22,24 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         private readonly IValidator<CreateSimulationExamRequest> _addSimulationExamValidator;
         private readonly IValidator<UpdateSimulationExamRequest> _updateSimulationExamValidator;
 
+        private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly INotificationService _notificationService;
+
+
+
         public SimulationExamService(IUnitOfWork uow, IMapper mapper, 
             IValidator<CreateSimulationExamRequest> addSimulationExamValidator,
             IValidator<UpdateSimulationExamRequest> updateSimulationExamValidator,
-            IVoucherService voucherService)
+            IVoucherService voucherService,
+            IHubContext<NotificationHub> hubContext, INotificationService notificationService)
         {
             _uow = uow;
             _mapper = mapper;
             _addSimulationExamValidator = addSimulationExamValidator;
             _updateSimulationExamValidator = updateSimulationExamValidator;
             _voucherService = voucherService;
+            _hubContext = hubContext;
+            _notificationService = notificationService;
         }
 
         public async Task<SimulationExamDto> CreateSimulationExamAsync(CreateSimulationExamRequest request, CancellationToken cancellationToken)
@@ -106,6 +116,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             };
             await _uow.NotificationRepository.AddAsync(notification);
             await _uow.Commit(cancellationToken);
+
+            var notifications = await _notificationService.GetNotificationByRoleAsync("manager", new CancellationToken());
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
 
             return _mapper.Map<SimulationExamDto>(result);
         }
@@ -302,6 +315,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             await _uow.NotificationRepository.AddAsync(notification);
             await _uow.Commit(cancellationToken);
+
+            var notifications = await _notificationService.GetNotificationByRoleAsync("manager", new CancellationToken());
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
 
             return _mapper.Map<SimulationExamDto>(exam);
         }

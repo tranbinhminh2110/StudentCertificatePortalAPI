@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
+using StudentCertificatePortal_API.Utils;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
 
@@ -17,7 +19,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         private readonly IValidator<CreateVoucherRequest> _addVoucherValidator;
         private readonly IValidator<UpdateVoucherRequest> _updateVoucherValidator;
 
-        public VoucherService(IUnitOfWork uow, IMapper mapper, IValidator<CreateVoucherRequest> addVoucherValidator, IValidator<UpdateVoucherRequest> updateVoucherValidator)
+        public VoucherService(IUnitOfWork uow, IMapper mapper,
+            IValidator<CreateVoucherRequest> addVoucherValidator, IValidator<UpdateVoucherRequest> updateVoucherValidator
+            )
         {
             _uow = uow;
             _mapper = mapper;

@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Enums;
 using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
+using StudentCertificatePortal_API.Utils;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
 
@@ -20,13 +22,19 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         private readonly IValidator<CreateCourseRequest> _addCourseValidator;
         private readonly IValidator<UpdateCourseRequest> _updateCourseValidator;
 
-        public CourseService(IUnitOfWork uow, IMapper mapper,IValidator<CreateCourseRequest> addCourseValidator, IValidator<UpdateCourseRequest> updateCourseValidator, IVoucherService voucherService)
+        private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly INotificationService _notificationService;
+        public CourseService(IUnitOfWork uow, IMapper mapper,IValidator<CreateCourseRequest> addCourseValidator
+            , IValidator<UpdateCourseRequest> updateCourseValidator, IVoucherService voucherService
+            , IHubContext<NotificationHub> hubContext, INotificationService notificationService)
         {
             _uow = uow;
             _mapper = mapper;
             _addCourseValidator = addCourseValidator;
             _updateCourseValidator = updateCourseValidator;
             _voucherService = voucherService;
+            _hubContext = hubContext;
+            _notificationService = notificationService;
         }
 
         public async Task<CourseDto> CreateCourseAsync(CreateCourseRequest request, CancellationToken cancellationToken)
@@ -98,7 +106,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             };
             await _uow.NotificationRepository.AddAsync(notification);
 
+
+
             await _uow.Commit(cancellationToken);
+
+            var notifications = await _notificationService.GetNotificationByRoleAsync("manager", new CancellationToken());
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
             return _mapper.Map<CourseDto>(result);
 
         }
@@ -336,6 +349,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             // Commit changes to database
             await _uow.Commit(cancellationToken);
 
+            var notifications = await _notificationService.GetNotificationByRoleAsync("manager", new CancellationToken());
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
+
             return _mapper.Map<CourseDto>(course);
 
         }
@@ -367,6 +383,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             await _uow.NotificationRepository.AddAsync(notification);
             await _uow.Commit(cancellationToken);
 
+
+            var notifications = await _notificationService.GetNotificationByRoleAsync("staff", new CancellationToken());
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
             var result = _mapper.Map<CourseDto>(course);
 
             return result;

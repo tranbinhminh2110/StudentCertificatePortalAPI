@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Enums;
 using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
+using StudentCertificatePortal_API.Utils;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
 
@@ -19,12 +21,19 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         private readonly IValidator<CreateJobPositionRequest> _addJobPositonValidator;
         private readonly IValidator<UpdateJobPositionRequest> _updateJobPositonValidator;
 
-        public JobPositionService(IUnitOfWork uow, IMapper mapper, IValidator<CreateJobPositionRequest> addJobPositionValidator, IValidator<UpdateJobPositionRequest> updateJobPositionValidator)
+        private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly INotificationService _notificationService;
+
+        public JobPositionService(IUnitOfWork uow, IMapper mapper, IValidator<CreateJobPositionRequest> addJobPositionValidator
+            , IValidator<UpdateJobPositionRequest> updateJobPositionValidator
+            , IHubContext<NotificationHub> hubContext, INotificationService notificationService)
         {
             _uow = uow;
             _mapper = mapper;
             _addJobPositonValidator = addJobPositionValidator;
             _updateJobPositonValidator = updateJobPositionValidator;
+            _hubContext = hubContext;
+            _notificationService = notificationService;
         }
 
             public async Task<JobPositionDto> CreateJobPositionAsync(CreateJobPositionRequest request, CancellationToken cancellationToken)
@@ -93,6 +102,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             await _uow.NotificationRepository.AddAsync(notification);
 
             await _uow.Commit(cancellationToken);
+
+            var notifications = await _notificationService.GetNotificationByRoleAsync("manager", new CancellationToken());
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
             // Map the result to a DTO and return it
             var jobPositionDto = _mapper.Map<JobPositionDto>(jobEntity);
             jobPositionDto.MajorId = jobEntity.Majors.Select(m => m.MajorId).ToList();
@@ -359,6 +371,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 // Add the notification
                 await _uow.NotificationRepository.AddAsync(notification);
                 await _uow.Commit(cancellationToken);
+
+                var notifications = await _notificationService.GetNotificationByRoleAsync("manager", new CancellationToken());
+                await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
 
                 var jobPositionDto = _mapper.Map<JobPositionDto>(job);
                 jobPositionDto.MajorId = job.Majors.Select(m => m.MajorId).ToList();

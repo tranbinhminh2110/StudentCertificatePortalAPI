@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Enums;
 using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
+using StudentCertificatePortal_API.Utils;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
 using System.Runtime.ConstrainedExecution;
@@ -20,12 +22,20 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         private readonly IValidator<CreateMajorRequest> _addMajorValidator;
         private readonly IValidator<UpdateMajorRequest> _updateMajorValidator;
-        public MajorService(IUnitOfWork uow, IMapper mapper, IValidator<CreateMajorRequest> addMajorValidator, IValidator<UpdateMajorRequest> updateMajorValidator)
+
+
+        private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly INotificationService _notificationService;
+        public MajorService(IUnitOfWork uow, IMapper mapper, IValidator<CreateMajorRequest> addMajorValidator
+            , IValidator<UpdateMajorRequest> updateMajorValidator
+            , IHubContext<NotificationHub> hubContext, INotificationService notificationService)
         {
             _uow = uow;
             _mapper = mapper;
             _addMajorValidator = addMajorValidator;
             _updateMajorValidator = updateMajorValidator;
+            _hubContext = hubContext;
+            _notificationService = notificationService;
         }
 
         public async Task<MajorDto> CreateMajorAsync(CreateMajorRequest request, CancellationToken cancellationToken)
@@ -99,6 +109,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 };
                 await _uow.NotificationRepository.AddAsync(notification);
                 await _uow.Commit(cancellationToken);
+
+                var notifications = await _notificationService.GetNotificationByRoleAsync("manager", new CancellationToken());
+                await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
                 return majorDto;
             }
             catch (Exception ex)
@@ -414,6 +427,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 };
                 await _uow.NotificationRepository.AddAsync(notification);
                 await _uow.Commit(cancellationToken);
+
+                var notifications = await _notificationService.GetNotificationByRoleAsync("manager", new CancellationToken());
+                await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
 
                 // Create the DTO and populate JobPosition details
                 var majorDto = _mapper.Map<MajorDto>(major);
