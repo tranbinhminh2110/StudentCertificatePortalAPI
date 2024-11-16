@@ -422,6 +422,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             await _uow.NotificationRepository.AddAsync(notification);
             await _uow.Commit(cancellationToken);
 
+            var notifications = await _notificationService.GetNotificationByRoleAsync("staff", new CancellationToken());
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
+
             var result = _mapper.Map<JobPositionDto>(job);
 
             return result;
