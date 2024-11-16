@@ -18,8 +18,6 @@ namespace StudentCertificatePortal_API.Validators
             RuleFor(x => x.CertId)
                 .NotNull().WithMessage("Certification ID is required.")
                 .GreaterThan(0).WithMessage("Certification ID must be a positive integer.");
-            RuleFor(x => x.CourseDescription)
-                .MaximumLength(500).WithMessage("Course Description must not exceed 500 characters.");
             RuleFor(x => x.CourseFee)
                 .GreaterThanOrEqualTo(0).WithMessage("CourseFee must be a positive number");
             RuleFor(x => x.CourseImage)
