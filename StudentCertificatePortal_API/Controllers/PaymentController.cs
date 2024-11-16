@@ -9,10 +9,14 @@ namespace StudentCertificatePortal_API.Controllers
     public class PaymentController: ApiControllerBase
     {
         private readonly IPaymentService _service;
+        private readonly IExamEnrollmentService _examEnrollmentService;
+        private readonly ICourseEnrollmentService _courseEnrollmentService;
 
-        public PaymentController(IPaymentService service)
+        public PaymentController(IPaymentService service, IExamEnrollmentService examEnrollmentService, ICourseEnrollmentService courseEnrollmentService)
         {
             _service = service;
+            _examEnrollmentService = examEnrollmentService;
+            _courseEnrollmentService = courseEnrollmentService;
         }
 
         [HttpGet]
@@ -48,6 +52,52 @@ namespace StudentCertificatePortal_API.Controllers
         {
             var result = await _service.ProcessPayment(request, new CancellationToken());
             return Ok(Result<PaymentDto>.Succeed(result));
+        }
+
+        [HttpPost("pay-now")]
+        public async Task<ActionResult<Result<PaymentDto>>> PayNow([FromBody] CreatePayNowRequest request)
+        {
+
+            if(request.Simulation_Exams.Any(id => id != 0 && request.UserId != 0))
+            {
+                
+                var enroll = new CreateExamEnrollmentRequest()
+                {
+                    UserId = request.UserId,
+                    Simulation_Exams = request.Simulation_Exams,
+                };
+                var eEnrollment = await _examEnrollmentService.CreateExamEnrollmentAsync(enroll, new CancellationToken());
+                if (eEnrollment == null) throw new Exception("Error enrollment and please try again.");
+                var payment = new CreatePaymentRequest()
+                {
+                    UserId = enroll.UserId,
+                    ExamEnrollmentId = eEnrollment.ExamEnrollmentId,
+                };
+                var payNow = await _service.ProcessPayment(payment, new CancellationToken());
+                if (payNow == null) throw new Exception("Error payment and please try again.");
+                return Ok(Result<PaymentDto>.Succeed(payNow));
+            }else if(request.Courses.Any(id => id != 0 && request.UserId != 0))
+            {
+                var enroll = new CreateCourseEnrollmentRequest()
+                {
+                    UserId = request.UserId,
+                    Courses = request.Courses,
+                };
+
+                var cEnrollment = await _courseEnrollmentService.CreateCourseEnrollmentAsync(enroll, new CancellationToken());
+                if (cEnrollment == null) throw new Exception("Error enrollment and please try again.");
+                var payment = new CreatePaymentRequest()
+                {
+                    UserId = request.UserId,
+                    CourseEnrollmentId = cEnrollment.CourseEnrollmentId,
+                };
+                var payNow = await _service.ProcessPayment(payment, new CancellationToken());
+                if (payNow == null) throw new Exception("Error payment and please try again.");
+                return Ok(Result<PaymentDto>.Succeed(payNow));
+            }
+
+            return BadRequest("Error processing payment.");
+
         }
     }
 }
