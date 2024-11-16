@@ -4,6 +4,7 @@ using StudentCertificatePortal_API.Commons;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Services.Interface;
+using StudentCertificatePortal_Data.Models;
 
 namespace StudentCertificatePortal_API.Controllers
 {
@@ -55,7 +56,11 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.GetCourseEnrollmentByUserIdAsync(userId, new CancellationToken());
             return Ok(Result<List<CourseEnrollmentDto>>.Succeed(result));
         }
-
-
+        [HttpGet("list_student_enroll/{courseId}")]
+        public async Task<ActionResult<Result<List<ListStudentDto>>>> GetUsersByCourseId(int courseId, CancellationToken cancellationToken)
+        {
+            var result = await _service.GetUsersByCourseIdAsync(courseId, new CancellationToken());
+            return Ok(Result<List<ListStudentDto>>.Succeed(result));
+        }
     }
 }

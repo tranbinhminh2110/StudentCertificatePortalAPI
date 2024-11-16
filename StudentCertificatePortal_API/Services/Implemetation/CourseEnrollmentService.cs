@@ -289,5 +289,37 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             return _mapper.Map<CourseEnrollmentDto>(courseEnrollment);
         }
+        public async Task<List<ListStudentDto>> GetUsersByCourseIdAsync(int courseId, CancellationToken cancellationToken)
+        {
+            var studentOfCourses = await _uow.StudentOfCourseRepository
+                .WhereAsync(
+                    sc => sc.CourseId == courseId && sc.Status == true,
+                    cancellationToken,
+                    include: q => q.Include(sc => sc.CouseEnrollment)
+                                  .ThenInclude(ce => ce.User) 
+                );
+
+            if (studentOfCourses == null || !studentOfCourses.Any())
+            {
+                throw new KeyNotFoundException($"No users found enrolled in course with ID {courseId}.");
+            }
+
+            var users = studentOfCourses.Select(sc => new ListStudentDto
+            {
+                UserId = sc.CouseEnrollment.User.UserId,
+                Username = sc.CouseEnrollment.User.Username,
+                UserImage = sc.CouseEnrollment.User.UserImage,
+                Email = sc.CouseEnrollment.User.Email,
+                Fullname = sc.CouseEnrollment.User.Fullname,
+                Address = sc.CouseEnrollment.User.Address,
+                PhoneNumber = sc.CouseEnrollment.User.PhoneNumber,
+                CreationDate = sc.CreationDate,
+                ExpiryDate = sc.ExpiryDate,
+            }).Distinct().ToList();
+           
+
+            return users;
+        }
+
     }
 }

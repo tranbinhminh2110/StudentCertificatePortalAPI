@@ -11,6 +11,8 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<CourseEnrollmentDto> UpdateCourseEnrollmentAsync(int courseEnrollmentId, UpdateCourseEnrollmentRequest request, CancellationToken cancellationToken);
         Task<CourseEnrollmentDto> DeleteCourseEnrollmentAsync(int courseEnrollmentId, CancellationToken cancellationToken);
         Task<List<CourseEnrollmentDto>> GetCourseEnrollmentByUserIdAsync(int userId, CancellationToken cancellationToken);
+        Task<List<ListStudentDto>> GetUsersByCourseIdAsync(int courseId, CancellationToken cancellationToken);
+
 
     }
 }
