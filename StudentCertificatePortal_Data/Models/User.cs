@@ -37,6 +37,8 @@ public partial class User
 
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
     public virtual ICollection<Score> Scores { get; set; } = new List<Score>();
 
     public virtual Wallet? Wallet { get; set; }
