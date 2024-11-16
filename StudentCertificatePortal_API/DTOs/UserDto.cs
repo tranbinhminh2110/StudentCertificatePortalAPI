@@ -28,5 +28,7 @@ namespace StudentCertificatePortal_API.DTOs
         public DateTime? UserCreatedAt { get; set; }
 
         public string? UserImage { get; set; }
+        public int UserOffenseCount { get; set; }
+
     }
 }
