@@ -42,8 +42,15 @@ namespace StudentCertificatePortal_API.Jobs
 
                 foreach (var expiredExam in expiredExams)
                 {
+
+                    
+                    var eEnrollment = await _uow.ExamEnrollmentRepository.FirstOrDefaultAsync(x => x.ExamEnrollmentId == expiredExam.EnrollmentId);
+                    eEnrollment.ExamEnrollmentStatus = Enums.EnumExamEnrollment.Expired.ToString();
+                    _uow.ExamEnrollmentRepository.Update(eEnrollment);
+                    await _uow.Commit(cancellationToken);
                     _uow.StudentOfExamRepository.Delete(expiredExam);
                     await _uow.Commit(cancellationToken);
+                    
                 }
                 await _uow.Commit(cancellationToken);
                 _logger.LogInformation("Expired exams have been deleted.");
