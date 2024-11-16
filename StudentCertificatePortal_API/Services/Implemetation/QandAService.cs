@@ -262,7 +262,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
 
             var existingQuestion = await _uow.QuestionRepository
-                .WhereAsync(q => q.ExamId == request.ExamId && q.QuestionText != null, cancellationToken);
+                .WhereAsync(q => q.ExamId == request.ExamId && q.QuestionText != null, cancellationToken, include: q => q.Include( a => a.Answers));
             var matchingQuestion = existingQuestion
                 .Where(q => q.QuestionText.Trim().ToLower() == request.QuestionName.Trim().ToLower())
                 .ToList();

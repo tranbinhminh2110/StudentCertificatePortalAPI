@@ -33,6 +33,10 @@ namespace StudentCertificatePortal_API.Controllers
         public async Task<ActionResult<Result<QandADto>>> CreateQandA([FromBody] CreateQuestionRequest request)
         {
             var result = await _service.CreateQandAAsync(request, new CancellationToken());
+            if (result == null)
+            {
+                throw new Exception("Failed to add the question. Please check if the question already exists or if there's an issue with the data provided.");
+            }
             return Ok(Result<QandADto>.Succeed(result));
         }
 
