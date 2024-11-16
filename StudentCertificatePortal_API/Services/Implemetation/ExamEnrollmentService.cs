@@ -22,7 +22,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         private readonly IValidator<UpdateExamEnrollmentRequest> _updateExamEnrollmentValidator;
 
 
-        public ExamEnrollmentService(IUnitOfWork uow, IMapper mapper, 
+        public ExamEnrollmentService(IUnitOfWork uow, IMapper mapper,
             IValidator<CreateExamEnrollmentRequest> addExamEnrollmentValidator,
             IValidator<UpdateExamEnrollmentRequest> updateExamEnrollmentValidator)
         {
@@ -41,42 +41,42 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken);
             var userEnrollments = await _uow.ExamEnrollmentRepository.WhereAsync(x => x.UserId == request.UserId);
-             /* Select all exam enrollment có cùng user*/
+            /* Select all exam enrollment có cùng user*/
             var userEnrollmentIds = userEnrollments.Select(x => x.ExamEnrollmentId);
 
-             /*
-              - Kiểm tra số lượng simulation có trong enrollment đã tồn tại 
-              */
+            /*
+             - Kiểm tra số lượng simulation có trong enrollment đã tồn tại 
+             */
 
             int count = 0;
             List<ExamsEnrollment> listEnroll = new List<ExamsEnrollment>();
             foreach (var examIdIndex in request.Simulation_Exams)
             {
-                 /* Kiểm tra xem exam Enrollment có cùng exam id trong studenofexams và có cùng enrollment id
-                  
-                  */
+                /* Kiểm tra xem exam Enrollment có cùng exam id trong studenofexams và có cùng enrollment id
+
+                 */
                 var enrollmentExist = await _uow.ExamEnrollmentRepository.Include(x => x.StudentOfExams)
                     .Where(a => a.StudentOfExams.Any(s => s.ExamId == examIdIndex && userEnrollmentIds.Contains(s.EnrollmentId))).ToListAsync();
 
                 if (enrollmentExist != null)
                 {
-                    foreach(var index in enrollmentExist)
+                    foreach (var index in enrollmentExist)
                     {
                         if (!listEnroll.Contains(index))
                         {
                             count++;
                             listEnroll.Add(index);
                         }
-                        
+
                     }
-                    
+
                 }
 
             }
 
-            if(count == 1)
+            if (count == 1)
             {
-                foreach(var enrollmentExist in listEnroll)
+                foreach (var enrollmentExist in listEnroll)
                 {
                     if (enrollmentExist.ExamEnrollmentStatus == Enums.EnumExamEnrollment.Completed.ToString())
                     {
@@ -99,14 +99,15 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         };
                     }
                 }
-            }else if(count > 1)
+            }
+            else if (count > 1)
             {
-                foreach(var examIntoEnroll in listEnroll)
+                foreach (var examIntoEnroll in listEnroll)
                 {
 
                     var studentOfExamToReomve = examIntoEnroll.StudentOfExams.Where(s => request.Simulation_Exams.Contains(s.ExamId)).ToList();
 
-                    foreach(var studentOfExam in studentOfExamToReomve)
+                    foreach (var studentOfExam in studentOfExamToReomve)
                     {
 
                         // Load the enrollment along with its related StudentOfExams
@@ -171,7 +172,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 UserId = request.UserId,
                 ExamEnrollmentDate = DateTime.UtcNow,
                 ExamEnrollmentStatus = EnumExamEnrollment.OnGoing.ToString(),
-                TotalPrice = totalPrice > 0 ? totalPrice : 0, 
+                TotalPrice = totalPrice > 0 ? totalPrice : 0,
             };
 
             var result = await _uow.ExamEnrollmentRepository.AddAsync(eEnrollmentEntity);
@@ -187,10 +188,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 var studentOfExamEntity = new StudentOfExam()
                 {
                     CreationDate = DateTime.Now,
+                    ExpiryDate = DateTime.Now.AddDays(3),
                     Price = simulation.ExamDiscountFee,
                     Status = false,
                     ExamId = simulation.ExamId,
-                    EnrollmentId = result.ExamEnrollmentId 
+                    EnrollmentId = result.ExamEnrollmentId
                 };
 
                 await _uow.StudentOfExamRepository.AddAsync(studentOfExamEntity);
@@ -220,7 +222,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 include: p => p.Include(q => q.StudentOfExams)
                                .Include(q => q.Payments));
 
-            
+
 
             if (examEnrollment is null)
             {
@@ -256,9 +258,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     ExamFee = se.Exam.ExamFee,
                     ExamDescription = se.Exam.ExamDescription,
                     ExamPermission = se.Exam.ExamPermission
-                    
+
                 }).ToList()
-            }).ToList();    
+            }).ToList();
 
             return examEnrollments;
         }

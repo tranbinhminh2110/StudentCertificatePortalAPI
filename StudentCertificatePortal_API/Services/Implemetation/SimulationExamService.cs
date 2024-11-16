@@ -232,7 +232,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     Answers = question.Answers.Select(answer => new AnswerList
                     {
                         AnswerId = answer.AnswerId,
-                        AnswerText = answer.Text
+                        AnswerText = answer.Text,
+                        IsCorrect = answer.IsCorrect,
                     }).ToList()
                 }).ToList();
             }
