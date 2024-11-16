@@ -77,11 +77,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 var notification = new Notification()
                 {
                     NotificationName = "Feedback contains forbidden words",
-                    NotificationDescription = $"The feedback from user '{user.Username}' contains forbidden words and has been flagged for review. Feedback: '{request.FeedbackDescription}', Exam: '{exam.ExamName}'",
+                    NotificationDescription = $"Feedback submitted by user '{user.Username}' for the exam '{exam.ExamName}' contains forbidden words and has been flagged for review. Feedback details: '{request.FeedbackDescription}'.",
                     NotificationImage = request.FeedbackImage,
                     CreationDate = DateTime.UtcNow,
                     Role = "Admin",
                     IsRead = false,
+                    UserId = request.UserId,
                 };
 
                 await _uow.NotificationRepository.AddAsync(notification);

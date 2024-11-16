@@ -311,6 +311,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 UserImage = sc.CouseEnrollment.User.UserImage,
                 Email = sc.CouseEnrollment.User.Email,
                 Fullname = sc.CouseEnrollment.User.Fullname,
+                Dob = sc.CouseEnrollment.User.Dob,
                 Address = sc.CouseEnrollment.User.Address,
                 PhoneNumber = sc.CouseEnrollment.User.PhoneNumber,
                 CreationDate = sc.CreationDate,
