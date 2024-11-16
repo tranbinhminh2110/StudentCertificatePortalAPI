@@ -51,12 +51,24 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.UpdateNotificationIsReadAsync(role, new CancellationToken());
             return Ok(Result<List<NotificationDto>>.Succeed(result));
         }
+        [HttpPut("AdminIsRead")]
+        public async Task<ActionResult<Result<List<NotificationDto>>>> UpdateAdminIsRead(string role)
+        {
+            var result = await _service.UpdateAdminIsReadAsync(role, new CancellationToken());
+            return Ok(Result<List<NotificationDto>>.Succeed(result));
+        }
 
         [HttpPost("send")]
         public async Task<IActionResult> SendNotification(string message)
         {
             await _hubContext.Clients.All.SendAsync("ReceiveNotification", message);
             return Ok(new { Message = "Notification sent successfully" });
+        }
+        [HttpGet("Student/{userId:int}")]
+        public async Task<ActionResult<Result<List<NotificationDto>>>> GetNotificationStudent(int userId)
+        {
+            var result = await _service.GetNotificationByStudentAsync(userId, new CancellationToken());
+            return Ok(Result<List<NotificationDto>>.Succeed(result));
         }
     }
 }

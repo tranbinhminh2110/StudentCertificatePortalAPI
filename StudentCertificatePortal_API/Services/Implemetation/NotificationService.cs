@@ -78,6 +78,57 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return _mapper.Map<List<NotificationDto>>(sortedResult);
 
         }
+
+        public async Task<List<NotificationDto>> UpdateAdminIsReadAsync(string role, CancellationToken cancellationToken)
+        {
+            var notifications = await _uow.NotificationRepository.WhereAsync(
+                x => x.Role == role && x.IsRead == false, cancellationToken);
+
+            if (notifications == null || !notifications.Any())
+            {
+                throw new KeyNotFoundException("No unread notifications found for this role.");
+            }
+
+            foreach (var notification in notifications)
+            {
+                notification.IsRead = true;
+
+                if (notification.NotificationName == "Feedback contains forbidden words")
+                {
+                    var userId = notification.UserId; 
+
+                    
+                    var studentNotification = new Notification()
+                    {
+                        NotificationName = "Feedback violation recorded",
+                        NotificationDescription = $"Your feedback has been flagged for containing forbidden words. This violation has been recorded.",
+                        NotificationImage = notification.NotificationImage, 
+                        CreationDate = DateTime.UtcNow,
+                        Role = "Student", 
+                        IsRead = false, 
+                        UserId = userId, 
+                    };
+
+                    await _uow.NotificationRepository.AddAsync(studentNotification);
+                }
+            }
+
+            await _uow.Commit(cancellationToken);
+
+            var sortedResult = notifications.OrderByDescending(x => x.CreationDate);
+            return _mapper.Map<List<NotificationDto>>(sortedResult);
+        }
+        public async Task<List<NotificationDto>> GetNotificationByStudentAsync(int userId, CancellationToken cancellationToken)
+        {
+            var result = await _uow.NotificationRepository.WhereAsync(x => x.UserId == userId, cancellationToken);
+            if (result is null)
+            {
+                throw new KeyNotFoundException("Notification not found.");
+            }
+            var sortedResult = result.OrderByDescending(x => x.CreationDate);
+            return _mapper.Map<List<NotificationDto>>(sortedResult);
+        }
+
     }
 }
  

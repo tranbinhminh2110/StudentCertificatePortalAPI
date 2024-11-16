@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
+using StudentCertificatePortal_API.Utils;
 using StudentCertificatePortal_API.Validators;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
@@ -19,12 +21,20 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         private readonly IValidator<CreateFeedbackRequest> _addFeedbackValidator;
         private readonly IValidator<UpdateFeedbackRequest> _updateFeedbackValidator;
 
-        public FeedbackService(IUnitOfWork uow, IMapper mapper, IValidator<CreateFeedbackRequest> addFeedbackValidator, IValidator<UpdateFeedbackRequest> updateFeedbackValidator)
+        private readonly ForbiddenWordsService _forbiddenWordsService;
+        private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly INotificationService _notificationService;
+
+        public FeedbackService(IUnitOfWork uow, IMapper mapper, IValidator<CreateFeedbackRequest> addFeedbackValidator, IValidator<UpdateFeedbackRequest> updateFeedbackValidator, 
+            ForbiddenWordsService forbiddenWordsService, IHubContext<NotificationHub> hubContext, INotificationService notificationService)
         {
             _uow = uow;
             _mapper = mapper;
             _addFeedbackValidator = addFeedbackValidator;
             _updateFeedbackValidator = updateFeedbackValidator;
+            _forbiddenWordsService = forbiddenWordsService;
+            _hubContext = hubContext;
+            _notificationService = notificationService;
         }
 
         public async Task<FeedbackDto> CreateFeedbackAsync(CreateFeedbackRequest request, CancellationToken cancellationToken)
@@ -39,11 +49,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new KeyNotFoundException("User not found.");
             }
-            /*var exam = await _uow.SimulationExamRepository.FirstOrDefaultAsync(x => x.SimulationExamId == request.SimulationExamId, cancellationToken);
-            if (exam is null) 
+
+            var exam = await _uow.SimulationExamRepository.FirstOrDefaultAsync(x => x.ExamId == request.ExamId, cancellationToken);
+            if (exam is null)
             {
                 throw new KeyNotFoundException("SimulationExam not found.");
-            }*/
+            }
+
+            bool containsForbiddenWord = _forbiddenWordsService.ContainsForbiddenWords(request.FeedbackDescription);
+
+            var feedbackPermission = containsForbiddenWord ? false : true;
+
             var feedbackEntity = new Feedback()
             {
                 UserId = request.UserId,
@@ -51,9 +67,29 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 FeedbackDescription = request.FeedbackDescription,
                 FeedbackImage = request.FeedbackImage,
                 FeedbackCreatedAt = request.FeedbackCreatedAt,
+                FeedbackPermission = feedbackPermission, 
+
             };
             var result = await _uow.FeedbackRepository.AddAsync(feedbackEntity);
             await _uow.Commit(cancellationToken);
+            if (containsForbiddenWord)
+            {
+                var notification = new Notification()
+                {
+                    NotificationName = "Feedback contains forbidden words",
+                    NotificationDescription = $"The feedback from user '{user.Username}' contains forbidden words and has been flagged for review. Feedback: '{request.FeedbackDescription}', Exam: '{exam.ExamName}'",
+                    NotificationImage = request.FeedbackImage,
+                    CreationDate = DateTime.UtcNow,
+                    Role = "Admin",
+                    IsRead = false,
+                };
+
+                await _uow.NotificationRepository.AddAsync(notification);
+                await _uow.Commit(cancellationToken);
+
+                var notifications = await _notificationService.GetNotificationByRoleAsync("Admin", cancellationToken);
+                await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
+            }
             return _mapper.Map<FeedbackDto>(result);
             
         }
