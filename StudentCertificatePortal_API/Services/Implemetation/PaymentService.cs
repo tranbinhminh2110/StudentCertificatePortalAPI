@@ -166,6 +166,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 var soes = await _uow.StudentOfExamRepository.WhereAsync(x => x.EnrollmentId == enrollment.ExamEnrollmentId);
                 foreach (var soe in soes)
                 {
+                    soe.CreationDate = DateTime.Now;
+                    soe.ExpiryDate = DateTime.Now.AddDays(3);
                     soe.Status = true;
                     _uow.StudentOfExamRepository.Update(soe);
                     await _uow.Commit(cancellation);
