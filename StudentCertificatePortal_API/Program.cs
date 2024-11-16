@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Quartz;
 using StudentCertificatePortal_API.Filters.ActionFilters;
+using StudentCertificatePortal_API.Jobs;
 using StudentCertificatePortal_API.Middlewares;
 using StudentCertificatePortal_API.Policies;
 using StudentCertificatePortal_API.Services.Implemetation;
@@ -42,6 +44,18 @@ builder.Services.AddAuthentication(options =>
 });
 
 // Initial Scheduler 
+builder.Services.AddQuartz(q =>
+{
+    q.UseMicrosoftDependencyInjectionJobFactory();
+    var jobKey = new JobKey("RemoveExpiredExamsJob");
+    q.AddJob<RemoveExpiredExamsJob>(opts => opts.WithIdentity(jobKey));
+
+    q.AddTrigger(opts => opts
+        .ForJob(jobKey)  
+        .StartNow() 
+        .WithSimpleSchedule(x => x.WithIntervalInHours(24).RepeatForever()) 
+    );
+});
 
 builder.Services.AddSignalR();
 

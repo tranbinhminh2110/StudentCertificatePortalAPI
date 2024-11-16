@@ -6,7 +6,7 @@ using StudentCertificatePortal_API.Services.Interface;
 
 namespace StudentCertificatePortal_API.Controllers
 {
-    public class PaymentController: ApiControllerBase
+    public class PaymentController : ApiControllerBase
     {
         private readonly IPaymentService _service;
         private readonly IExamEnrollmentService _examEnrollmentService;
@@ -58,9 +58,9 @@ namespace StudentCertificatePortal_API.Controllers
         public async Task<ActionResult<Result<PaymentDto>>> PayNow([FromBody] CreatePayNowRequest request)
         {
 
-            if(request.Simulation_Exams.Any(id => id != 0 && request.UserId != 0))
+            if (request.Simulation_Exams.Any(id => id != 0 && request.UserId != 0))
             {
-                
+
                 var enroll = new CreateExamEnrollmentRequest()
                 {
                     UserId = request.UserId,
@@ -76,7 +76,8 @@ namespace StudentCertificatePortal_API.Controllers
                 var payNow = await _service.ProcessPayment(payment, new CancellationToken());
                 if (payNow == null) throw new Exception("Error payment and please try again.");
                 return Ok(Result<PaymentDto>.Succeed(payNow));
-            }else if(request.Courses.Any(id => id != 0 && request.UserId != 0))
+            }
+            else if (request.Courses.Any(id => id != 0 && request.UserId != 0))
             {
                 var enroll = new CreateCourseEnrollmentRequest()
                 {

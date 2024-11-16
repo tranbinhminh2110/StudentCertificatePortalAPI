@@ -187,8 +187,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                 var studentOfExamEntity = new StudentOfExam()
                 {
-                    CreationDate = DateTime.Now,
-                    ExpiryDate = DateTime.Now.AddDays(3),
                     Price = simulation.ExamDiscountFee,
                     Status = false,
                     ExamId = simulation.ExamId,
