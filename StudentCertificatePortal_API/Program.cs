@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using StudentCertificatePortal_API.Filters.ActionFilters;
 using StudentCertificatePortal_API.Middlewares;
@@ -42,6 +41,7 @@ builder.Services.AddAuthentication(options =>
     options.CallbackPath = "/sign-in-google"; 
 });
 
+// Initial Scheduler 
 
 builder.Services.AddSignalR();
 

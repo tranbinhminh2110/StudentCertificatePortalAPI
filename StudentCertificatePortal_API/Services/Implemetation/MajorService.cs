@@ -128,7 +128,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 x => x.MajorId == majorId,
                 cancellationToken, include: q => q.Include(c => c.JobPositions)
                                                   .Include(c => c.Certs));
-            if (major is null) 
+            if (major is null)
             {
                 throw new KeyNotFoundException("Major not found.");
             }
@@ -187,7 +187,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<MajorDto> GetMajorByIdAsync(int majorId, CancellationToken cancellationToken)
         {
             var result = await _uow.MajorRepository.FirstOrDefaultAsync(
-                x => x.MajorId == majorId, cancellationToken: cancellationToken,include: query => query.Include(c => c.JobPositions)
+                x => x.MajorId == majorId, cancellationToken: cancellationToken, include: query => query.Include(c => c.JobPositions)
                             .Include(c => c.Certs)
                             .ThenInclude(cert => cert.Type)
                             .Include(c => c.Certs)
@@ -206,7 +206,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     JobPositionCode = jobPosition.JobPositionCode,
                     JobPositionDescription = jobPosition.JobPositionDescription,
                     JobPositionPermission = jobPosition.JobPositionPermission,
-                    
+
                 }).ToList();
             majorDto.CertificationDetails = result.Certs
                     .Select(cert => new CertificationDetailsDto
@@ -471,7 +471,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 NotificationName = "Major Permission Update",
                 NotificationDescription = $"The major '{major.MajorName}' has been {majorPermission}.",
-                NotificationImage = major.MajorImage, 
+                NotificationImage = major.MajorImage,
                 CreationDate = DateTime.UtcNow,
                 Role = "Staff",
                 IsRead = false,

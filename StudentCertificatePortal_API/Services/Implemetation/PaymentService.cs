@@ -30,20 +30,20 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<PaymentDto> GetPaymentByIdAsync(int paymentId)
         {
             var result = await _uow.PaymentRepository.FirstOrDefaultAsync(x => x.PaymentId == paymentId);
-            if(result == null)
+            if (result == null)
             {
                 throw new KeyNotFoundException("Payment not found.");
             }
 
-            return _mapper.Map<PaymentDto>(result); 
+            return _mapper.Map<PaymentDto>(result);
         }
 
-        
+
 
         public async Task<PaymentDto> ProcessPayment(CreatePaymentRequest request, CancellationToken cancellation)
         {
             var result = new Payment();
-            if(request.CourseEnrollmentId > 0)
+            if (request.CourseEnrollmentId > 0)
             {
                 // Process Payment of Course Enrollment
                 // Check the enrollment and include related StudentOfCourses to calculate the total fee
@@ -100,17 +100,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 var socs = await _uow.StudentOfCourseRepository.WhereAsync(x => x.CouseEnrollmentId == request.CourseEnrollmentId);
 
 
-                foreach(var soc in socs)
+                foreach (var soc in socs)
                 {
                     soc.Status = true;
                     _uow.StudentOfCourseRepository.Update(soc);
                     await _uow.Commit(cancellation);
 
                 }
-               
+
 
             }
-            else if( request.ExamEnrollmentId > 0)
+            else if (request.ExamEnrollmentId > 0)
             {
                 // Process Payment of Exam Enrollment
                 // Check info of exam enrollment 
@@ -118,8 +118,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     x => x.ExamEnrollmentId == request.ExamEnrollmentId,
                     cancellation,
                     include: ee => ee.Include(q => q.StudentOfExams));
-                 
-                if(enrollExams == null)
+
+                if (enrollExams == null)
                 {
                     throw new KeyNotFoundException("Exam Enrollment not found.");
                 }
@@ -150,21 +150,21 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 result = await _uow.PaymentRepository.AddAsync(paymentEntity);
                 await _uow.Commit(cancellation);
                 // Update Point in wallet
-                wallet.Point -= enrollExams.TotalPrice??0;
-                
-                
+                wallet.Point -= enrollExams.TotalPrice ?? 0;
+
+
                 _uow.WalletRepository.Update(wallet);
                 await _uow.Commit(cancellation);
 
-                var enrollment = await _uow.ExamEnrollmentRepository.FirstOrDefaultAsync( x=> x.ExamEnrollmentId == request.ExamEnrollmentId);
-                
-                enrollment.ExamEnrollmentStatus = EnumExamEnrollment.Completed.ToString();
-                
-                _uow.ExamEnrollmentRepository.Update(enrollment);
-                await _uow.Commit(cancellation);    
+                var enrollment = await _uow.ExamEnrollmentRepository.FirstOrDefaultAsync(x => x.ExamEnrollmentId == request.ExamEnrollmentId);
 
-                var soes = await _uow.StudentOfExamRepository.WhereAsync(x => x.EnrollmentId ==  enrollment.ExamEnrollmentId);
-                foreach(var soe in soes)
+                enrollment.ExamEnrollmentStatus = EnumExamEnrollment.Completed.ToString();
+
+                _uow.ExamEnrollmentRepository.Update(enrollment);
+                await _uow.Commit(cancellation);
+
+                var soes = await _uow.StudentOfExamRepository.WhereAsync(x => x.EnrollmentId == enrollment.ExamEnrollmentId);
+                foreach (var soe in soes)
                 {
                     soe.Status = true;
                     _uow.StudentOfExamRepository.Update(soe);
@@ -181,7 +181,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         {
             var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.UserId == userId);
 
-            if(wallet == null || wallet.WalletStatus == EnumWallet.IsLocked.ToString())
+            if (wallet == null || wallet.WalletStatus == EnumWallet.IsLocked.ToString())
             {
                 throw new KeyNotFoundException("Wallet not found or is locked.");
 
