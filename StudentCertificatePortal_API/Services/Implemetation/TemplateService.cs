@@ -1,4 +1,5 @@
-﻿using OfficeOpenXml;
+﻿using Microsoft.EntityFrameworkCore;
+using OfficeOpenXml;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_Data.Models;
@@ -44,7 +45,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                     var check = new CreateQuestionRequest()
                     {
+                        ExamId = examId,
                         QuestionName = question.QuestionText,
+                        Answers = new List<AnswerRequest>()
                     };
                     for (int col = 2; col <= 9; col += 2)
                     {
@@ -96,20 +99,19 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new Exception("Simulation not found. Question creation requires a valid CertId.");
             }
 
-            var existingQuestion = await _uow.QuestionRepository
-                .WhereAsync(q => q.ExamId == request.ExamId && q.QuestionText != null, cancellationToken);
-            var matchingQuestion = existingQuestion
-                .Where(q => q.QuestionText.Trim().ToLower() == request.QuestionName.Trim().ToLower())
-                .ToList();
+            var existingQuestions = await _uow.QuestionRepository
+                .WhereAsync(q => q.ExamId == request.ExamId && q.QuestionText != null, cancellationToken, include: q => q.Include(a => a.Answers));
 
-            if (matchingQuestion.Any())
+            var matchingQuestion = existingQuestions
+                .FirstOrDefault(q => q.QuestionText.Trim().ToLower() == request.QuestionName.Trim().ToLower());
+
+            if (matchingQuestion != null)
             {
-                var existingAnswers = matchingQuestion.SelectMany(q => q.Answers).ToList();
-
+                var existingAnswers = matchingQuestion.Answers;
                 var isDuplicateAnswers = request.Answers.All(r =>
                     existingAnswers.Any(a =>
                         a.Text != null &&
-                        a.Text.Trim().ToLower() == r.Text.Trim().ToLower() &&
+                        a.Text.Trim().ToLower().Equals(r.Text.Trim().ToLower()) &&
                         a.IsCorrect == r.IsCorrect));
 
                 if (isDuplicateAnswers)
@@ -120,6 +122,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             return false;
         }
+
         public byte[] GenerateExamTemplate()
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
