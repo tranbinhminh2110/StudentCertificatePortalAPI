@@ -367,6 +367,7 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.FeedbackImage)
                 .HasColumnType("text")
                 .HasColumnName("feedback_image");
+            entity.Property(e => e.FeedbackPermission).HasColumnName("feedback_permission");
             entity.Property(e => e.UserId).HasColumnName("user_id");
 
             entity.HasOne(d => d.Exam).WithMany(p => p.Feedbacks)
@@ -482,6 +483,11 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.Role)
                 .HasMaxLength(255)
                 .HasColumnName("role");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Notifications)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("fk_notifications_users");
         });
 
         modelBuilder.Entity<Organize>(entity =>
@@ -744,6 +750,7 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.UserImage)
                 .HasColumnType("text")
                 .HasColumnName("user_image");
+            entity.Property(e => e.UserOffenseCount).HasColumnName("user_offenseCount");
             entity.Property(e => e.Username)
                 .HasMaxLength(255)
                 .HasColumnName("username");

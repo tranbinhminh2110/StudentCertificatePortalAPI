@@ -18,4 +18,8 @@ public partial class Notification
     public string? Role { get; set; }
 
     public bool? IsRead { get; set; }
+
+    public int? UserId { get; set; }
+
+    public virtual User? User { get; set; }
 }

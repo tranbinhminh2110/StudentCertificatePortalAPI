@@ -1,4 +1,5 @@
 ﻿using OfficeOpenXml;
+using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
@@ -39,32 +40,86 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         QuestionText = questionText
                     };
 
-                    var questionResult = await _uow.QuestionRepository.AddAsync(question, cancellationToken);
-                    await _uow.Commit(cancellationToken);
+                    
 
+                    var check = new CreateQuestionRequest()
+                    {
+                        QuestionName = question.QuestionText,
+                    };
                     for (int col = 2; col <= 9; col += 2)
                     {
                         var answerText = worksheet.Cells[row, col].Value?.ToString();
                         var isCorrectText = worksheet.Cells[row, col + 1].Value?.ToString();
                         var isCorrect = bool.TryParse(isCorrectText, out var parsedIsCorrect) && parsedIsCorrect;
 
-                        if (!string.IsNullOrWhiteSpace(answerText))
+                        check.Answers.Add(new AnswerRequest() { Text = answerText, IsCorrect = isCorrect });
+                    }
+
+                    bool isDuplicate = await IsDuplicateQuestionAsync(check, cancellationToken);
+                    if (isDuplicate)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        var questionResult = await _uow.QuestionRepository.AddAsync(question, cancellationToken);
+                        await _uow.Commit(cancellationToken);
+                        for (int col = 2; col <= 9; col += 2)
                         {
-                            var entity = new Answer()
+                            var answerText = worksheet.Cells[row, col].Value?.ToString();
+                            var isCorrectText = worksheet.Cells[row, col + 1].Value?.ToString();
+                            var isCorrect = bool.TryParse(isCorrectText, out var parsedIsCorrect) && parsedIsCorrect;
+
+                            if (!string.IsNullOrWhiteSpace(answerText))
                             {
-                                QuestionId = questionResult.QuestionId,
-                                Text = answerText,
-                                IsCorrect = isCorrect
-                            };
-                            await _uow.AnswerRepository.AddAsync(entity, cancellationToken);
-                            await _uow.Commit(cancellationToken);
+                                var entity = new Answer()
+                                {
+                                    QuestionId = questionResult.QuestionId,
+                                    Text = answerText,
+                                    IsCorrect = isCorrect
+                                };
+                                await _uow.AnswerRepository.AddAsync(entity, cancellationToken);
+                                await _uow.Commit(cancellationToken);
+                            }
                         }
                     }
                 }
             }
         }
+        public async Task<bool> IsDuplicateQuestionAsync(CreateQuestionRequest request, CancellationToken cancellationToken)
+        {
+            var simulation = await _uow.SimulationExamRepository
+                .FirstOrDefaultAsync(x => x.ExamId == request.ExamId, cancellationToken);
 
+            if (simulation == null)
+            {
+                throw new Exception("Simulation not found. Question creation requires a valid CertId.");
+            }
 
+            var existingQuestion = await _uow.QuestionRepository
+                .WhereAsync(q => q.ExamId == request.ExamId && q.QuestionText != null, cancellationToken);
+            var matchingQuestion = existingQuestion
+                .Where(q => q.QuestionText.Trim().ToLower() == request.QuestionName.Trim().ToLower())
+                .ToList();
+
+            if (matchingQuestion.Any())
+            {
+                var existingAnswers = matchingQuestion.SelectMany(q => q.Answers).ToList();
+
+                var isDuplicateAnswers = request.Answers.All(r =>
+                    existingAnswers.Any(a =>
+                        a.Text != null &&
+                        a.Text.Trim().ToLower() == r.Text.Trim().ToLower() &&
+                        a.IsCorrect == r.IsCorrect));
+
+                if (isDuplicateAnswers)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
         public byte[] GenerateExamTemplate()
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
