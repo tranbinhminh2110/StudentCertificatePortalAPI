@@ -29,6 +29,8 @@ public partial class User
 
     public string? UserImage { get; set; }
 
+    public int UserOffenseCount { get; set; }
+
     public virtual Cart? Cart { get; set; }
 
     public virtual ICollection<CoursesEnrollment> CoursesEnrollments { get; set; } = new List<CoursesEnrollment>();
@@ -36,6 +38,8 @@ public partial class User
     public virtual ICollection<ExamsEnrollment> ExamsEnrollments { get; set; } = new List<ExamsEnrollment>();
 
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
+
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
     public virtual ICollection<Score> Scores { get; set; } = new List<Score>();
 

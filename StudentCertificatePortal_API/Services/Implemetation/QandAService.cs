@@ -32,53 +32,54 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new RequestValidationException(validation.Errors);
             }
-            var simulation = await _uow.SimulationExamRepository.FirstOrDefaultAsync(x => x.ExamId == request.ExamId, cancellationToken);
 
-            if (simulation == null)
-            {
-                throw new Exception("Simulation not found. Question creation requires a valid CertId.");
-            }
-            var questionEntity = new Question()
-            {
-                QuestionText = request.QuestionName,
-                ExamId = request.ExamId,
-                
-            };
-            var questionResult = await _uow.QuestionRepository.AddAsync(questionEntity);
-            await _uow.Commit(cancellationToken);
-            var result = new QandADto()
-            {
-                QuestionId = questionResult.QuestionId,
-                QuestionName = questionResult.QuestionText,
-                ExamId = questionResult.ExamId,
-                Answers = new List<AnswerDto>()
-            };
+            bool checkIsDuplicate = await IsDuplicateQuestionAsync(request, cancellationToken);
 
-            foreach (var answer in request.Answers)
+            if (!checkIsDuplicate)
             {
-                var answerEntity = new Answer()
+                var questionEntity = new Question()
                 {
-                    Text = answer.Text,
-                    IsCorrect = answer.IsCorrect,
-                    QuestionId = questionResult.QuestionId,
+                    QuestionText = request.QuestionName,
+                    ExamId = request.ExamId,
                 };
-                var answerResult = await _uow.AnswerRepository.AddAsync(answerEntity);
+                var questionResult = await _uow.QuestionRepository.AddAsync(questionEntity);
                 await _uow.Commit(cancellationToken);
-                result.Answers.Add(new AnswerDto()
+                var result = new QandADto()
                 {
-                    AnswerId = answerResult.AnswerId,
-                    Text = answerResult.Text,
-                    IsCorrect = answerResult.IsCorrect
-                });
+                    QuestionId = questionResult.QuestionId,
+                    QuestionName = questionResult.QuestionText,
+                    ExamId = questionResult.ExamId,
+                    Answers = new List<AnswerDto>()
+                };
 
+                foreach (var answer in request.Answers)
+                {
+                    var answerEntity = new Answer()
+                    {
+                        Text = answer.Text,
+                        IsCorrect = answer.IsCorrect,
+                        QuestionId = questionResult.QuestionId,
+                    };
+                    var answerResult = await _uow.AnswerRepository.AddAsync(answerEntity);
+                    await _uow.Commit(cancellationToken);
+                    result.Answers.Add(new AnswerDto()
+                    {
+                        AnswerId = answerResult.AnswerId,
+                        Text = answerResult.Text,
+                        IsCorrect = answerResult.IsCorrect
+                    });
+
+                }
+                return _mapper.Map<QandADto>(result);
             }
-            return _mapper.Map<QandADto>(result);
+            return null;
+
         }
 
         public async Task<QandADto> DeleteQandAAsync(int questionId, CancellationToken cancellationToken)
         {
             var question = await _uow.QuestionRepository.FirstOrDefaultAsync(x => x.QuestionId == questionId);
-            if(question ==  null)
+            if (question == null)
             {
                 throw new KeyNotFoundException("Question not found!");
             }
@@ -90,7 +91,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             foreach (var answer in answers)
             {
-                 _uow.AnswerRepository.Delete(answer); 
+                _uow.AnswerRepository.Delete(answer);
             }
 
             await _uow.Commit(cancellationToken);
@@ -103,9 +104,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<List<QandADto>> GetAll()
         {
-            var result = new List<QandADto>();  
+            var result = new List<QandADto>();
             var questions = await _uow.QuestionRepository.GetAll();
-            foreach(var question in questions)
+            foreach (var question in questions)
             {
                 var answers = await _uow.AnswerRepository.WhereAsync(x => x.QuestionId == question.QuestionId);
                 result.Add(new QandADto()
@@ -123,7 +124,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         {
             var result = new QandADto();
             var question = await _uow.QuestionRepository.FirstOrDefaultAsync(x => x.QuestionId == questionId);
-            if(question == null)
+            if (question == null)
             {
                 throw new KeyNotFoundException("Question not found!");
             }
@@ -140,7 +141,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         {
             var result = new List<QandADto>();
             var questions = await _uow.QuestionRepository.WhereAsync(x => x.QuestionText.Contains(questionName));
-            if(questions == null)
+            if (questions == null)
             {
                 throw new KeyNotFoundException("Question not found!");
             }
@@ -206,7 +207,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             question.QuestionText = request.QuestionName;
             question.ExamId = request.ExamId;
-            
+
 
             _uow.QuestionRepository.Update(question);
             await _uow.Commit(cancellationToken);
@@ -247,6 +248,42 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             await _uow.Commit(cancellationToken);
             return result;
+        }
+
+
+        public async Task<bool> IsDuplicateQuestionAsync(CreateQuestionRequest request, CancellationToken cancellationToken)
+        {
+            var simulation = await _uow.SimulationExamRepository
+                .FirstOrDefaultAsync(x => x.ExamId == request.ExamId, cancellationToken);
+
+            if (simulation == null)
+            {
+                throw new Exception("Simulation not found. Question creation requires a valid CertId.");
+            }
+
+            var existingQuestion = await _uow.QuestionRepository
+                .WhereAsync(q => q.ExamId == request.ExamId && q.QuestionText != null, cancellationToken);
+            var matchingQuestion = existingQuestion
+                .Where(q => q.QuestionText.Trim().ToLower() == request.QuestionName.Trim().ToLower())
+                .ToList();
+
+            if (matchingQuestion.Any())
+            {
+                var existingAnswers = matchingQuestion.SelectMany(q => q.Answers).ToList();
+
+                var isDuplicateAnswers = request.Answers.All(r =>
+                    existingAnswers.Any(a =>
+                        a.Text != null &&
+                        a.Text.Trim().ToLower() == r.Text.Trim().ToLower() &&
+                        a.IsCorrect == r.IsCorrect));
+
+                if (isDuplicateAnswers)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
     }
