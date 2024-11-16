@@ -15,6 +15,10 @@ namespace StudentCertificatePortal_API.DTOs
 
         public int? UserId { get; set; }
 
+        public DateTime? CreationDate { get; set; }
+
+        public DateTime? ExpiryDate { get; set; }
+
         public List<ExamDetailsDto> SimulationExamDetail { get; set; } = new List<ExamDetailsDto>();
     }
 }

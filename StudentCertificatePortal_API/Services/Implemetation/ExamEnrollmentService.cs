@@ -246,6 +246,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 ExamEnrollmentStatus = ee.ExamEnrollmentStatus,
                 TotalPrice = ee.TotalPrice,
                 UserId = ee.UserId,
+                CreationDate = ee.StudentOfExams.FirstOrDefault() != null
+               ? ee.StudentOfExams.FirstOrDefault().CreationDate
+               : (DateTime?)null,
+                ExpiryDate = ee.StudentOfExams.FirstOrDefault() != null
+               ? ee.StudentOfExams.FirstOrDefault().ExpiryDate
+               : (DateTime?)null,
                 SimulationExamDetail = ee.StudentOfExams.Select(se => new ExamDetailsDto()
                 {
                     ExamId = se.ExamId,
@@ -280,6 +286,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 ExamEnrollmentStatus = result.ExamEnrollmentStatus,
                 TotalPrice = result.TotalPrice,
                 UserId = result.UserId,
+                CreationDate = result.StudentOfExams.FirstOrDefault() != null
+               ? result.StudentOfExams.FirstOrDefault().CreationDate
+               : (DateTime?)null,
+                ExpiryDate = result.StudentOfExams.FirstOrDefault() != null
+               ? result.StudentOfExams.FirstOrDefault().ExpiryDate
+               : (DateTime?)null,
                 SimulationExamDetail = result.StudentOfExams.Select(se => new ExamDetailsDto
                 {
                     ExamId = se.ExamId,
@@ -311,6 +323,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 ExamEnrollmentStatus = ee.ExamEnrollmentStatus,
                 TotalPrice = ee.TotalPrice,
                 UserId = ee.UserId,
+                CreationDate = ee.StudentOfExams.FirstOrDefault() != null
+                ? ee.StudentOfExams.FirstOrDefault().CreationDate
+                : (DateTime?)null,
+                ExpiryDate = ee.StudentOfExams.FirstOrDefault() != null
+                ? ee.StudentOfExams.FirstOrDefault().ExpiryDate
+                : (DateTime?)null,
                 SimulationExamDetail = ee.StudentOfExams.Select(se => new ExamDetailsDto()
                 {
                     ExamId = se.ExamId,
