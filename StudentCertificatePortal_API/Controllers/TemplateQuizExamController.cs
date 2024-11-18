@@ -20,7 +20,7 @@ namespace StudentCertificatePortal_API.Controllers
         public async Task<IActionResult> UploadExamTemplate(IFormFile file, [FromRoute] int examId)
         {
             if (file.Length <= 0)
-                return BadRequest("File không hợp lệ.");
+                return BadRequest("Invalid file.");
 
             using (var stream = new MemoryStream())
             {
@@ -29,7 +29,7 @@ namespace StudentCertificatePortal_API.Controllers
                 await _service.AddQuestionsFromExcelAsync(examId, stream, new CancellationToken());
             }
 
-            return Ok("Đề thi đã được thêm thành công.");
+            return Ok("The exam has been successfully added.");
         }
     }
 }
