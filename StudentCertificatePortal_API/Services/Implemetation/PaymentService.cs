@@ -57,6 +57,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     throw new KeyNotFoundException("Course Enrollment not found.");
                 }
 
+                if (enrollCourses.CourseEnrollmentStatus == Enums.EnumCourseEnrollment.Completed.ToString())
+                {
+                    throw new Exception("The course enrollment is already completed. You cannot modify or re-enroll.");
+                }
+
+
                 // Check if the wallet has sufficient balance
                 bool canPay = await CanPay(request.UserId, enrollCourses.TotalPrice ?? 0);
 
@@ -123,6 +129,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 {
                     throw new KeyNotFoundException("Exam Enrollment not found.");
                 }
+
+                if (enrollExams.ExamEnrollmentStatus == Enums.EnumExamEnrollment.Completed.ToString())
+                {
+                    throw new Exception("The exam enrollment is already completed. You cannot modify or re-enroll.");
+                }
+
                 // Insufficient balance in wallet
                 bool canPay = await CanPay(request.UserId, enrollExams.TotalPrice ?? 0);
 
