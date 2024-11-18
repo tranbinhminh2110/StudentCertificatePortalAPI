@@ -78,7 +78,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 {
                     NotificationName = "Feedback contains forbidden words",
                     NotificationDescription = $"Feedback submitted by user '{user.Username}' for the exam '{exam.ExamName}' contains forbidden words and has been flagged for review. Feedback details: '{request.FeedbackDescription}'.",
-                    NotificationImage = request.FeedbackImage,
+                    NotificationImage = user.UserImage,
                     CreationDate = DateTime.UtcNow,
                     Role = "Admin",
                     IsRead = false,

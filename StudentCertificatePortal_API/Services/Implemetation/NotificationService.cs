@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Commons;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Services.Interface;
@@ -78,11 +79,28 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return _mapper.Map<List<NotificationDto>>(sortedResult);
 
         }
+        public async Task<List<NotificationDto>> UpdateIsReadByIdAsync(int notificationId, CancellationToken cancellationToken)
+        {
+            var notifications = await _uow.NotificationRepository.WhereAsync(
+                x => x.NotificationId == notificationId, cancellationToken);
+            if (notifications == null || !notifications.Any())
+            {
+                throw new KeyNotFoundException("No unread notifications found for this role.");
+            }
+            foreach (var notification in notifications)
+            {
+                notification.IsRead = true;
+            }
+            await _uow.Commit(cancellationToken);
+            var sortedResult = notifications.OrderByDescending(x => x.CreationDate); 
+            return _mapper.Map<List<NotificationDto>>(sortedResult);
+
+        }
 
         public async Task<List<NotificationDto>> UpdateAdminIsReadAsync(int notificationId, CancellationToken cancellationToken)
         {
             var notifications = await _uow.NotificationRepository.WhereAsync(
-                x => x.NotificationId == notificationId && x.IsRead == false, cancellationToken);
+                x => x.NotificationId == notificationId && x.IsRead == false, cancellationToken, include: query => query.Include(n => n.User));
 
             if (notifications == null || !notifications.Any())
             {
@@ -106,7 +124,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         {
                             NotificationName = "Feedback flagged for review",
                             NotificationDescription = $"Your feedback has been flagged for containing inappropriate language. Please ensure compliance with community guidelines to avoid further issues.",
-                            NotificationImage = notification.NotificationImage,
+                            NotificationImage = user.UserImage,
                             CreationDate = DateTime.UtcNow,
                             Role = "Student",
                             IsRead = false,

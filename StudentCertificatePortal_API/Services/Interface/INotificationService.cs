@@ -10,6 +10,7 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<List<NotificationDto>> GetNotificationByRoleAsync(string role, CancellationToken cancellationToken);
         Task<NotificationDto> DeleteNotificationAsync(int notificationId, CancellationToken cancellationToken);
         Task<List<NotificationDto>> UpdateNotificationIsReadAsync(string role, CancellationToken cancellationToken);
+        Task<List<NotificationDto>> UpdateIsReadByIdAsync(int notificationId, CancellationToken cancellationToken);
         Task<List<NotificationDto>> UpdateAdminIsReadAsync(int notificationId, CancellationToken cancellationToken);
         Task<List<NotificationDto>> GetNotificationByStudentAsync(int userId, CancellationToken cancellationToken);
 
