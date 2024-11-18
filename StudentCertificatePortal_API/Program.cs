@@ -56,6 +56,7 @@ builder.Services.AddQuartz(q =>
         .WithSimpleSchedule(x => x.WithIntervalInHours(24).RepeatForever()) 
     );
 });
+builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 builder.Services.AddSignalR();
 
