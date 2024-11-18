@@ -41,7 +41,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     countQuestionCorrect++;
                 }
             }
-            float finalScore = countQuestionCorrect * (10f / numberQuestion);
+            float finalScore = countQuestionCorrect * (100f / numberQuestion);
 
             var scoreEntity = new Score()
             {
