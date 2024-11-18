@@ -41,7 +41,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     countQuestionCorrect++;
                 }
             }
-            float finalScore = countQuestionCorrect * (100f / numberQuestion);
+            Double finalScore = Math.Round(countQuestionCorrect * (100f / numberQuestion), 2);
 
             var scoreEntity = new Score()
             {
@@ -58,57 +58,31 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<bool> CheckAnswerCorrect(int questionId, List<int> answerId, CancellationToken cancellationToken)
         {
-            var question = await _uow.QuestionRepository.FirstOrDefaultAsync(x => x.QuestionId == questionId,
+            if (questionId <= 0)
+                return false;
+
+            if (answerId == null || !answerId.Any() || answerId.Any(a => a <= 0))
+                return false;
+
+            var question = await _uow.QuestionRepository.FirstOrDefaultAsync(
+                x => x.QuestionId == questionId,
                 cancellationToken,
                 include: i => i.Include(a => a.Answers));
 
-            if (question != null)
-            {
-                List<int> answerCorrectIds = new List<int>();
-                foreach (var answer in question.Answers)
-                {
-                    if (answer.IsCorrect)
-                    {
-                        answerCorrectIds.Add(answer.AnswerId);
-                    }
-                }
-                if (answerCorrectIds.Count == answerId.Count)
-                {
-                    if (answerId.Count == 1)
-                    {
-                        if (answerId[0] == answerCorrectIds[0])
-                        {
-                            return true;
-                        }
-                        return false;
-                    }
-                    else if (answerId.Count > 1)
-                    {
-                        int count = 0;
-                        for (int i = 0; i < answerId.Count; i++)
-                        {
-                            foreach (var ansCorrect in answerCorrectIds)
-                            {
-                                if (answerId[0] == ansCorrect)
-                                {
-                                    count++;
-                                }
-                            }
-                        }
-                        if (count == answerCorrectIds.Count)
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                }
+            if (question == null)
                 return false;
-            }
-            return false;
+
+            var answerCorrectIds = question.Answers
+                                            .Where(a => a.IsCorrect)
+                                            .Select(a => a.AnswerId)
+                                            .ToList();
+
+            if (answerCorrectIds.Count != answerId.Count)
+                return false;
+
+            return !answerCorrectIds.Except(answerId).Any();
         }
+
 
         public async Task<List<ScoreDto>> GetScoreByUserId(int userId, int? examId, CancellationToken cancellationToken)
         {
