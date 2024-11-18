@@ -254,11 +254,45 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new KeyNotFoundException("Feedback not found.");
             }
+            bool containsForbiddenWord = _forbiddenWordsService.ContainsForbiddenWords(request.FeedbackDescription);
+            feedback.FeedbackPermission = !containsForbiddenWord;
             feedback.FeedbackDescription = request.FeedbackDescription;
             feedback.FeedbackImage = request.FeedbackImage;
 
             _uow.FeedbackRepository.Update(feedback);
             await _uow.Commit(cancellationToken);
+            if (containsForbiddenWord)
+            {
+                var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == feedback.UserId, cancellationToken);
+                if (user == null)
+                {
+                    throw new KeyNotFoundException("User not found.");
+                }
+
+                var exam = await _uow.SimulationExamRepository.FirstOrDefaultAsync(x => x.ExamId == feedback.ExamId, cancellationToken);
+                if (exam == null)
+                {
+                    throw new KeyNotFoundException("SimulationExam not found.");
+                }
+
+                var notification = new Notification()
+                {
+                    NotificationName = "Feedback contains forbidden words",
+                    NotificationDescription = $"Updated feedback by user '{user.Username}' for the exam '{exam.ExamName}' contains forbidden words and has been flagged for review. Feedback details: '{request.FeedbackDescription}'.",
+                    NotificationImage = user.UserImage,
+                    CreationDate = DateTime.UtcNow,
+                    Role = "Admin",
+                    IsRead = false,
+                    UserId = feedback.UserId,
+                };
+
+                await _uow.NotificationRepository.AddAsync(notification);
+                await _uow.Commit(cancellationToken);
+
+                // Send notification to admin
+                var notifications = await _notificationService.GetNotificationByRoleAsync("Admin", cancellationToken);
+                await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
+            }
             return _mapper.Map<FeedbackDto>(feedback);
         }
     }
