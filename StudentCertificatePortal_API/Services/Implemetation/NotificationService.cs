@@ -79,14 +79,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         }
 
-        public async Task<List<NotificationDto>> UpdateAdminIsReadAsync(string role, CancellationToken cancellationToken)
+        public async Task<List<NotificationDto>> UpdateAdminIsReadAsync(int notificationId, CancellationToken cancellationToken)
         {
             var notifications = await _uow.NotificationRepository.WhereAsync(
-                x => x.Role == role && x.IsRead == false, cancellationToken);
+                x => x.NotificationId == notificationId && x.IsRead == false, cancellationToken);
 
             if (notifications == null || !notifications.Any())
             {
-                throw new KeyNotFoundException("There are no unread notifications for this role.");
+                throw new KeyNotFoundException($"No unread notification found for NotificationId {notificationId}.");
             }
 
             foreach (var notification in notifications)

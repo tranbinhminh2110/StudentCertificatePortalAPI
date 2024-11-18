@@ -13,8 +13,5 @@
 
         public string? PhoneNumber { get; set; }
 
-        public DateTime? CreationDate { get; set; }
-
-        public DateTime? ExpiryDate { get; set; }
     }
 }

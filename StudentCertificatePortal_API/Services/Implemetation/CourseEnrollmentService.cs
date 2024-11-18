@@ -314,8 +314,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 Dob = sc.CouseEnrollment.User.Dob,
                 Address = sc.CouseEnrollment.User.Address,
                 PhoneNumber = sc.CouseEnrollment.User.PhoneNumber,
-                CreationDate = sc.CreationDate,
-                ExpiryDate = sc.ExpiryDate,
+
             }).Distinct().ToList();
            
 

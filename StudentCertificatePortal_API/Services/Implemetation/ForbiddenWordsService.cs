@@ -8,8 +8,8 @@
         {
             _forbiddenWords = new List<string>
         {
-        "điên","cặn bã","mất dạy","súc vật","khốn nạn","hèn","đểu","đê tiện","bẩn thỉu","sỉ nhục","kém cỏi","hạ đẳng","chó","mất nết","rác rưởi","phế phẩm","bỉ ổi","điếm","hư hỏng","khốn","ngu","xấu xí",
-        "cẩu","địt","djt","mày","fuck","dick","dmm","cặc","lồn","biến","cút","bitch","óc","cc","vl"
+        "điên","cặn bã","mất dạy","súc vật","khốn nạn","hèn","đểu","đê tiện","bẩn thỉu","sỉ nhục","kém cỏi","hạ đẳng","chó","mất nết","rác rưởi","phế phẩm","bỉ ổi","điếm","hư hỏng","khốn","ngu",
+        "cẩu","địt","djt","dit","fuck","dick","dmm","cặc","lồn","biến","cút","bitch","óc"
         };
         }
         public bool ContainsForbiddenWords(string feedbackDescription)
