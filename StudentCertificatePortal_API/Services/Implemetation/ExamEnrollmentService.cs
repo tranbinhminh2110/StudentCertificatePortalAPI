@@ -41,20 +41,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken);
             var userEnrollments = await _uow.ExamEnrollmentRepository.WhereAsync(x => x.UserId == request.UserId);
-            /* Select all exam enrollment có cùng user*/
             var userEnrollmentIds = userEnrollments.Select(x => x.ExamEnrollmentId);
-
-            /*
-             - Kiểm tra số lượng simulation có trong enrollment đã tồn tại 
-             */
 
             int count = 0;
             List<ExamsEnrollment> listEnroll = new List<ExamsEnrollment>();
             foreach (var examIdIndex in request.Simulation_Exams)
             {
-                /* Kiểm tra xem exam Enrollment có cùng exam id trong studenofexams và có cùng enrollment id
-
-                 */
                 var enrollmentExist = await _uow.ExamEnrollmentRepository.Include(x => x.StudentOfExams)
                     .Where(a => a.StudentOfExams.Any(s => s.ExamId == examIdIndex && userEnrollmentIds.Contains(s.EnrollmentId))).ToListAsync();
 
@@ -67,11 +59,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                             count++;
                             listEnroll.Add(index);
                         }
-
                     }
-
                 }
-
             }
 
             if (count == 1)
@@ -95,7 +84,23 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                             IsEnrolled = true,
                             Status = "OnGoing",
                             ExamEnrollmentId = enrollmentExist.ExamEnrollmentId,
-                            Message = $"The user is currently enrolled in this simulation (OnGoing). Payment is required to continue."
+                            Message = "The user is currently enrolled in this simulation (OnGoing). Payment is required to continue."
+                        };
+                    }
+                    else if (enrollmentExist.ExamEnrollmentStatus == Enums.EnumExamEnrollment.Expired.ToString())
+                    {
+                        // Logic to allow enrollment again
+                        // Update the status to OnGoing or any other suitable status
+                        enrollmentExist.ExamEnrollmentStatus = Enums.EnumExamEnrollment.OnGoing.ToString();
+                        _uow.ExamEnrollmentRepository.Update(enrollmentExist);
+                        await _uow.Commit(cancellationToken);
+
+                        return new ExamEnrollmentResponse
+                        {
+                            IsEnrolled = true,
+                            Status = "Expired but allowed to enroll again",
+                            ExamEnrollmentId = enrollmentExist.ExamEnrollmentId,
+                            Message = "The enrollment was expired but has been reset to allow new enrollments."
                         };
                     }
                 }
@@ -104,34 +109,27 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 foreach (var examIntoEnroll in listEnroll)
                 {
+                    var studentOfExamToRemove = examIntoEnroll.StudentOfExams.Where(s => request.Simulation_Exams.Contains(s.ExamId)).ToList();
 
-                    var studentOfExamToReomve = examIntoEnroll.StudentOfExams.Where(s => request.Simulation_Exams.Contains(s.ExamId)).ToList();
-
-                    foreach (var studentOfExam in studentOfExamToReomve)
+                    foreach (var studentOfExam in studentOfExamToRemove)
                     {
-
-                        // Load the enrollment along with its related StudentOfExams
                         var enrollment = await _uow.ExamEnrollmentRepository
                             .Include(e => e.StudentOfExams)
                             .FirstOrDefaultAsync(e => e.ExamEnrollmentId == studentOfExam.EnrollmentId, cancellationToken);
 
                         if (enrollment != null)
                         {
-                            // Find the specific StudentOfExam entries to remove
                             var examsToRemove = enrollment.StudentOfExams
                                 .Where(s => s.ExamId == studentOfExam.ExamId)
-                                .ToList(); // Create a list to avoid modifying the collection while iterating
+                                .ToList();
 
-                            // Remove each entry found
                             foreach (var i in examsToRemove)
                             {
                                 enrollment.StudentOfExams.Remove(i);
                             }
 
-                            // Commit the changes to persist them
                             await _uow.Commit(cancellationToken);
                         }
-
                     }
                 }
             }
@@ -147,7 +145,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
 
             int? totalPrice = 0;
-
             var simulations = new List<SimulationExam>();
 
             foreach (var simulationId in request.Simulation_Exams)
@@ -180,11 +177,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             foreach (var simulation in simulations)
             {
-                if (simulation == null)
-                {
-                    throw new KeyNotFoundException($"Simulation exam with ID {simulation.ExamId} not found.");
-                }
-
                 var studentOfExamEntity = new StudentOfExam()
                 {
                     Price = simulation.ExamDiscountFee,
@@ -196,6 +188,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 await _uow.StudentOfExamRepository.AddAsync(studentOfExamEntity);
                 totalPrice += simulation.ExamDiscountFee;
             }
+
             result.TotalPrice = totalPrice > 0 ? totalPrice : 0;
             _uow.ExamEnrollmentRepository.Update(result);
             await _uow.Commit(cancellationToken);
@@ -209,6 +202,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 ExamEnrollment = _mapper.Map<ExamEnrollmentDto>(result)
             };
         }
+
+
 
 
 
