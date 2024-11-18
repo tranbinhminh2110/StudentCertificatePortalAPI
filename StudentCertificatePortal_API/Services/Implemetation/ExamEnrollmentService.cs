@@ -204,7 +204,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 IsEnrolled = false,
                 Status = "Created",
-                /*ExamEnrollmentId = result.ExamEnrollmentId,*/
+                ExamEnrollmentId = result.ExamEnrollmentId,
                 Message = "Exam enrollment successfully created.",
                 ExamEnrollment = _mapper.Map<ExamEnrollmentDto>(result)
             };
