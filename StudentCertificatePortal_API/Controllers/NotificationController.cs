@@ -51,10 +51,10 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.UpdateNotificationIsReadAsync(role, new CancellationToken());
             return Ok(Result<List<NotificationDto>>.Succeed(result));
         }
-        [HttpPut("RecordViolations")]
-        public async Task<ActionResult<Result<List<NotificationDto>>>> UpdateAdminIsRead(string role)
+        [HttpPut("RecordViolations/{notificationId:int}")]
+        public async Task<ActionResult<Result<List<NotificationDto>>>> UpdateAdminIsRead(int notificationId)
         {
-            var result = await _service.UpdateAdminIsReadAsync(role, new CancellationToken());
+            var result = await _service.UpdateAdminIsReadAsync(notificationId, new CancellationToken());
             return Ok(Result<List<NotificationDto>>.Succeed(result));
         }
 
