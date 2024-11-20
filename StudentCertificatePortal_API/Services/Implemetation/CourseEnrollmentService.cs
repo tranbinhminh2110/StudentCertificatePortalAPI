@@ -60,13 +60,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                 courses.Add(course);
             }
+            var random = new Random();
+            var enrollmentCode = random.Next(100000, 1000000).ToString();
 
             var courseEntity = new CoursesEnrollment()
             {
                 UserId = request.UserId,
                 CourseEnrollmentDate = DateTime.UtcNow,
                 CourseEnrollmentStatus = EnumCourseEnrollment.OnGoing.ToString(),
-                TotalPrice = totalPrice ?? 0, 
+                TotalPrice = totalPrice ?? 0,
+                EnrollCode = enrollmentCode
             };
 
            
@@ -320,6 +323,48 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             return users;
         }
+        public async Task<EnrollCodeDto> GetUserByEnrollCodeAsync(string enrollCode, CancellationToken cancellationToken)
+        {
+            var courseEnrollment = await _uow.CourseEnrollmentRepository.FirstOrDefaultAsync(
+                ce => ce.EnrollCode == enrollCode,
+                cancellationToken,
+                include: q => q.Include(ce => ce.User) 
+                              .Include(ce => ce.StudentOfCourses) 
+                              .ThenInclude(sc => sc.Course) 
+            );
+
+            if (courseEnrollment == null)
+            {
+                throw new KeyNotFoundException($"User with EnrollCode {enrollCode} does not exist.");
+            }
+
+            var courseNames = courseEnrollment.StudentOfCourses?
+                .Where(sc => sc.Status == true && sc.Course != null) 
+                .Select(sc => sc.Course?.CourseName) 
+                .Where(courseName => courseName != null) 
+                .ToList();
+
+            if (courseNames == null)
+            {
+                courseNames = new List<string>();
+            }
+
+            var userDto = new EnrollCodeDto
+            {
+                UserId = courseEnrollment.User.UserId,
+                Username = courseEnrollment.User.Username,
+                UserImage = courseEnrollment.User.UserImage,
+                Email = courseEnrollment.User.Email,
+                Fullname = courseEnrollment.User.Fullname,
+                Dob = courseEnrollment.User.Dob,
+                Address = courseEnrollment.User.Address,
+                PhoneNumber = courseEnrollment.User.PhoneNumber,
+                CourseNames = courseNames 
+            };
+
+            return userDto;
+        }
+
 
     }
 }

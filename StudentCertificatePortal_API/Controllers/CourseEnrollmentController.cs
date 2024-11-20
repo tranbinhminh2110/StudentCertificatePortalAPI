@@ -62,5 +62,11 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.GetUsersByCourseIdAsync(courseId, new CancellationToken());
             return Ok(Result<List<ListStudentDto>>.Succeed(result));
         }
+        [HttpGet("check_student_enroll/{enrollCode}")]
+        public async Task<ActionResult<Result<EnrollCodeDto>>> GetUsersByEnrollCode(string enrollCode, CancellationToken cancellationToken)
+        {
+            var result = await _service.GetUserByEnrollCodeAsync(enrollCode, new CancellationToken());
+            return Ok(Result<EnrollCodeDto>.Succeed(result));
+        }
     }
 }
