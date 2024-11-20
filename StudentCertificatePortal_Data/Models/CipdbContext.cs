@@ -291,6 +291,9 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.CourseEnrollmentStatus)
                 .HasMaxLength(255)
                 .HasColumnName("course_enrollment_status");
+            entity.Property(e => e.EnrollCode)
+                .HasMaxLength(255)
+                .HasColumnName("enroll_code");
             entity.Property(e => e.TotalPrice).HasColumnName("total_price");
             entity.Property(e => e.UserId).HasColumnName("user_id");
 

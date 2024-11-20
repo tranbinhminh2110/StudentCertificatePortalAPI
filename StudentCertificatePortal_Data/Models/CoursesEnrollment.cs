@@ -15,6 +15,8 @@ public partial class CoursesEnrollment
 
     public int? UserId { get; set; }
 
+    public string? EnrollCode { get; set; }
+
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
     public virtual ICollection<StudentOfCourse> StudentOfCourses { get; set; } = new List<StudentOfCourse>();
