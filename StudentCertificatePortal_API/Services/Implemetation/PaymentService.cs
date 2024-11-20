@@ -63,7 +63,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                 // Lấy danh sách ExamId đã mua
                 var purchasedExamIds = enrollExams.StudentOfExams
-                    .Where(soe => soe.Status == true) // Chỉ lấy các Exam đã được mua
+                    .Where(soe => soe.Status == "Completed") // Chỉ lấy các Exam đã được mua
                     .Select(soe => soe.ExamId)
                     .ToList();
 
@@ -116,7 +116,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 // Cập nhật trạng thái các Exam vừa được mua
                 foreach (var exam in examsToPurchase)
                 {
-                    exam.Status = true;
+                    exam.Status = "Completed";
                     exam.CreationDate = DateTime.UtcNow;
                     exam.ExpiryDate = DateTime.UtcNow.AddDays(3);
                     _uow.StudentOfExamRepository.Update(exam);

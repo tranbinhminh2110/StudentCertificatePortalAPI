@@ -680,7 +680,10 @@ public partial class CipdbContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("expiry_date");
             entity.Property(e => e.Price).HasColumnName("price");
-            entity.Property(e => e.Status).HasColumnName("status");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasDefaultValue("Unpaid");
 
             entity.HasOne(d => d.Enrollment).WithMany(p => p.StudentOfExams)
                 .HasForeignKey(d => d.EnrollmentId)

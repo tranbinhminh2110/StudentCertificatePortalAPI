@@ -15,7 +15,7 @@ public partial class StudentOfExam
 
     public int? Price { get; set; }
 
-    public bool? Status { get; set; }
+    public string Status { get; set; } = null!;
 
     public virtual ExamsEnrollment Enrollment { get; set; } = null!;
 
