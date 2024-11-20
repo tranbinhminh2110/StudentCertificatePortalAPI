@@ -7,6 +7,7 @@ using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
+using System.Text.RegularExpressions;
 
 namespace StudentCertificatePortal_API.Services.Implemetation
 {
@@ -264,17 +265,19 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var existingQuestion = await _uow.QuestionRepository
                 .WhereAsync(q => q.ExamId == request.ExamId && q.QuestionText != null, cancellationToken, include: q => q.Include( a => a.Answers));
             var matchingQuestion = existingQuestion
-                .Where(q => q.QuestionText.Trim().ToLower() == request.QuestionName.Trim().ToLower())
+                .Where(q => StripHTMLTags(q.QuestionText.Trim().ToLower()) == StripHTMLTags(request.QuestionName.Trim().ToLower()))
                 .ToList();
 
             if (matchingQuestion.Any())
             {
                 var existingAnswers = matchingQuestion.SelectMany(q => q.Answers).ToList();
 
+
+
                 var isDuplicateAnswers = request.Answers.All(r =>
                     existingAnswers.Any(a =>
                         a.Text != null &&
-                        a.Text.Trim().ToLower() == r.Text.Trim().ToLower() &&
+                        StripHTMLTags(a.Text.Trim().ToLower()) == StripHTMLTags(r.Text.Trim().ToLower()) &&
                         a.IsCorrect == r.IsCorrect));
 
                 if (isDuplicateAnswers)
@@ -284,6 +287,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
 
             return false;
+        }
+
+        public string StripHTMLTags(string input)
+        {
+            return Regex.Replace(input, "<.*?>", string.Empty);
         }
 
     }
