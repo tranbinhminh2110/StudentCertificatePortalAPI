@@ -48,7 +48,8 @@ namespace StudentCertificatePortal_API.Jobs
                     eEnrollment.ExamEnrollmentStatus = Enums.EnumExamEnrollment.Expired.ToString();
                     _uow.ExamEnrollmentRepository.Update(eEnrollment);
                     await _uow.Commit(cancellationToken);
-                    _uow.StudentOfExamRepository.Delete(expiredExam);
+                    expiredExam.Status = "Expired";
+                    _uow.StudentOfExamRepository.Update(expiredExam);
                     await _uow.Commit(cancellationToken);
                     
                 }

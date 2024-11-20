@@ -67,7 +67,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             // Remove old enrollments if they are incomplete or unpaid
             foreach (var exam in existingExams)
             {
-                if (exam.Status == false) // Status is false for unpaid/incomplete
+                if (exam.Status == "Unpaid") // Status is false for unpaid/incomplete
                 {
                     // Tìm enrollment cũ liên kết với exam
                     var oldEnrollment = userEnrollments.FirstOrDefault(e => e.StudentOfExams.Any(se => se.ExamId == exam.ExamId));
@@ -145,7 +145,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 var studentOfExamEntity = new StudentOfExam()
                 {
                     Price = simulation.ExamDiscountFee,
-                    Status = false, // Enrolled status
+                    Status = "Unpaid", 
                     ExamId = simulation.ExamId,
                     EnrollmentId = enrollmentResult.ExamEnrollmentId
                 };

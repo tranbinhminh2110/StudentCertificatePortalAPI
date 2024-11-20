@@ -127,7 +127,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         .Include(c => c.Wallet)
                         .Include(c => c.CoursesEnrollments)
                         .Include(c => c.ExamsEnrollments)
-                        .Include(c => c.Cart));
+                        .Include(c => c.Cart).Include(c => c.Notifications).Include(c => c.Scores));
 
             
 
@@ -139,13 +139,23 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             user.Feedbacks?.Clear();
             user.CoursesEnrollments?.Clear();
             user.ExamsEnrollments?.Clear();
+            
+            user.Notifications?.Clear();
+            user.Scores?.Clear();
             var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.UserId == user.UserId);
             if(wallet != null)
             {
                 _uow.WalletRepository.Delete(wallet);
                 await _uow.Commit(cancellationToken);
             }
-             
+
+            var cart = await _uow.CartRepository.FirstOrDefaultAsync(c => c.UserId == user.UserId);
+            if (cart != null)
+            {
+                _uow.CartRepository.Delete(cart);
+                await _uow.Commit(cancellationToken);
+            }
+
 
             if (user is null)
             {
