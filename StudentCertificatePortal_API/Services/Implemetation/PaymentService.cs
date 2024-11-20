@@ -43,83 +43,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<PaymentDto> ProcessPayment(CreatePaymentRequest request, CancellationToken cancellation)
         {
             var result = new Payment();
-            if (request.CourseEnrollmentId > 0)
+            if (request.ExamEnrollmentId > 0)
             {
-                // Process Payment of Course Enrollment
-                // Check the enrollment and include related StudentOfCourses to calculate the total fee
-                var enrollCourses = await _uow.CourseEnrollmentRepository.FirstOrDefaultAsync(
-                    x => x.CourseEnrollmentId == request.CourseEnrollmentId,
-                    cancellation,
-                    include: p => p.Include(q => q.StudentOfCourses));
-
-                if (enrollCourses == null)
-                {
-                    throw new KeyNotFoundException("Course Enrollment not found.");
-                }
-
-                if (enrollCourses.CourseEnrollmentStatus == Enums.EnumCourseEnrollment.Completed.ToString())
-                {
-                    throw new Exception("The course enrollment is already completed. You cannot modify or re-enroll.");
-                }
-
-
-                // Check if the wallet has sufficient balance
-                bool canPay = await CanPay(request.UserId, enrollCourses.TotalPrice ?? 0);
-
-                if (!canPay)
-                {
-                    throw new Exception("Insufficient balance in wallet.");
-                }
-
-                // Retrieve the wallet
-                var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId);
-                if (wallet == null)
-                {
-                    throw new KeyNotFoundException("Wallet not found.");
-                }
-
-                var paymentEntity = new Payment()
-                {
-                    PaymentDate = DateTime.UtcNow,
-                    PaymentPoint = enrollCourses.TotalPrice,
-                    PaymentMethod = "Using Point",
-                    PaymentStatus = EnumTransaction.Success.ToString(),
-                    WalletId = wallet.WalletId,
-                    CourseEnrollmentId = request.CourseEnrollmentId,
-                };
-
-                result = await _uow.PaymentRepository.AddAsync(paymentEntity);
-                await _uow.Commit(cancellation);
-
-                wallet.Point -= enrollCourses.TotalPrice ?? 0;
-
-                _uow.WalletRepository.Update(wallet);
-                await _uow.Commit(cancellation);
-
-
-                var enrollment = await _uow.CourseEnrollmentRepository.FirstOrDefaultAsync(x => x.CourseEnrollmentId == request.CourseEnrollmentId);
-                enrollment.CourseEnrollmentStatus = EnumCourseEnrollment.Completed.ToString();
-
-                _uow.CourseEnrollmentRepository.Update(enrollment);
-                await _uow.Commit(cancellation);
-
-                var socs = await _uow.StudentOfCourseRepository.WhereAsync(x => x.CouseEnrollmentId == request.CourseEnrollmentId);
-
-
-                foreach (var soc in socs)
-                {
-                    soc.Status = true;
-                    _uow.StudentOfCourseRepository.Update(soc);
-                    await _uow.Commit(cancellation);
-
-                }
-
-
-            }
-            else if (request.ExamEnrollmentId > 0)
-            {
-                // Process Payment of Exam Enrollment
-                // Check info of exam enrollment 
+                // Lấy thông tin Exam Enrollment
                 var enrollExams = await _uow.ExamEnrollmentRepository.FirstOrDefaultAsync(
                     x => x.ExamEnrollmentId == request.ExamEnrollmentId,
                     cancellation,
@@ -135,24 +61,44 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     throw new Exception("The exam enrollment is already completed. You cannot modify or re-enroll.");
                 }
 
-                // Insufficient balance in wallet
-                bool canPay = await CanPay(request.UserId, enrollExams.TotalPrice ?? 0);
+                // Lấy danh sách ExamId đã mua
+                var purchasedExamIds = enrollExams.StudentOfExams
+                    .Where(soe => soe.Status == true) // Chỉ lấy các Exam đã được mua
+                    .Select(soe => soe.ExamId)
+                    .ToList();
 
+                // Danh sách Exam chưa mua
+                var examsToPurchase = enrollExams.StudentOfExams
+                    .Where(soe => !purchasedExamIds.Contains(soe.ExamId))
+                    .ToList();
+
+                if (!examsToPurchase.Any())
+                {
+                    throw new Exception("All exams in this enrollment have already been purchased.");
+                }
+
+                // Tính tổng giá của các Exam cần mua
+                var totalPriceToPay = examsToPurchase.Sum(soe => soe.Price ?? 0);
+
+                // Kiểm tra số dư trong ví
+                bool canPay = await CanPay(request.UserId, totalPriceToPay);
                 if (!canPay)
                 {
                     throw new Exception("Insufficient balance in wallet.");
                 }
 
+                // Lấy ví của người dùng
                 var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId);
                 if (wallet == null)
                 {
-                    throw new KeyNotFoundException("Wallet not found."); ;
+                    throw new KeyNotFoundException("Wallet not found.");
                 }
-                //Save info payment
+
+                // Thêm thông tin thanh toán
                 var paymentEntity = new Payment()
                 {
                     PaymentDate = DateTime.UtcNow,
-                    PaymentPoint = enrollExams.TotalPrice,
+                    PaymentPoint = totalPriceToPay,
                     PaymentMethod = "Using Point",
                     PaymentStatus = EnumTransaction.Success.ToString(),
                     WalletId = wallet.WalletId,
@@ -161,34 +107,34 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                 result = await _uow.PaymentRepository.AddAsync(paymentEntity);
                 await _uow.Commit(cancellation);
-                // Update Point in wallet
-                wallet.Point -= enrollExams.TotalPrice ?? 0;
 
-
+                // Cập nhật số dư trong ví
+                wallet.Point -= totalPriceToPay;
                 _uow.WalletRepository.Update(wallet);
                 await _uow.Commit(cancellation);
 
-                var enrollment = await _uow.ExamEnrollmentRepository.FirstOrDefaultAsync(x => x.ExamEnrollmentId == request.ExamEnrollmentId);
-
-                enrollment.ExamEnrollmentStatus = EnumExamEnrollment.Completed.ToString();
-
-                _uow.ExamEnrollmentRepository.Update(enrollment);
-                await _uow.Commit(cancellation);
-
-                var soes = await _uow.StudentOfExamRepository.WhereAsync(x => x.EnrollmentId == enrollment.ExamEnrollmentId);
-                foreach (var soe in soes)
+                // Cập nhật trạng thái các Exam vừa được mua
+                foreach (var exam in examsToPurchase)
                 {
-                    soe.CreationDate = DateTime.Now;
-                    soe.ExpiryDate = DateTime.Now.AddDays(3);
-                    soe.Status = true;
-                    _uow.StudentOfExamRepository.Update(soe);
-                    await _uow.Commit(cancellation);
+                    exam.Status = true;
+                    exam.CreationDate = DateTime.UtcNow;
+                    exam.ExpiryDate = DateTime.UtcNow.AddDays(3);
+                    _uow.StudentOfExamRepository.Update(exam);
                 }
-            }
-            // Returns
-            return _mapper.Map<PaymentDto>(result);
 
+                // Cập nhật trạng thái Enrollment
+                enrollExams.ExamEnrollmentStatus = EnumExamEnrollment.Completed.ToString();
+                _uow.ExamEnrollmentRepository.Update(enrollExams);
+                await _uow.Commit(cancellation);
+            }
+            else
+            {
+                throw new ArgumentException("Invalid request: No ExamEnrollmentId provided.");
+            }
+
+            return _mapper.Map<PaymentDto>(result);
         }
+
 
         // Kiểm tra số dư trong ví
         public async Task<bool> CanPay(int? userId, int? pointRequest)

@@ -33,107 +33,15 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         }
         public async Task<ExamEnrollmentResponse> CreateExamEnrollmentAsync(CreateExamEnrollmentRequest request, CancellationToken cancellationToken)
         {
+            // Validate request using validator
             var validation = await _addExamEnrollmentValidator.ValidateAsync(request, cancellationToken);
             if (!validation.IsValid)
             {
                 throw new RequestValidationException(validation.Errors);
             }
 
+            // Check if user exists
             var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken);
-            var userEnrollments = await _uow.ExamEnrollmentRepository.WhereAsync(x => x.UserId == request.UserId);
-            var userEnrollmentIds = userEnrollments.Select(x => x.ExamEnrollmentId);
-
-            int count = 0;
-            List<ExamsEnrollment> listEnroll = new List<ExamsEnrollment>();
-            foreach (var examIdIndex in request.Simulation_Exams)
-            {
-                var enrollmentExist = await _uow.ExamEnrollmentRepository.Include(x => x.StudentOfExams)
-                    .Where(a => a.StudentOfExams.Any(s => s.ExamId == examIdIndex && userEnrollmentIds.Contains(s.EnrollmentId))).ToListAsync();
-
-                if (enrollmentExist != null)
-                {
-                    foreach (var index in enrollmentExist)
-                    {
-                        if (!listEnroll.Contains(index))
-                        {
-                            count++;
-                            listEnroll.Add(index);
-                        }
-                    }
-                }
-            }
-
-            if (count == 1)
-            {
-                foreach (var enrollmentExist in listEnroll)
-                {
-                    if (enrollmentExist.ExamEnrollmentStatus == Enums.EnumExamEnrollment.Completed.ToString())
-                    {
-                        return new ExamEnrollmentResponse
-                        {
-                            IsEnrolled = true,
-                            Status = "Completed",
-                            ExamEnrollmentId = enrollmentExist.ExamEnrollmentId,
-                            Message = "The user is already enrolled in this simulation (Completed)."
-                        };
-                    }
-                    else if (enrollmentExist.ExamEnrollmentStatus == Enums.EnumExamEnrollment.OnGoing.ToString())
-                    {
-                        return new ExamEnrollmentResponse
-                        {
-                            IsEnrolled = true,
-                            Status = "OnGoing",
-                            ExamEnrollmentId = enrollmentExist.ExamEnrollmentId,
-                            Message = "The user is currently enrolled in this simulation (OnGoing). Payment is required to continue."
-                        };
-                    }
-                    else if (enrollmentExist.ExamEnrollmentStatus == Enums.EnumExamEnrollment.Expired.ToString())
-                    {
-                        // Logic to allow enrollment again
-                        // Update the status to OnGoing or any other suitable status
-                        enrollmentExist.ExamEnrollmentStatus = Enums.EnumExamEnrollment.OnGoing.ToString();
-                        _uow.ExamEnrollmentRepository.Update(enrollmentExist);
-                        await _uow.Commit(cancellationToken);
-
-                        return new ExamEnrollmentResponse
-                        {
-                            IsEnrolled = true,
-                            Status = "Expired but allowed to enroll again",
-                            ExamEnrollmentId = enrollmentExist.ExamEnrollmentId,
-                            Message = "The enrollment was expired but has been reset to allow new enrollments."
-                        };
-                    }
-                }
-            }
-            else if (count > 1)
-            {
-                foreach (var examIntoEnroll in listEnroll)
-                {
-                    var studentOfExamToRemove = examIntoEnroll.StudentOfExams.Where(s => request.Simulation_Exams.Contains(s.ExamId)).ToList();
-
-                    foreach (var studentOfExam in studentOfExamToRemove)
-                    {
-                        var enrollment = await _uow.ExamEnrollmentRepository
-                            .Include(e => e.StudentOfExams)
-                            .FirstOrDefaultAsync(e => e.ExamEnrollmentId == studentOfExam.EnrollmentId, cancellationToken);
-
-                        if (enrollment != null)
-                        {
-                            var examsToRemove = enrollment.StudentOfExams
-                                .Where(s => s.ExamId == studentOfExam.ExamId)
-                                .ToList();
-
-                            foreach (var i in examsToRemove)
-                            {
-                                enrollment.StudentOfExams.Remove(i);
-                            }
-
-                            await _uow.Commit(cancellationToken);
-                        }
-                    }
-                }
-            }
-
             if (user == null)
             {
                 throw new KeyNotFoundException("User not found. Exam Enrollment creation requires a valid UserId.");
@@ -144,8 +52,62 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new ArgumentException("Simulation_Exams cannot be null or empty.");
             }
 
-            int? totalPrice = 0;
+            // Fetch existing enrollments for the user
+            var userEnrollments = await _uow.ExamEnrollmentRepository
+                .Include(x => x.StudentOfExams)
+                .Where(x => x.UserId == request.UserId)
+                .ToListAsync(cancellationToken);
+
+            // Check if any existing enrollments match the requested exams
+            var existingExams = userEnrollments
+                .SelectMany(enrollment => enrollment.StudentOfExams)
+                .Where(studentExam => request.Simulation_Exams.Contains(studentExam.ExamId))
+                .ToList();
+
+            // Remove old enrollments if they are incomplete or unpaid
+            foreach (var exam in existingExams)
+            {
+                if (exam.Status == false) // Status is false for unpaid/incomplete
+                {
+                    // Tìm enrollment cũ liên kết với exam
+                    var oldEnrollment = userEnrollments.FirstOrDefault(e => e.StudentOfExams.Any(se => se.ExamId == exam.ExamId));
+
+                    if (oldEnrollment != null)
+                    {
+                        // Xóa từng StudentOfExam liên kết với exam
+                        var examsToRemove = oldEnrollment.StudentOfExams.Where(se => se.ExamId == exam.ExamId).ToList();
+
+                        foreach (var studentExam in examsToRemove)
+                        {
+                            oldEnrollment.StudentOfExams.Remove(studentExam);
+                        }
+
+                        // Xóa enrollment nếu không còn StudentOfExam nào
+                        if (!oldEnrollment.StudentOfExams.Any())
+                        {
+                            _uow.ExamEnrollmentRepository.Delete(oldEnrollment);
+                        }
+                    }
+                }
+
+                else
+                {
+                    // Exam đã được mua hoặc hoàn tất
+                    return new ExamEnrollmentResponse
+                    {
+                        IsEnrolled = true,
+                        Status = "Purchased",
+                        ExamEnrollmentId = exam.EnrollmentId,
+                        Message = $"The user has already purchased the simulation exam with ExamId {exam.ExamId}."
+                    };
+                }
+            }
+            await _uow.Commit(cancellationToken);
+
+
+            // Create new enrollment
             var simulations = new List<SimulationExam>();
+            int totalPrice = 0;
 
             foreach (var simulationId in request.Simulation_Exams)
             {
@@ -161,47 +123,54 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     _uow.SimulationExamRepository.Update(simulation);
                     await _uow.Commit(cancellationToken);
                 }
+
                 simulations.Add(simulation);
+                totalPrice += simulation.ExamDiscountFee ?? 0;
             }
 
-            var eEnrollmentEntity = new ExamsEnrollment()
+            var newEnrollmentEntity = new ExamsEnrollment()
             {
                 UserId = request.UserId,
                 ExamEnrollmentDate = DateTime.UtcNow,
                 ExamEnrollmentStatus = EnumExamEnrollment.OnGoing.ToString(),
-                TotalPrice = totalPrice > 0 ? totalPrice : 0,
+                TotalPrice = totalPrice
             };
 
-            var result = await _uow.ExamEnrollmentRepository.AddAsync(eEnrollmentEntity);
+            var enrollmentResult = await _uow.ExamEnrollmentRepository.AddAsync(newEnrollmentEntity);
             await _uow.Commit(cancellationToken);
 
+            // Add each exam to the StudentOfExam table
             foreach (var simulation in simulations)
             {
                 var studentOfExamEntity = new StudentOfExam()
                 {
                     Price = simulation.ExamDiscountFee,
-                    Status = false,
+                    Status = false, // Enrolled status
                     ExamId = simulation.ExamId,
-                    EnrollmentId = result.ExamEnrollmentId
+                    EnrollmentId = enrollmentResult.ExamEnrollmentId
                 };
 
                 await _uow.StudentOfExamRepository.AddAsync(studentOfExamEntity);
-                totalPrice += simulation.ExamDiscountFee;
             }
 
-            result.TotalPrice = totalPrice > 0 ? totalPrice : 0;
-            _uow.ExamEnrollmentRepository.Update(result);
             await _uow.Commit(cancellationToken);
 
             return new ExamEnrollmentResponse
             {
                 IsEnrolled = false,
                 Status = "Created",
-                ExamEnrollmentId = result.ExamEnrollmentId,
-                Message = "Exam enrollment successfully created.",
-                ExamEnrollment = _mapper.Map<ExamEnrollmentDto>(result)
+                ExamEnrollmentId = enrollmentResult.ExamEnrollmentId,
+                Message = "Exam enrollment successfully created. Any previous unpaid enrollments have been removed.",
+                ExamEnrollment = _mapper.Map<ExamEnrollmentDto>(enrollmentResult)
             };
         }
+
+
+
+
+
+
+
 
 
 
