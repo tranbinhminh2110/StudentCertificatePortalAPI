@@ -61,7 +61,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 courses.Add(course);
             }
             var random = new Random();
-            var enrollmentCode = random.Next(100000, 1000000).ToString();
+            var enrollmentCode = random.Next(100000000, 1000000000).ToString();
 
             var courseEntity = new CoursesEnrollment()
             {
@@ -135,6 +135,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 TotalPrice = courseEnrollment.TotalPrice,
                 CourseEnrollmentStatus = courseEnrollment.CourseEnrollmentStatus,
                 UserId = courseEnrollment.UserId,
+                EnrollCode = courseEnrollment.EnrollCode,
                 CourseDetails = courseEnrollment.StudentOfCourses.Select(sc => new CourseDetailsDto
                 {
                     CourseId = sc.Course.CourseId,
@@ -144,6 +145,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CourseFee = sc.Course.CourseFee,
                     CourseDiscountFee = sc.Course.CourseDiscountFee,
                     CourseImage = sc.Course.CourseImage,
+
                 }).ToList()
             }).ToList();
 
@@ -170,6 +172,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CourseEnrollmentStatus = result.CourseEnrollmentStatus,
                 TotalPrice = result.TotalPrice,
                 UserId = result.UserId,
+                EnrollCode = result.EnrollCode,
                 CourseDetails = result.StudentOfCourses.Select(sc => new CourseDetailsDto
                 {
                     CourseId = sc.Course.CourseId,
@@ -205,6 +208,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CourseEnrollmentStatus = enrollment.CourseEnrollmentStatus,
                 TotalPrice = enrollment.TotalPrice,
                 UserId = enrollment.UserId,
+                EnrollCode = enrollment.EnrollCode,
                 CourseDetails = enrollment.StudentOfCourses.Select(sc => new CourseDetailsDto
                 {
                     CourseId = sc.Course.CourseId,
@@ -328,9 +332,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var courseEnrollment = await _uow.CourseEnrollmentRepository.FirstOrDefaultAsync(
                 ce => ce.EnrollCode == enrollCode,
                 cancellationToken,
-                include: q => q.Include(ce => ce.User) 
-                              .Include(ce => ce.StudentOfCourses) 
-                              .ThenInclude(sc => sc.Course) 
+                include: q => q.Include(ce => ce.User)
+                              .Include(ce => ce.StudentOfCourses)
+                              .ThenInclude(sc => sc.Course)
             );
 
             if (courseEnrollment == null)
@@ -338,17 +342,23 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new KeyNotFoundException($"User with EnrollCode {enrollCode} does not exist.");
             }
 
-            var courseNames = courseEnrollment.StudentOfCourses?
-                .Where(sc => sc.Status == true && sc.Course != null) 
-                .Select(sc => sc.Course?.CourseName) 
-                .Where(courseName => courseName != null) 
+            var courseDetails = courseEnrollment.StudentOfCourses?
+                .Where(sc => sc.Status == true && sc.Course != null)
+                .Select(sc => new CourseDetailsDto
+                {
+                    CourseId = sc.Course.CourseId,
+                    CourseName = sc.Course.CourseName,
+                    CourseCode = sc.Course.CourseCode,
+                    CourseTime = sc.Course.CourseTime,
+                    CourseFee = sc.Course.CourseFee,
+                    CourseDiscountFee = sc.Course.CourseDiscountFee,
+                    CourseImage = sc.Course.CourseImage,
+                })
                 .ToList();
-
-            if (courseNames == null)
+            if (courseDetails == null || !courseDetails.Any())
             {
-                courseNames = new List<string>();
+                throw new KeyNotFoundException($"User with EnrollCode {enrollCode} does not exist.");
             }
-
             var userDto = new EnrollCodeDto
             {
                 UserId = courseEnrollment.User.UserId,
@@ -359,7 +369,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 Dob = courseEnrollment.User.Dob,
                 Address = courseEnrollment.User.Address,
                 PhoneNumber = courseEnrollment.User.PhoneNumber,
-                CourseNames = courseNames 
+                CourseDetails = courseDetails 
             };
 
             return userDto;

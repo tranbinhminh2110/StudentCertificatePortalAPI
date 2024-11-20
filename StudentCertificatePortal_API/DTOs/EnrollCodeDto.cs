@@ -12,7 +12,7 @@
         public string? Address { get; set; }
 
         public string? PhoneNumber { get; set; }
-        public List<string> CourseNames { get; set; } 
+        public List<CourseDetailsDto> CourseDetails { get; set; } = new List<CourseDetailsDto>();
 
 
     }
