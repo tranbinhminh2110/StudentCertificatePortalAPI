@@ -15,6 +15,14 @@
         {
             return new Result<T> { Succeeded = false, Message = ex.Message };
         }
-
+        public static Result<T> Succeed(T data, string message)
+        {
+            return new Result<T>
+            {
+                Succeeded = true,
+                Data = data,
+                Message = message
+            };
+        }
     }
 }
