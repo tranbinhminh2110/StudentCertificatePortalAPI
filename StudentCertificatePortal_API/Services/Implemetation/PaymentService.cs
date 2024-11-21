@@ -127,6 +127,84 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 _uow.ExamEnrollmentRepository.Update(enrollExams);
                 await _uow.Commit(cancellation);
             }
+            else if (request.CourseEnrollmentId > 0)
+            {
+                // Lấy thông tin Course Enrollment
+                var courseEnrollment = await _uow.CourseEnrollmentRepository.FirstOrDefaultAsync(
+                    x => x.CourseEnrollmentId == request.CourseEnrollmentId,
+                    cancellation,
+                    include: ce => ce.Include(q => q.StudentOfCourses));
+
+                if (courseEnrollment == null)
+                {
+                    throw new KeyNotFoundException("Course Enrollment not found.");
+                }
+
+                if (courseEnrollment.CourseEnrollmentStatus == Enums.EnumCourseEnrollment.Completed.ToString())
+                {
+                    throw new Exception("The course enrollment is already completed. You cannot modify or re-enroll.");
+                }
+
+                // Danh sách các khóa học chưa được mua (Status == false)
+                var coursesToPurchase = courseEnrollment.StudentOfCourses
+                    .Where(sc => sc.Status == false) // Status là bool (true/false)
+                    .ToList();
+
+                if (!coursesToPurchase.Any())
+                {
+                    throw new Exception("All courses in this enrollment have already been purchased.");
+                }
+
+                // Tính tổng giá của các khóa học cần mua
+                var totalPriceToPay = coursesToPurchase.Sum(sc => sc.Price ?? 0);
+
+                // Kiểm tra số dư trong ví
+                bool canPay = await CanPay(request.UserId, totalPriceToPay);
+                if (!canPay)
+                {
+                    throw new Exception("Insufficient balance in wallet.");
+                }
+
+                // Lấy ví của người dùng
+                var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId);
+                if (wallet == null)
+                {
+                    throw new KeyNotFoundException("Wallet not found.");
+                }
+
+                // Thêm thông tin thanh toán
+                var paymentEntity = new Payment()
+                {
+                    PaymentDate = DateTime.UtcNow,
+                    PaymentPoint = totalPriceToPay,
+                    PaymentMethod = "Using Point",
+                    PaymentStatus = EnumTransaction.Success.ToString(),
+                    WalletId = wallet.WalletId,
+                    CourseEnrollmentId = request.CourseEnrollmentId,
+                };
+
+                result = await _uow.PaymentRepository.AddAsync(paymentEntity);
+                await _uow.Commit(cancellation);
+
+                // Cập nhật số dư trong ví
+                wallet.Point -= totalPriceToPay;
+                _uow.WalletRepository.Update(wallet);
+                await _uow.Commit(cancellation);
+
+                // Cập nhật trạng thái các khóa học vừa được mua
+                foreach (var course in coursesToPurchase)
+                {
+                    course.Status = true; // Cập nhật trạng thái thành đã mua
+                    course.CreationDate = DateTime.UtcNow;
+                    course.ExpiryDate = DateTime.UtcNow.AddDays(30); // Ví dụ: hạn 30 ngày
+                    _uow.StudentOfCourseRepository.Update(course);
+                }
+
+                // Cập nhật trạng thái của CourseEnrollment
+                courseEnrollment.CourseEnrollmentStatus = EnumCourseEnrollment.Completed.ToString();
+                _uow.CourseEnrollmentRepository.Update(courseEnrollment);
+                await _uow.Commit(cancellation);
+            }
             else
             {
                 throw new ArgumentException("Invalid request: No ExamEnrollmentId provided.");

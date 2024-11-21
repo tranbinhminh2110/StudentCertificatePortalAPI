@@ -58,58 +58,110 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 .Where(x => x.UserId == request.UserId)
                 .ToListAsync(cancellationToken);
 
-            // Check if any existing enrollments match the requested exams
-            var existingExams = userEnrollments
-                .SelectMany(enrollment => enrollment.StudentOfExams)
-                .Where(studentExam => request.Simulation_Exams.Contains(studentExam.ExamId))
+            // Get all StudentOfExams for this user that are either unpaid or expired
+            var existingStudentExams = userEnrollments
+                .SelectMany(e => e.StudentOfExams)
                 .ToList();
 
-            // Remove old enrollments if they are incomplete or unpaid
-            foreach (var exam in existingExams)
+            var duplicateExamsToRemove = existingStudentExams
+                .Where(exam =>
+                    request.Simulation_Exams.Contains(exam.ExamId) &&
+                    (exam.Status == "Unpaid" || exam.Status == "Expired"))
+                .ToList();
+
+            // Remove duplicate exams from their enrollments
+            foreach (var examToRemove in duplicateExamsToRemove)
             {
-                if (exam.Status == "Unpaid") // Status is false for unpaid/incomplete
+                var enrollment = userEnrollments.First(e => e.ExamEnrollmentId == examToRemove.EnrollmentId);
+                enrollment.StudentOfExams.Remove(examToRemove);
+
+                // Mark enrollment as Cancelled if it becomes empty
+                if (!enrollment.StudentOfExams.Any())
                 {
-                    // Tìm enrollment cũ liên kết với exam
-                    var oldEnrollment = userEnrollments.FirstOrDefault(e => e.StudentOfExams.Any(se => se.ExamId == exam.ExamId));
-
-                    if (oldEnrollment != null)
-                    {
-                        // Xóa từng StudentOfExam liên kết với exam
-                        var examsToRemove = oldEnrollment.StudentOfExams.Where(se => se.ExamId == exam.ExamId).ToList();
-
-                        foreach (var studentExam in examsToRemove)
-                        {
-                            oldEnrollment.StudentOfExams.Remove(studentExam);
-                        }
-
-                        // Xóa enrollment nếu không còn StudentOfExam nào
-                        if (!oldEnrollment.StudentOfExams.Any())
-                        {
-                            _uow.ExamEnrollmentRepository.Delete(oldEnrollment);
-                        }
-                    }
+                    enrollment.ExamEnrollmentStatus = "Cancelled";
                 }
-
+                // Recalculate total price for the enrollment
                 else
                 {
-                    // Exam đã được mua hoặc hoàn tất
-                    return new ExamEnrollmentResponse
-                    {
-                        IsEnrolled = true,
-                        Status = "Purchased",
-                        ExamEnrollmentId = exam.EnrollmentId,
-                        Message = $"The user has already purchased the simulation exam with ExamId {exam.ExamId}."
-                    };
+                    enrollment.TotalPrice = enrollment.StudentOfExams.Sum(e => e.Price ?? 0);
+                }
+
+                _uow.ExamEnrollmentRepository.Update(enrollment);
+            }
+            await _uow.Commit(cancellationToken);
+
+            // Check for already purchased (valid) exams
+            var purchasedExamIds = existingStudentExams
+                .Where(exam => exam.Status != "Unpaid" && exam.Status != "Expired")
+                .Select(exam => exam.ExamId)
+                .ToList();
+
+            // Remove purchased exams from the request
+            var remainingExams = request.Simulation_Exams
+                .Where(examId => !purchasedExamIds.Contains(examId))
+                .ToList();
+
+            // If all exams are already purchased
+            if (!remainingExams.Any())
+            {
+                return new ExamEnrollmentResponse
+                {
+                    IsEnrolled = true,
+                    Status = "Purchased",
+                    ExamEnrollmentId = userEnrollments
+                        .SelectMany(e => e.StudentOfExams)
+                        .First(e => purchasedExamIds.Contains(e.ExamId))
+                        .EnrollmentId,
+                    Message = "All requested simulation exams have already been purchased."
+                };
+            }
+
+            // Find matching enrollment for remaining exams
+            var matchingEnrollment = userEnrollments
+                .Where(enrollment =>
+                    enrollment.StudentOfExams.All(exam => exam.Status == "Unpaid") && // All exams must be unpaid
+                    enrollment.StudentOfExams.Count == remainingExams.Count && // Must have same count
+                    enrollment.StudentOfExams.All(exam => remainingExams.Contains(exam.ExamId))) // All exams must match
+                .FirstOrDefault();
+
+            // If we found a matching enrollment with exact exam count, reuse it
+            if (matchingEnrollment != null)
+            {
+                // Update the enrollment date
+                matchingEnrollment.ExamEnrollmentDate = DateTime.UtcNow;
+                _uow.ExamEnrollmentRepository.Update(matchingEnrollment);
+                await _uow.Commit(cancellationToken);
+
+                var message = purchasedExamIds.Any()
+                    ? "Some exams were already purchased. Existing unpaid enrollment reused for remaining exams."
+                    : "Existing unpaid enrollment reused.";
+
+                return new ExamEnrollmentResponse
+                {
+                    IsEnrolled = false,
+                    Status = "Created",
+                    ExamEnrollmentId = matchingEnrollment.ExamEnrollmentId,
+                    Message = message,
+                    ExamEnrollment = _mapper.Map<ExamEnrollmentDto>(matchingEnrollment)
+                };
+            }
+
+            // Update status of old unpaid enrollments to "Cancelled"
+            foreach (var enrollment in userEnrollments)
+            {
+                if (enrollment.StudentOfExams.All(exam => exam.Status == "Unpaid"))
+                {
+                    enrollment.ExamEnrollmentStatus = "Cancelled";
+                    _uow.ExamEnrollmentRepository.Update(enrollment);
                 }
             }
             await _uow.Commit(cancellationToken);
 
-
-            // Create new enrollment
+            // Create new enrollment for remaining exams
             var simulations = new List<SimulationExam>();
             int totalPrice = 0;
 
-            foreach (var simulationId in request.Simulation_Exams)
+            foreach (var simulationId in remainingExams)
             {
                 var simulation = await _uow.SimulationExamRepository.FirstOrDefaultAsync(x => x.ExamId == simulationId, cancellationToken);
                 if (simulation == null)
@@ -139,13 +191,13 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var enrollmentResult = await _uow.ExamEnrollmentRepository.AddAsync(newEnrollmentEntity);
             await _uow.Commit(cancellationToken);
 
-            // Add each exam to the StudentOfExam table
+            // Add each remaining exam to the StudentOfExam table
             foreach (var simulation in simulations)
             {
                 var studentOfExamEntity = new StudentOfExam()
                 {
                     Price = simulation.ExamDiscountFee,
-                    Status = "Unpaid", 
+                    Status = "Unpaid",
                     ExamId = simulation.ExamId,
                     EnrollmentId = enrollmentResult.ExamEnrollmentId
                 };
@@ -155,12 +207,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             await _uow.Commit(cancellationToken);
 
+            var responseMessage = purchasedExamIds.Any()
+                ? "New enrollment created for unpurchased exams. Some requested exams were already purchased."
+                : "New exam enrollment created. Previous unpaid enrollments have been marked as cancelled.";
+
             return new ExamEnrollmentResponse
             {
                 IsEnrolled = false,
                 Status = "Created",
                 ExamEnrollmentId = enrollmentResult.ExamEnrollmentId,
-                Message = "Exam enrollment successfully created. Any previous unpaid enrollments have been removed.",
+                Message = responseMessage,
                 ExamEnrollment = _mapper.Map<ExamEnrollmentDto>(enrollmentResult)
             };
         }
