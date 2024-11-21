@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using StudentCertificatePortal_API.Contracts.Requests;
+using StudentCertificatePortal_API.Contracts.Responses;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
@@ -11,14 +13,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
     public class TemplateService : ITemplateService
     {
         private readonly IUnitOfWork _uow;
+        private readonly IMapper _mapper;
 
-        public TemplateService(IUnitOfWork uow)
+        public TemplateService(IUnitOfWork uow, IMapper mapper)
         {
             _uow = uow;
+            _mapper = mapper;
         }
 
-        public async Task AddQuestionsFromExcelAsync(int examId, Stream fileStream, CancellationToken cancellationToken)
+        public async Task<List<DuplicateQuestionInfoResponse>> AddQuestionsFromExcelAsync(int examId, Stream fileStream, CancellationToken cancellationToken)
         {
+            var duplicateQuestions = new List<DuplicateQuestionInfoResponse>();
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
             using (var package = new ExcelPackage(fileStream))
@@ -62,6 +67,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     bool isDuplicate = await IsDuplicateQuestionAsync(check, cancellationToken);
                     if (isDuplicate)
                     {
+                        duplicateQuestions.Add(new DuplicateQuestionInfoResponse{ Row = row, QuestionText =  questionText}) ;
                         continue;
                     }
                     else
@@ -89,6 +95,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     }
                 }
             }
+
+            return duplicateQuestions;
         }
         public async Task<bool> IsDuplicateQuestionAsync(CreateQuestionRequest request, CancellationToken cancellationToken)
         {

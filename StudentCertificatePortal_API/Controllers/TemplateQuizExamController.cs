@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using StudentCertificatePortal_API.Commons;
+using StudentCertificatePortal_API.Contracts.Responses;
+using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Services.Interface;
 
 namespace StudentCertificatePortal_API.Controllers
@@ -21,15 +24,17 @@ namespace StudentCertificatePortal_API.Controllers
         {
             if (file.Length <= 0)
                 return BadRequest("Invalid file.");
-
+            var result = new List<DuplicateQuestionInfoResponse>();
             using (var stream = new MemoryStream())
             {
                 await file.CopyToAsync(stream);
                 stream.Position = 0;
-                await _service.AddQuestionsFromExcelAsync(examId, stream, new CancellationToken());
+                result = await _service.AddQuestionsFromExcelAsync(examId, stream, new CancellationToken());
             }
 
-            return Ok("The exam has been successfully added.");
+            string message = $"The exam has been successfully added. {result.Count} duplicate questions were skipped.";
+
+            return Ok(Result<List<DuplicateQuestionInfoResponse>>.Succeed(result, message));
         }
     }
 }
