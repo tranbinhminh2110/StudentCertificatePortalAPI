@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Quartz;
+using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_Repository.Interface;
 
 namespace StudentCertificatePortal_API.Jobs
@@ -8,17 +9,20 @@ namespace StudentCertificatePortal_API.Jobs
     {
         private readonly IUnitOfWork _uow;
         private readonly ILogger<RemoveExpiredExamsJob> _logger;
+        private readonly IVoucherService _voucherService;
 
-        public RemoveExpiredExamsJob(IUnitOfWork uow, ILogger<RemoveExpiredExamsJob> logger)
+        public RemoveExpiredExamsJob(IUnitOfWork uow, ILogger<RemoveExpiredExamsJob> logger, IVoucherService voucherService)
         {
             _uow = uow;
             _logger = logger;
+            _voucherService = voucherService;
         }
         public async Task Execute(IJobExecutionContext context)
         {
             try
             {
                 _logger.LogInformation("Starting the RemoveExpiredExamsJob job at {Time}", DateTime.Now);
+                await _voucherService.GetAll(new CancellationToken());
                 await RemoveExpiredExamsAsync(new CancellationToken());
                 _logger.LogInformation("Completed the RemoveExpiredExamsJob job at {Time}", DateTime.Now);
 
@@ -61,5 +65,6 @@ namespace StudentCertificatePortal_API.Jobs
                 _logger.LogInformation("No expired exams found to delete.");
             }
         }
+
     }
 }
