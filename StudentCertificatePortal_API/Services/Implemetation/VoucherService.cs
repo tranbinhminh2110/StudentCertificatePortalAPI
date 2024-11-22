@@ -127,6 +127,20 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             if (voucher is null) {
                 throw new KeyNotFoundException("Voucher not found.");
             }
+            if (voucher.Courses != null && voucher.Courses.Any())
+            {
+                foreach (var course in voucher.Courses)
+                {
+                    course.CourseDiscountFee = course.CourseFee; 
+                }
+            }
+            if (voucher.Exams != null && voucher.Exams.Any())
+            {
+                foreach (var exam in voucher.Exams)
+                {
+                    exam.ExamDiscountFee = exam.ExamFee;
+                }
+            }
             voucher.Exams?.Clear();
             voucher.Courses?.Clear();
 
