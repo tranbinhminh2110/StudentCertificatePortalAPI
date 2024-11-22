@@ -153,12 +153,26 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<List<VoucherDto>> GetAll(CancellationToken cancellationToken)
         {
-            var expiredVouchers = await _uow.VoucherRepository.WhereAsync(v =>
-                v.ExpiryDate <= DateTime.Now && v.VoucherStatus == true);
+            var expiredVouchers = await _uow.VoucherRepository.GetAllAsync(query =>
+         query.Include(v => v.Courses)
+         .Include(v => v.Exams)
+         .Where(v => v.ExpiryDate <= DateTime.Now && v.VoucherStatus == true));
 
             foreach (var voucher in expiredVouchers)
             {
                 voucher.VoucherStatus = false;
+                foreach (var course in voucher.Courses)
+                {
+                    course.CourseDiscountFee = course.CourseFee;
+                    _uow.CourseRepository.Update(course);  
+
+                }
+                foreach (var exam in voucher.Exams)
+                {
+                    exam.ExamDiscountFee = exam.ExamFee;
+                    _uow.SimulationExamRepository.Update(exam); 
+                }
+
                 _uow.VoucherRepository.Update(voucher);
             }
 
