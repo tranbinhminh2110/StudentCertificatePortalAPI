@@ -61,5 +61,11 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.UpdateCoursePermissionAsync(courseId, coursePermission, new CancellationToken());
             return Ok(Result<CourseDto>.Succeed(result));
         }
+        [HttpPut("{courseId:int}/Vouchers")]
+        public async Task<ActionResult<Result<CourseDto>>> UpdateCourseVoucher(int courseId, [FromBody] List<int> voucherIds)
+        {
+            var result = await _service.UpdateCourseVoucherAsync(courseId, voucherIds, HttpContext.RequestAborted);
+            return Ok(Result<CourseDto>.Succeed(result));
+        }
     }
 }
