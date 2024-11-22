@@ -79,6 +79,24 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 }
 
             }
+            float discountRate = 1 - (voucherEntity.Percentage ?? 0) / 100f;
+
+            foreach (var course in voucherEntity.Courses)
+            {
+                if (course.CourseFee.HasValue)
+                {
+                    course.CourseDiscountFee = (int?)(course.CourseFee.Value * discountRate);
+                }
+            }
+
+            foreach (var exam in voucherEntity.Exams)
+            {
+                if (exam.ExamFee.HasValue)
+                {
+                    exam.ExamDiscountFee = (int?)(exam.ExamFee.Value * discountRate);
+                }
+            }
+
             await _uow.VoucherRepository.AddAsync(voucherEntity);
             try
             {
@@ -394,6 +412,24 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
 
             // Update the Voucher in the repository
+            float discountRate = 1 - (voucher.Percentage ?? 0) / 100f;
+
+            foreach (var course in voucher.Courses)
+            {
+                if (course.CourseFee.HasValue)
+                {
+                    course.CourseDiscountFee = (int?)(course.CourseFee.Value * discountRate);
+                }
+            }
+            foreach (var exam in voucher.Exams)
+            {
+                if (exam.ExamFee.HasValue)
+                {
+                    exam.ExamDiscountFee = (int?)(exam.ExamFee.Value * discountRate);
+                }
+            }
+
+
             _uow.VoucherRepository.Update(voucher);
 
             try
