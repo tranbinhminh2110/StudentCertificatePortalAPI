@@ -359,6 +359,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new RequestValidationException(validation.Errors);
             }
+
             // Find the voucher by ID
             var voucher = await _uow.VoucherRepository
                 .Include(x => x.Exams)
@@ -378,7 +379,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             voucher.ExpiryDate = request.ExpiryDate;
             voucher.VoucherStatus = request.ExpiryDate > DateTime.Now;
 
-
             // Get existing Exam IDs
             var existingExamIds = voucher.Exams.Select(e => e.ExamId).ToList();
             var newExamIds = request.ExamId ?? new List<int>();
@@ -391,7 +391,10 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     var examToRemove = voucher.Exams.FirstOrDefault(e => e.ExamId == existingExamId);
                     if (examToRemove != null)
                     {
-                        voucher.Exams.Remove(examToRemove);
+                        // Restore the ExamDiscountFee to its original value (ExamFee)
+                        examToRemove.ExamDiscountFee = examToRemove.ExamFee;
+
+                        voucher.Exams.Remove(examToRemove);  // Remove the exam
                     }
                 }
             }
@@ -418,10 +421,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     }
                 }
             }
+
             var existingCourseIds = voucher.Courses.Select(e => e.CourseId).ToList();
             var newCourseIds = request.CourseId ?? new List<int>();
 
-            // Remove Exams that are no longer referenced
+            // Remove Courses that are no longer referenced
             foreach (var existingCourseId in existingCourseIds)
             {
                 if (!newCourseIds.Contains(existingCourseId))
@@ -429,12 +433,15 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     var courseToRemove = voucher.Courses.FirstOrDefault(e => e.CourseId == existingCourseId);
                     if (courseToRemove != null)
                     {
-                        voucher.Courses.Remove(courseToRemove);
+                        // Restore the CourseDiscountFee to its original value (CourseFee)
+                        courseToRemove.CourseDiscountFee = courseToRemove.CourseFee;
+
+                        voucher.Courses.Remove(courseToRemove);  // Remove the course
                     }
                 }
             }
 
-            // Add new Exams that are not already in the Voucher
+            // Add new Courses that are not already in the Voucher
             foreach (var newCourseId in newCourseIds)
             {
                 if (!existingCourseIds.Contains(newCourseId))
@@ -457,7 +464,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 }
             }
 
-
             // Update the Voucher in the repository
             float discountRate = 1 - (voucher.Percentage ?? 0) / 100f;
 
@@ -475,7 +481,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     exam.ExamDiscountFee = (int?)(exam.ExamFee.Value * discountRate);
                 }
             }
-
 
             _uow.VoucherRepository.Update(voucher);
 
@@ -505,5 +510,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new Exception($"An unexpected error occurred: {innerExceptionMessage}", ex);
             }
         }
+
     }
 }
