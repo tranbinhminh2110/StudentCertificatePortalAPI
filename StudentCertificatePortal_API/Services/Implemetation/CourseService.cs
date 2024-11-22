@@ -390,6 +390,81 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             return result;
         }
+        public async Task<CourseDto> UpdateCourseVoucherAsync(int courseId, List<int> voucherIds, CancellationToken cancellationToken)
+        {
+            // Lấy thông tin course từ database
+            var course = await _uow.CourseRepository.FirstOrDefaultAsync(
+                x => x.CourseId == courseId,
+                cancellationToken,
+                include: query => query.Include(c => c.Vouchers)
+            );
+
+            if (course == null)
+            {
+                throw new KeyNotFoundException("Course not found.");
+            }
+
+            // Xóa các voucher hiện tại
+            course.Vouchers.Clear();
+
+            float? totalDiscount = 1;
+
+            foreach (var voucherId in voucherIds)
+            {
+                if (voucherId > 0)
+                {
+                    // Lấy thông tin voucher
+                    var voucher = await _voucherService.GetVoucherByIdAsync(voucherId, cancellationToken);
+
+                    if (voucher == null || voucher.VoucherStatus == false)
+                    {
+                        throw new KeyNotFoundException($"Voucher with ID {voucherId} not found or is expired.");
+                    }
+
+                    var existingVoucher = await _uow.VoucherRepository.FirstOrDefaultAsync(
+                        v => v.VoucherId == voucherId,
+                        cancellationToken
+                    );
+
+                    if (existingVoucher != null)
+                    {
+                        course.Vouchers.Add(existingVoucher);
+                    }
+                    else
+                    {
+                        course.Vouchers.Add(_mapper.Map<Voucher>(voucher));
+                    }
+
+                    totalDiscount *= (1 - voucher.Percentage / 100f);
+                }
+            }
+
+            // Tính lại giá giảm
+            if (course.CourseFee.HasValue)
+            {
+                course.CourseDiscountFee = (int?)(course.CourseFee.Value * totalDiscount);
+            }
+
+            // Cập nhật course
+            _uow.CourseRepository.Update(course);
+            await _uow.Commit(cancellationToken);
+
+            // Trả về DTO sau khi cập nhật
+            var courseDto = _mapper.Map<CourseDto>(course);
+            courseDto.VoucherDetails = course.Vouchers.Select(v => new VoucherDetailsDto
+            {
+                VoucherId = v.VoucherId,
+                VoucherName = v.VoucherName,
+                VoucherDescription = v.VoucherDescription,
+                Percentage = v.Percentage,
+                CreationDate = v.CreationDate,
+                ExpiryDate = v.ExpiryDate,
+                VoucherStatus = v.VoucherStatus
+            }).ToList();
+
+            return courseDto;
+        }
+
 
     }
 }

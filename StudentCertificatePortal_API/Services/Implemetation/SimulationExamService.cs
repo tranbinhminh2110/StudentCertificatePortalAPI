@@ -433,5 +433,78 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             return _mapper.Map<List<SimulationExamDto>>(simulationExam);
         }
+        public async Task<SimulationExamDto> UpdateExamVouchersAsync(int examId, List<int> voucherIds, CancellationToken cancellationToken)
+        {
+            // Lấy exam từ cơ sở dữ liệu
+            var exam = await _uow.SimulationExamRepository.FirstOrDefaultAsync(
+                x => x.ExamId == examId,
+                cancellationToken,
+                include: x => x.Include(e => e.Vouchers));
+
+            if (exam is null)
+            {
+                throw new KeyNotFoundException("Simulation Exam not found.");
+            }
+
+            // Xóa tất cả voucher hiện tại liên kết với exam
+            exam.Vouchers.Clear();
+
+            // Biến để tính tổng giảm giá
+            float? totalDiscount = 1;
+
+            // Thêm các voucher mới
+            foreach (var voucherId in voucherIds)
+            {
+                if (voucherId > 0)
+                {
+                    // Lấy thông tin voucher từ service
+                    var voucher = await _voucherService.GetVoucherByIdAsync(voucherId, cancellationToken);
+                    if (voucher == null || voucher.VoucherStatus == false)
+                    {
+                        throw new KeyNotFoundException($"Voucher with ID {voucherId} not found or is expired.");
+                    }
+
+                    // Kiểm tra xem voucher có tồn tại trong database hay không
+                    var existingVoucher = await _uow.VoucherRepository.FirstOrDefaultAsync(v => v.VoucherId == voucherId, cancellationToken);
+                    if (existingVoucher != null)
+                    {
+                        exam.Vouchers.Add(existingVoucher);
+                    }
+                    else
+                    {
+                        exam.Vouchers.Add(_mapper.Map<Voucher>(voucher));
+                    }
+
+                    // Tính tổng giảm giá
+                    totalDiscount *= (1 - voucher.Percentage / 100f);
+                }
+            }
+
+            // Cập nhật giá sau giảm
+            if (exam.ExamFee.HasValue)
+            {
+                exam.ExamDiscountFee = (int?)(exam.ExamFee.Value * totalDiscount);
+            }
+
+            // Cập nhật dữ liệu
+            _uow.SimulationExamRepository.Update(exam);
+            await _uow.Commit(cancellationToken);
+
+            // Trả về kết quả
+            var examDto = _mapper.Map<SimulationExamDto>(exam);
+            examDto.VoucherDetails = exam.Vouchers.Select(v => new VoucherDetailsDto
+            {
+                VoucherId = v.VoucherId,
+                VoucherName = v.VoucherName,
+                VoucherDescription = v.VoucherDescription,
+                Percentage = v.Percentage,
+                CreationDate = v.CreationDate,
+                ExpiryDate = v.ExpiryDate,
+                VoucherStatus = v.VoucherStatus
+            }).ToList();
+
+            return examDto;
+        }
+        
     }
 }

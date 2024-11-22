@@ -12,5 +12,6 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<SimulationExamDto> UpdateSimulationExamAsync(int examId, UpdateSimulationExamRequest request, CancellationToken cancellationToken);
         Task<SimulationExamDto> DeleteSimulationExamAsync(int examId, CancellationToken cancellationToken);
         Task<List<SimulationExamDto>> GetSimulationExamByNameAsync(string examName, CancellationToken cancellationToken);
+        Task<SimulationExamDto> UpdateExamVouchersAsync(int examId, List<int> voucherIds, CancellationToken cancellationToken);
     }
 }

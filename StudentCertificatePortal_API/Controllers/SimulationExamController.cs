@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using StudentCertificatePortal_API.Commons;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
+using StudentCertificatePortal_API.Services.Implemetation;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_Data.Models;
 
@@ -70,6 +71,12 @@ namespace StudentCertificatePortal_API.Controllers
         {
             var result = await _simulationExamPermissionService.UpdatePermissionAsync(examId, permission, new CancellationToken());
             return result ? Ok("The Simulation Exam permission has been updated successfully.") : NotFound("The Simulation Exam with the specified ID was not found or the permission update failed.");
+        }
+        [HttpPut("{examId}/update-vouchers")]
+        public async Task<IActionResult> UpdateExamVouchers(int examId, [FromBody] List<int> voucherIds)
+        {
+            var result = await _service.UpdateExamVouchersAsync(examId, voucherIds, HttpContext.RequestAborted);
+            return Ok(result);
         }
     }
 }

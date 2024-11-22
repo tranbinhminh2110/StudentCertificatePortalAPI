@@ -13,6 +13,7 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<CourseDto> DeleteCourseAsync(int courseId, CancellationToken cancellationToken);
         Task<List<CourseDto>> GetCourseByNameAsync(string courseName, CancellationToken cancellationToken);
         Task<CourseDto> UpdateCoursePermissionAsync(int courseId, EnumPermission coursePermission, CancellationToken cancellationToken);
+        Task<CourseDto> UpdateCourseVoucherAsync(int courseId, List<int> voucherIds, CancellationToken cancellationToken);
 
     }
 }
