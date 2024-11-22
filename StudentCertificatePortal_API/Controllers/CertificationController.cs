@@ -50,7 +50,8 @@ namespace StudentCertificatePortal_API.Controllers
         }
 
         [HttpGet("~/api/v1/[controller]/search")]
-        public async Task<ActionResult<Result<List<CertificationDto>>>> GetCertificcationByName([FromQuery] string? certName = null)
+        public async Task<ActionResult<Result<List<CertificationDto>>>> GetCertificcationByName(
+            [FromQuery] string? certName = null, [FromQuery] int pageNumber = 1 , [FromQuery] int pageSize = 8)
         {
             IEnumerable<CertificationDto> result;
             if(certName == null)
@@ -61,8 +62,23 @@ namespace StudentCertificatePortal_API.Controllers
             {
                 result = await _service.GetCertificationByNameAsync(certName, new CancellationToken());
             }
-            
-            return Ok(Result<List<CertificationDto>>.Succeed(result.ToList()));
+
+
+            var totalRecords = result.Count();
+            var paginatedResult = result.Skip((pageNumber -1)* pageSize).Take(pageSize).ToList();
+
+            var metadata = new
+            {
+                TotalRecords = totalRecords,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling((double)totalRecords / pageSize)
+            };
+            return Ok(new
+            {
+                Data = Result<List<CertificationDto>>.Succeed(paginatedResult),
+                Metadata = metadata
+            });
         }
         [HttpDelete("{certId:int}")]
         public async Task<ActionResult<Result<CertificationDto>>> DeleteCertificationById([FromRoute] int certId)
