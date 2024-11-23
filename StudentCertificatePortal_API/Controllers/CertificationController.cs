@@ -51,16 +51,25 @@ namespace StudentCertificatePortal_API.Controllers
 
         [HttpGet("~/api/v1/[controller]/search")]
         public async Task<ActionResult<Result<List<CertificationDto>>>> GetCertificcationByName(
-            [FromQuery] string? certName = null, [FromQuery] int pageNumber = 1 , [FromQuery] int pageSize = 8)
+            [FromQuery] string? certName = null, [FromQuery] int pageNumber = 1 , [FromQuery] int pageSize = 8, [FromQuery] Enums.EnumPermission? permission = null)
         {
+            if (pageNumber <= 0 || pageSize <= 0)
+            {
+                return BadRequest("Page number and page size must be greater than zero.");
+            }
             IEnumerable<CertificationDto> result;
-            if(certName == null)
+            if(string.IsNullOrEmpty(certName))
             {
                 result = await _service.GetAll();
             }
             else
             {
                 result = await _service.GetCertificationByNameAsync(certName, new CancellationToken());
+            }
+
+            if (permission.HasValue)
+            {
+                result = result.Where(cert => cert.Permission == permission.ToString());
             }
 
 
