@@ -61,12 +61,10 @@ namespace StudentCertificatePortal_API.Controllers
             if(string.IsNullOrEmpty(certName))
             {
                 result = await _service.GetAll();
-                result = result.OrderBy(x => x.CertName).ToList();
             }
             else
             {
                 result = await _service.GetCertificationByNameAsync(certName, new CancellationToken());
-                result = result.OrderBy(x => x.CertName).ToList();
             }
 
             if (permission.HasValue)

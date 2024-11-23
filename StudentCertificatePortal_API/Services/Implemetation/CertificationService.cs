@@ -302,7 +302,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 certificationDtos.Add(certificationDto);
             }
 
-            return certificationDtos;
+            return certificationDtos.OrderBy(x => x.CertName).ToList();
         }
 
 
@@ -422,7 +422,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 certificationDto.TypeName = type?.TypeName;
             }
 
-            return certificationDtos;
+            return certificationDtos.OrderBy(x => x.CertName).ToList();
         }
 
 
