@@ -40,6 +40,55 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         }
 
+        public async Task<StudentDataDto> GetPercentageDistribution()
+        {
+            var totalStudents = await _uow.UserRepository.WhereAsync(x => x.Role == "Student");
+            int totalStudentCount = totalStudents.Count();
+
+            var enrolledExamStudents = await _uow.ExamEnrollmentRepository
+                                      .WhereAsync(x => x.ExamEnrollmentStatus == Enums.EnumExamEnrollment.Completed.ToString());
+
+            var listExamEnrolled = enrolledExamStudents
+                           .Select(x => x.UserId)
+                           .Distinct()
+                           .ToList();
+
+            var enrolledCourseStudents = await _uow.CourseEnrollmentRepository
+                                      .WhereAsync(x => x.CourseEnrollmentStatus == Enums.EnumCourseEnrollment.Completed.ToString());
+
+            var listCourseEnrolled = enrolledCourseStudents
+                           .Select(x => x.UserId)
+                           .Distinct()
+                           .ToList();
+
+            var studentsInBoth = listExamEnrolled.Intersect(listCourseEnrolled).ToList();
+            int studentsInBothCount = studentsInBoth.Count();
+
+
+            var onlyCourseEnrolled = listCourseEnrolled.Except(studentsInBoth).Count();
+
+            var onlyExamEnrolled = listExamEnrolled.Except(studentsInBoth).Count();
+            var noEnrollment = totalStudentCount - listExamEnrolled.Count() - listCourseEnrolled.Count() + studentsInBothCount;
+
+
+            var studentDataDto = new StudentDataDto
+            {
+                TotalStudents = totalStudentCount,
+                PercentageTotalStudents = 100,
+                OnlyEnrolledInCourse = onlyCourseEnrolled,
+                PercentageOnlyEnrolledInCourse = (onlyCourseEnrolled / (double)totalStudentCount) * 100,
+                OnlyPurchaseSimulationExams = onlyExamEnrolled,
+                PercentageOnlyPurchaseSimulationExams = (onlyExamEnrolled / (double)totalStudentCount) * 100,
+                PurchaseBoth = studentsInBothCount,
+                PercentagePurchaseBoth = (studentsInBothCount / (double)totalStudentCount) * 100,
+                PurchaseNothing = noEnrollment,
+                PercentagePurchaseNothing = (noEnrollment / (double)totalStudentCount) * 100
+            };
+
+            return studentDataDto;
+        }
+
+
 
         public async Task<Dictionary<int, decimal>> GetMonthlyRevenueAsync(int year, CancellationToken cancellationToken = default)
         {
