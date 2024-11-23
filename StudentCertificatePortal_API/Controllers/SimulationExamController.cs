@@ -76,7 +76,7 @@ namespace StudentCertificatePortal_API.Controllers
         public async Task<IActionResult> UpdateExamVouchers(int examId, [FromBody] List<int> voucherIds)
         {
             var result = await _service.UpdateExamVouchersAsync(examId, voucherIds, HttpContext.RequestAborted);
-            return Ok(result);
+            return Ok(result);  
         }
     }
 }
