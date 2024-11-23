@@ -22,6 +22,27 @@ namespace StudentCertificatePortal_API.Controllers
             return Ok(Result<DashboardSummaryDto>.Succeed(summary));
         }
 
+        [HttpGet("percentage-distribution")]
+        public async Task<ActionResult<StudentDataDto>> GetPercentageDistribution()
+        {
+            try
+            {
+                var result = await _service.GetPercentageDistribution();
+
+                if (result == null)
+                {
+                    return NotFound("No data available.");
+                }
+
+                return Ok(Result<StudentDataDto>.Succeed(result));  
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal server error: " + ex.Message);
+            }
+        }
+
+
         [HttpGet("total-point")]
         public async Task<IActionResult> GetTotalAmount(
             [FromQuery] TimePeriod period,
