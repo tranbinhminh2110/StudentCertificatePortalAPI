@@ -64,7 +64,7 @@ builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost",
-           builder => builder.WithOrigins("http://localhost:3000", "https://uni-cert.vercel.app/", "https://uni-cert.vercel.app", "http://127.0.0.1:5500")
+           builder => builder.WithOrigins("http://localhost:3000", "https://uni-cert.vercel.app/", "https://uni-cert.vercel.app", "http://127.0.0.1:5500", "http://localhost:3000/login")
                              .AllowCredentials()
                              .AllowAnyHeader()
                              .AllowAnyMethod());
