@@ -248,6 +248,15 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new KeyNotFoundException("Exam Enrollment not found.");
             }
+
+            var userId = examEnrollment.UserId;
+            var examId = examEnrollment.StudentOfExams.Select(x => x.ExamId).ToList();
+            foreach(var exam in examId)
+            {
+                var score = await _uow.ScoreRepository.FirstOrDefaultAsync(x => x.UserId == userId && x.ExamId == exam);
+                _uow.ScoreRepository.Delete(score);
+                await _uow.Commit(cancellationToken);
+            }
             examEnrollment?.StudentOfExams.Clear();
             examEnrollment?.Payments.Clear();
             _uow.ExamEnrollmentRepository.Delete(examEnrollment);
