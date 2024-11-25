@@ -34,7 +34,7 @@ namespace StudentCertificatePortal_API.Controllers
             _walletService = walletService;
         }
 
-        [HttpGet("login-google")]
+        [HttpPost("login-google")]
         public IActionResult LoginGoogle()
         {
             var redirectUrl = Url.Action("GoogleResponse", "Google");
@@ -42,7 +42,7 @@ namespace StudentCertificatePortal_API.Controllers
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
 
-        [HttpGet("google-response")]
+        [HttpPost("google-response")]
         public async Task<IActionResult> GoogleResponse(CancellationToken cancellationToken)
         {
             var result = await HttpContext.AuthenticateAsync(GoogleDefaults.AuthenticationScheme);
