@@ -13,6 +13,8 @@ namespace StudentCertificatePortal_API.DTOs
 
         public string? OrganizeContact { get; set; }
         public string? OrganizePermission { get; set; }
+        public List<CertificationDetailsDto> CertificationDetails { get; set; } = new List<CertificationDetailsDto>();
+
 
 
     }

@@ -84,29 +84,99 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<List<OrganizeDto>> GetAll()
         {
-            var result = await _uow.OrganizeRepository.GetAll();
-            return _mapper.Map<List<OrganizeDto>>(result);
+            var result = await _uow.OrganizeRepository.GetAllAsync(
+                include: x => x.Include(o => o.Certifications)
+            );
+
+            var organizeDtos = result.Select(organize => new OrganizeDto
+            {
+                OrganizeId = organize.OrganizeId,
+                OrganizeName = organize.OrganizeName,
+                OrganizeAddress = organize.OrganizeAddress,
+                OrganizeContact = organize.OrganizeContact,
+                OrganizePermission = organize.OrganizePermission,
+                CertificationDetails = organize.Certifications.Select(cert => new CertificationDetailsDto
+                {
+                    CertId = cert.CertId,
+                    CertName = cert.CertName,
+                    CertCode = cert.CertCode,
+                    CertDescription = cert.CertDescription,
+                    CertImage = cert.CertImage,
+                    TypeName = cert.Type?.TypeName
+                }).ToList()
+            }).ToList();
+
+            return organizeDtos;
         }
 
         public async Task<OrganizeDto> GetOrganizeByIdAsync(int organizeId, CancellationToken cancellationToken)
         {
-            var result = await _uow.OrganizeRepository.FirstOrDefaultAsync(x => x.OrganizeId == organizeId, cancellationToken);
-            if (result is null)
+            var organize = await _uow.OrganizeRepository.FirstOrDefaultAsync(
+                x => x.OrganizeId == organizeId,
+                cancellationToken,
+                include: x => x.Include(o => o.Certifications)
+            );
+
+            if (organize is null)
             {
                 throw new KeyNotFoundException("Organize not found.");
             }
-            return _mapper.Map<OrganizeDto>(result);
+
+            var organizeDto = new OrganizeDto
+            {
+                OrganizeId = organize.OrganizeId,
+                OrganizeName = organize.OrganizeName,
+                OrganizeAddress = organize.OrganizeAddress,
+                OrganizeContact = organize.OrganizeContact,
+                OrganizePermission = organize.OrganizePermission,
+                CertificationDetails = organize.Certifications.Select(cert => new CertificationDetailsDto
+                {
+                    CertId = cert.CertId,
+                    CertName = cert.CertName,
+                    CertCode = cert.CertCode,
+                    CertDescription = cert.CertDescription,
+                    CertImage = cert.CertImage,
+                    TypeName = cert.Type?.TypeName
+                }).ToList()
+            };
+
+            return organizeDto;
         }
 
         public async Task<List<OrganizeDto>> GetOrganizeByNameAsync(string organizeName, CancellationToken cancellationToken)
         {
-            var result = await _uow.OrganizeRepository.WhereAsync(x => x.OrganizeName.Contains(organizeName), cancellationToken);
-            if (result is null)
+            var result = await _uow.OrganizeRepository.WhereAsync(
+                x => x.OrganizeName.Contains(organizeName),
+                cancellationToken,
+                include: x => x.Include(o => o.Certifications)
+            );
+
+            if (!result.Any())
             {
                 throw new KeyNotFoundException("Organize not found.");
             }
-            return _mapper.Map<List<OrganizeDto>>(result);
+
+            var organizeDtos = result.Select(organize => new OrganizeDto
+            {
+                OrganizeId = organize.OrganizeId,
+                OrganizeName = organize.OrganizeName,
+                OrganizeAddress = organize.OrganizeAddress,
+                OrganizeContact = organize.OrganizeContact,
+                OrganizePermission = organize.OrganizePermission,
+                CertificationDetails = organize.Certifications.Select(cert => new CertificationDetailsDto
+                {
+                    CertId = cert.CertId,
+                    CertName = cert.CertName,
+                    CertCode = cert.CertCode,
+                    CertDescription = cert.CertDescription,
+                    CertImage = cert.CertImage,
+                    TypeName = cert.Type?.TypeName
+                }).ToList()
+            }).ToList();
+
+            return organizeDtos;
         }
+
 
         public async Task<OrganizeDto> UpdateOrganizeAsync(int oragnizeId, UpdateOrganizeRequest request, CancellationToken cancellationToken)
         {
