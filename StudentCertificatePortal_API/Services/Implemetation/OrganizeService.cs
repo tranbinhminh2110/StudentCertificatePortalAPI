@@ -86,6 +86,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         {
             var result = await _uow.OrganizeRepository.GetAllAsync(
                 include: x => x.Include(o => o.Certifications)
+                            .ThenInclude(cert => cert.Type)
             );
 
             var organizeDtos = result.Select(organize => new OrganizeDto
@@ -102,7 +103,10 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CertCode = cert.CertCode,
                     CertDescription = cert.CertDescription,
                     CertImage = cert.CertImage,
-                    TypeName = cert.Type?.TypeName
+                    TypeName = cert.Type?.TypeName,
+                    CertValidity = cert.CertValidity,
+                    OrganizeName = cert.Organize?.OrganizeName,
+                    Permission = cert.Permission,
                 }).ToList()
             }).ToList();
 
@@ -115,6 +119,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 x => x.OrganizeId == organizeId,
                 cancellationToken,
                 include: x => x.Include(o => o.Certifications)
+                            .ThenInclude(cert => cert.Type)
+
             );
 
             if (organize is null)
@@ -136,7 +142,10 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CertCode = cert.CertCode,
                     CertDescription = cert.CertDescription,
                     CertImage = cert.CertImage,
-                    TypeName = cert.Type?.TypeName
+                    TypeName = cert.Type?.TypeName,
+                    CertValidity = cert.CertValidity,
+                    OrganizeName = cert.Organize?.OrganizeName,
+                    Permission = cert.Permission,
                 }).ToList()
             };
 
@@ -149,6 +158,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 x => x.OrganizeName.Contains(organizeName),
                 cancellationToken,
                 include: x => x.Include(o => o.Certifications)
+                            .ThenInclude(cert => cert.Type)
+
             );
 
             if (!result.Any())
@@ -170,7 +181,10 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CertCode = cert.CertCode,
                     CertDescription = cert.CertDescription,
                     CertImage = cert.CertImage,
-                    TypeName = cert.Type?.TypeName
+                    TypeName = cert.Type?.TypeName,
+                    CertValidity = cert.CertValidity,
+                    OrganizeName = cert.Organize?.OrganizeName,
+                    Permission = cert.Permission,
                 }).ToList()
             }).ToList();
 
