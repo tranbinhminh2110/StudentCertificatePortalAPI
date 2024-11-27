@@ -59,5 +59,11 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _jobPositionService.UpdateJobPositionPermissionAsync(jobPositionId, jobPositionPermission, new CancellationToken());
             return Ok(Result<JobPositionDto>.Succeed(result));
         }
+        [HttpGet("{jobPositionId:int}/organize/{organizeId:int}")]
+        public async Task<ActionResult<Result<List<JobPositionDto>>>> GetJobPositionByTwoId(int jobPositionId, int organizeId)
+        {
+            var result = await _jobPositionService.GetJobPositionByTwoIdAsync(jobPositionId, organizeId, new CancellationToken());
+            return Ok(Result<List<JobPositionDto>>.Succeed(result));
+        }
     }
 }
