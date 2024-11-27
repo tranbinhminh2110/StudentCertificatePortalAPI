@@ -14,24 +14,30 @@ using Microsoft.AspNetCore.Identity.Data;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.Services.Implemetation;
 using StudentCertificatePortal_API.Services.Interface;
+using Microsoft.SqlServer.Server;
+using Google.Apis.Auth;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace StudentCertificatePortal_API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class GoogleController: ControllerBase
+    public class GoogleController : ControllerBase
     {
         private readonly IUnitOfWork _uow;
         private readonly GenerateJSONWebTokenHelper _helper;
         private readonly ILoginService _service;
         private readonly IWalletService _walletService;
+        private readonly IConfiguration _configuration;
 
-        public GoogleController(IUnitOfWork uow, GenerateJSONWebTokenHelper helper, ILoginService service, IWalletService walletService)
+        public GoogleController(IUnitOfWork uow, GenerateJSONWebTokenHelper helper, ILoginService service, IWalletService walletService, IConfiguration configuration)
         {
             _uow = uow;
             _helper = helper;
             _service = service;
             _walletService = walletService;
+            _configuration = configuration;
         }
 
         [HttpGet("login-google")]
@@ -43,9 +49,38 @@ namespace StudentCertificatePortal_API.Controllers
         }
 
         [HttpGet("google-response")]
-        public async Task<IActionResult> GoogleResponse(CancellationToken cancellationToken)
+        public async Task<GoogleTokenPayload> GoogleResponse(string idToken, CancellationToken cancellationToken)
         {
-            var result = await HttpContext.AuthenticateAsync(GoogleDefaults.AuthenticationScheme);
+
+                try
+                {
+                    // Ensure token is correctly formatted
+                    if (string.IsNullOrWhiteSpace(idToken) ||
+                        !idToken.Contains('.') ||
+                        idToken.Split('.').Length != 3)
+                    {
+                        return null;
+                    }
+
+                    // Decode the token
+                    var handler = new JwtSecurityTokenHandler();
+                    var token = handler.ReadJwtToken(idToken);
+
+                    return new GoogleTokenPayload
+                    {
+                        Sub = token.Claims.FirstOrDefault(c => c.Type == "sub")?.Value,
+                        Email = token.Claims.FirstOrDefault(c => c.Type == "email")?.Value,
+                        GivenName = token.Claims.FirstOrDefault(c => c.Type == "given_name")?.Value,
+                        FamilyName = token.Claims.FirstOrDefault(c => c.Type == "family_name")?.Value
+                    };
+                }
+                catch
+                {
+                    return null;
+                }
+
+
+            /*var result = await HttpContext.AuthenticateAsync(GoogleDefaults.AuthenticationScheme);
             var claims = result.Principal?.Identities.FirstOrDefault()?.Claims;
 
             if (claims == null)
@@ -86,12 +121,12 @@ namespace StudentCertificatePortal_API.Controllers
                 if (walletResult == null)
                 {
                     return BadRequest("Wallet was not successfully created");
-                }
-            }
+                }*/
+            /*}*/
 
-            
 
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, result.Principal);
+
+            /*await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, result.Principal);
 
             var request = new LoginUserRequest { Email = user.Email, Password = user.Password };
             var userToken = await _service.Authenticate(request, cancellationToken);
@@ -110,8 +145,19 @@ namespace StudentCertificatePortal_API.Controllers
                 Token = token
             });
         }
+*/
 
 
+        }
 
+        public class GoogleTokenPayload
+        {
+            public string Sub { get; set; }
+            public string Email { get; set; }
+            public string GivenName { get; set; }
+            public string FamilyName { get; set; }
+            public string Picture { get; set; }
+        }
     }
+
 }

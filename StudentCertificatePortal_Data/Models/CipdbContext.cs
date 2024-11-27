@@ -169,7 +169,7 @@ public partial class CipdbContext : DbContext
                 .HasMaxLength(255)
                 .HasColumnName("cert_name");
             entity.Property(e => e.CertPointSystem)
-                .HasMaxLength(255)
+                .HasColumnType("text")
                 .HasColumnName("cert_point_system");
             entity.Property(e => e.CertPrerequisite)
                 .HasMaxLength(255)
