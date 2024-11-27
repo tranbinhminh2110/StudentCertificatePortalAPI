@@ -429,14 +429,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             return result;
         }
-        public async Task<List<JobPositionDto>> GetJobPositionByTwoIdAsync(int jobPositionId, int organizeId, CancellationToken cancellationToken)
+        public async Task<List<JobPositionDto>> GetJobPositionByTwoIdAsync(int jobPositionId, int? organizeId, CancellationToken cancellationToken)
         {
             var results = await _uow.JobPositionRepository.WhereAsync(
                 x => x.JobPositionId == jobPositionId,
                 cancellationToken: cancellationToken,
                 include: query => query.Include(jp => jp.Certs)
-                                       .ThenInclude(cert => cert.JobPositions)
-                                       .Include(jp => jp.Certs)
                                        .ThenInclude(cert => cert.Type)
                                        .Include(jp => jp.Certs)
                                        .ThenInclude(cert => cert.Organize));
@@ -452,7 +450,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                 jobPositionDto.CertificationDetails = result.Certs
                     .Where(cert => cert.JobPositions.Any(j => j.JobPositionId == jobPositionId) &&
-                                   cert.Organize != null && cert.Organize.OrganizeId == organizeId)
+                                   (organizeId == null || (cert.Organize != null && cert.Organize.OrganizeId == organizeId)))
                     .Select(cert => new CertificationDetailsDto
                     {
                         CertId = cert.CertId,
@@ -471,6 +469,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             return jobPositionDtoList;
         }
+
 
     }
 }
