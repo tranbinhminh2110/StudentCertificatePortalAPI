@@ -634,5 +634,27 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new Exception($"An unexpected error occurred: {innerExceptionMessage}", ex);
             }
         }
+        public async Task<decimal> GetTotalCertCostAsync(List<int> certificationIds, CancellationToken cancellationToken)
+        {
+            if (certificationIds == null || certificationIds.Count == 0)
+            {
+                throw new ArgumentException("Certification IDs cannot be empty.");
+            }
+
+            var certifications = await _uow.CertificationRepository
+                .GetAllAsync(query => query.Where(c => certificationIds.Contains(c.CertId)));
+
+            var notFoundCertIds = certificationIds.Except(certifications.Select(c => c.CertId)).ToList();
+
+            if (notFoundCertIds.Any())
+            {
+                throw new KeyNotFoundException($"Certifications with IDs {string.Join(", ", notFoundCertIds)} were not found.");
+            }
+
+            decimal totalCost = certifications.Sum(c => c.CertCost ?? 0);
+
+            return totalCost;
+        }
+
     }
 }

@@ -12,5 +12,6 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<CertificationDto> DeleteCertificationAsync(int certificationId, CancellationToken cancellationToken);
 
         Task<List<CertificationDto>> GetCertificationByNameAsync(string certName, CancellationToken cancellationToken);
+        Task<decimal> GetTotalCertCostAsync(List<int> certificationIds, CancellationToken cancellationToken);
     }
 }
