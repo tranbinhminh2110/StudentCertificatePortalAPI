@@ -13,6 +13,7 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<JobPositionDto> DeleteJobPositionAsync(int jobPositionId, CancellationToken cancellationToken);
         Task<List<JobPositionDto>> GetJobPositionByNameAsync(string jobPositionName, CancellationToken cancellationToken);
         Task<JobPositionDto> UpdateJobPositionPermissionAsync(int jobPositionId, EnumPermission jobPositionPermission, CancellationToken cancellationToken);
+        Task<List<JobPositionDto>> GetJobPositionByTwoIdAsync(int jobPositionId, int organizeId, CancellationToken cancellationToken);
 
     }
 }

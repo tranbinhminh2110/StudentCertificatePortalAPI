@@ -429,5 +429,48 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             return result;
         }
+        public async Task<List<JobPositionDto>> GetJobPositionByTwoIdAsync(int jobPositionId, int organizeId, CancellationToken cancellationToken)
+        {
+            var results = await _uow.JobPositionRepository.WhereAsync(
+                x => x.JobPositionId == jobPositionId,
+                cancellationToken: cancellationToken,
+                include: query => query.Include(jp => jp.Certs)
+                                       .ThenInclude(cert => cert.JobPositions)
+                                       .Include(jp => jp.Certs)
+                                       .ThenInclude(cert => cert.Type)
+                                       .Include(jp => jp.Certs)
+                                       .ThenInclude(cert => cert.Organize));
+
+            if (results == null || !results.Any())
+            {
+                throw new KeyNotFoundException("No job positions found.");
+            }
+
+            var jobPositionDtoList = results.Select(result =>
+            {
+                var jobPositionDto = _mapper.Map<JobPositionDto>(result);
+
+                jobPositionDto.CertificationDetails = result.Certs
+                    .Where(cert => cert.JobPositions.Any(j => j.JobPositionId == jobPositionId) &&
+                                   cert.Organize != null && cert.Organize.OrganizeId == organizeId)
+                    .Select(cert => new CertificationDetailsDto
+                    {
+                        CertId = cert.CertId,
+                        CertName = cert.CertName,
+                        CertCode = cert.CertCode,
+                        CertDescription = cert.CertDescription,
+                        CertImage = cert.CertImage,
+                        TypeName = cert.Type?.TypeName,
+                        CertValidity = cert.CertValidity,
+                        OrganizeName = cert.Organize?.OrganizeName,
+                        Permission = cert.Permission,
+                    }).ToList();
+
+                return jobPositionDto;
+            }).ToList();
+
+            return jobPositionDtoList;
+        }
+
     }
 }
