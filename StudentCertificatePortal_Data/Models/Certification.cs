@@ -13,8 +13,6 @@ public partial class Certification
 
     public int? CertCost { get; set; }
 
-    public string? CertPointSystem { get; set; }
-
     public string? CertImage { get; set; }
 
     public string? CertPrerequisite { get; set; }
@@ -28,6 +26,8 @@ public partial class Certification
     public string? CertDescription { get; set; }
 
     public string? Permission { get; set; }
+
+    public string? CertPointSystem { get; set; }
 
     public virtual ICollection<Course> Courses { get; set; } = new List<Course>();
 
