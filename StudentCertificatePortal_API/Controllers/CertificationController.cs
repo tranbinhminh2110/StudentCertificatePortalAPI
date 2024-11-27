@@ -104,5 +104,24 @@ namespace StudentCertificatePortal_API.Controllers
             return result ? Ok("The certification permission has been updated successfully.") : NotFound("The certification with the specified ID was not found or the permission update failed.");
         }
 
+        [HttpPost("total-cert-cost")]
+        public async Task<ActionResult<Result<decimal>>> GetTotalCertCost([FromBody] List<int> certificationIds, CancellationToken cancellationToken)
+        {
+            if (certificationIds == null || certificationIds.Count == 0)
+            {
+                return BadRequest("Certification IDs cannot be empty.");
+            }
+            try
+            {
+                decimal totalCost = await _service.GetTotalCertCostAsync(certificationIds, cancellationToken);
+                return Ok(Result<decimal>.Succeed(totalCost));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error calculating total cost: {ex.Message}");
+            }
+        }
+
+
     }
 }
