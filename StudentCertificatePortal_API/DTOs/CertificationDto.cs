@@ -27,9 +27,9 @@ namespace StudentCertificatePortal_API.DTOs
         public int? TypeId { get; set; }
         public string? TypeName { get; set; }
         public string? Permission { get; set; }
-        
-        
+        public List<int> CertSubsequentIds { get; set; } = new List<int>();
 
+        public List<string> CertSubsequentNames { get; set; } = new List<string>();
 
         // Danh sách ID của các chứng chỉ tiền đề
         public List<int>? CertPrerequisiteId { get; set; } = new List<int>();

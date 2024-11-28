@@ -251,7 +251,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var certifications = await _uow.CertificationRepository.GetAllAsync(query =>
                 query.Include(c => c.CertIdPrerequisites)
                 .Include(c => c.Majors)
-                .Include(c => c.JobPositions)); 
+                .Include(c => c.JobPositions).Include(x => x.Certs)); 
 
             var certificationDtos = new List<CertificationDto>();
 
@@ -262,11 +262,20 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 var organize = await _uow.OrganizeRepository.FirstOrDefaultAsync(x => x.OrganizeId == certification.OrganizeId);
                 var type = await _uow.CertTypeRepository.FirstOrDefaultAsync(x => x.TypeId == certification.TypeId);
 
+
+                var certificationsSub = await _uow.CertificationRepository.WhereAsync(cert => cert.CertId == certification.CertId);
+                var subsequent = certifications.Select(cert => cert.Certs);
+
+
+
                 certificationDto.OrganizeId = organize?.OrganizeId;
                 certificationDto.OrganizeName = organize?.OrganizeName;
                 certificationDto.TypeId = type?.TypeId;
                 certificationDto.TypeName = type?.TypeName;
-
+                var subsequentCertIds = certification.Certs.Select(cert => cert.CertId).ToList();
+                var subsequentCertNames = certification.Certs.Select(cert => cert.CertName).ToList();
+                certificationDto.CertSubsequentIds = subsequentCertIds;
+                certificationDto.CertSubsequentNames = subsequentCertNames;
                 certificationDto.CertPrerequisiteId = certification.CertIdPrerequisites
                     .Select(prerequisite => prerequisite.CertId)
                     .ToList();
@@ -316,7 +325,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     cancellationToken: cancellationToken,
                     include: query => query.Include(c => c.CertIdPrerequisites)
                                       .Include(c => c.Majors)
-                                      .Include(c => c.JobPositions)
+                                      .Include(c => c.JobPositions).Include(c => c.Certs)
                 );
 
             if (certification is null)
@@ -336,6 +345,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             certificationDto.TypeId = type?.TypeId;
             certificationDto.TypeName = type?.TypeName;
 
+
+            var subsequentCertIds = certification.Certs.Select(cert => cert.CertId).ToList();
+            var subsequentCertNames = certification.Certs.Select(cert => cert.CertName).ToList();
+            certificationDto.CertSubsequentIds = subsequentCertIds;
+            certificationDto.CertSubsequentNames = subsequentCertNames;
 
             certificationDto.CertPrerequisiteId = certification.CertIdPrerequisites
                 .Select(prerequisite => prerequisite.CertId)
@@ -378,7 +392,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 .WhereAsync(
                     x => x.CertName.Contains(certName),
                     cancellationToken,
-                    include: query => query.Include(c => c.CertIdPrerequisites)
+                    include: query => query.Include(c => c.CertIdPrerequisites).Include(x => x.Certs)
                 );
 
             
@@ -398,8 +412,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 
                 var organize = await _uow.OrganizeRepository.FirstOrDefaultAsync(x => x.OrganizeId == certification.OrganizeId);
                 var type = await _uow.CertTypeRepository.FirstOrDefaultAsync(x => x.TypeId == certification.TypeId);
+                var subsequentCertIds = certification.Certs.Select(cert => cert.CertId).ToList();
+                var subsequentCertNames = certification.Certs.Select(cert => cert.CertName).ToList();
+                certificationDto.CertSubsequentIds = subsequentCertIds;
+                certificationDto.CertSubsequentNames = subsequentCertNames;
 
-                
                 certificationDto.CertPrerequisiteId = certification.CertIdPrerequisites
                     .Select(prerequisite => prerequisite.CertId)
                     .ToList();
