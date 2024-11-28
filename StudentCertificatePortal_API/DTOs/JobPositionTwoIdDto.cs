@@ -14,6 +14,6 @@ namespace StudentCertificatePortal_API.DTOs
         public string? JobPositionDescription { get; set; }
         public string? JobPositionPermission { get; set; }
         public int? OrganizeId { get; set; }
-        public List<CertificationDetailsDto> CertificationDetails { get; set; } = new List<CertificationDetailsDto>();
+        public List<CertificationTwoIdDto> CertificationTwoId { get; set; } = new List<CertificationTwoIdDto>();
     }
 }

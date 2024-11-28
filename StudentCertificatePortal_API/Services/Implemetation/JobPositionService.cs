@@ -448,10 +448,10 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 var jobPositionDto = _mapper.Map<JobPositionTwoIdDto>(result);
 
-                jobPositionDto.CertificationDetails = result.Certs
+                jobPositionDto.CertificationTwoId = result.Certs
                     .Where(cert => cert.JobPositions.Any(j => j.JobPositionId == jobPositionId) &&
                                    (organizeId == null || (cert.Organize != null && cert.Organize.OrganizeId == organizeId)))
-                    .Select(cert => new CertificationDetailsDto
+                    .Select(cert => new CertificationTwoIdDto
                     {
                         CertId = cert.CertId,
                         CertName = cert.CertName,
@@ -460,6 +460,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         CertImage = cert.CertImage,
                         TypeName = cert.Type?.TypeName,
                         CertValidity = cert.CertValidity,
+                        OrganizeId = cert.OrganizeId ?? 0,
                         OrganizeName = cert.Organize?.OrganizeName,
                         Permission = cert.Permission,
                     }).ToList();
