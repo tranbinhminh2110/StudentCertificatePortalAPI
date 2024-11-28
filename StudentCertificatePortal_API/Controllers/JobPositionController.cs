@@ -60,10 +60,10 @@ namespace StudentCertificatePortal_API.Controllers
             return Ok(Result<JobPositionDto>.Succeed(result));
         }
         [HttpGet("{jobPositionId:int}/organize")]
-        public async Task<ActionResult<Result<List<JobPositionDto>>>> GetJobPositionByTwoId(int jobPositionId, int? organizeId)
+        public async Task<ActionResult<Result<List<JobPositionTwoIdDto>>>> GetJobPositionByTwoId(int jobPositionId, int? organizeId)
         {
             var result = await _jobPositionService.GetJobPositionByTwoIdAsync(jobPositionId, organizeId, new CancellationToken());
-            return Ok(Result<List<JobPositionDto>>.Succeed(result));
+            return Ok(Result<List<JobPositionTwoIdDto>>.Succeed(result));
         }
 
     }

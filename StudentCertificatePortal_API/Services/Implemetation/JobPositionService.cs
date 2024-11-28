@@ -429,7 +429,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             return result;
         }
-        public async Task<List<JobPositionDto>> GetJobPositionByTwoIdAsync(int jobPositionId, int? organizeId, CancellationToken cancellationToken)
+        public async Task<List<JobPositionTwoIdDto>> GetJobPositionByTwoIdAsync(int jobPositionId, int? organizeId, CancellationToken cancellationToken)
         {
             var results = await _uow.JobPositionRepository.WhereAsync(
                 x => x.JobPositionId == jobPositionId,
@@ -446,7 +446,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             var jobPositionDtoList = results.Select(result =>
             {
-                var jobPositionDto = _mapper.Map<JobPositionDto>(result);
+                var jobPositionDto = _mapper.Map<JobPositionTwoIdDto>(result);
 
                 jobPositionDto.CertificationDetails = result.Certs
                     .Where(cert => cert.JobPositions.Any(j => j.JobPositionId == jobPositionId) &&
@@ -464,12 +464,13 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         Permission = cert.Permission,
                     }).ToList();
 
+                jobPositionDto.OrganizeId = organizeId;
+
                 return jobPositionDto;
             }).ToList();
 
             return jobPositionDtoList;
         }
-
 
     }
 }
