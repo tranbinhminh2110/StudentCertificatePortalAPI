@@ -55,6 +55,24 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return _mapper.Map<TransactionDto>(result);
         }
 
+        /*public async Task<TransactionDto> CreateTransactionRefundAsync(CreateTransactionRequest request, CancellationToken cancellationToken)
+        {
+            var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.WalletId == request.WalletId);
+            if (wallet == null || wallet.WalletStatus == EnumWallet.IsLocked.ToString())
+            {
+                throw new KeyNotFoundException("Wallet not created or is locked.");
+            }
+            if(wallet.Point < request.Point)
+            {
+                throw new Exception("Insuffient wallet not enough.");
+            }
+
+            var transactionEntity = new Transaction()
+            {
+               
+            };
+        }*/
+        
         public async Task<TransactionDto> DeleteTransactionAsync(int transId, CancellationToken cancellationToken)
         {
             var trans = await _uow.TransactionRepository.FirstOrDefaultAsync(x => x.TransactionId == transId);
