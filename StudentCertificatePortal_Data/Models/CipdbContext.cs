@@ -757,6 +757,25 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.Username)
                 .HasMaxLength(255)
                 .HasColumnName("username");
+
+            entity.HasMany(d => d.Certs).WithMany(p => p.Users)
+                .UsingEntity<Dictionary<string, object>>(
+                    "UserCertification",
+                    r => r.HasOne<Certification>().WithMany()
+                        .HasForeignKey("CertId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__UserCerti__cert___0A688BB1"),
+                    l => l.HasOne<User>().WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK__UserCerti__user___09746778"),
+                    j =>
+                    {
+                        j.HasKey("UserId", "CertId").HasName("PK__UserCert__699A836196E11C66");
+                        j.ToTable("UserCertification");
+                        j.IndexerProperty<int>("UserId").HasColumnName("user_id");
+                        j.IndexerProperty<int>("CertId").HasColumnName("cert_id");
+                    });
         });
 
         modelBuilder.Entity<Voucher>(entity =>
