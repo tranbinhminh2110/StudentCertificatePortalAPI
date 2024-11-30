@@ -37,12 +37,24 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 wallet.Point -= request.Point;
                 _uow.WalletRepository.Update(wallet);
+                var transaction = new Transaction()
+                {
+                    TransDesription = $"Transaction for Wallet ID {request.WalletId} with {request.Point} points has been refunded. The new balance is {wallet.Point} points.",
+                    Amount = request.Point * 1000,
+                    TransStatus = Enums.EnumTransaction.Refunded.ToString(),
+                    WalletId = request.WalletId,
+                    Point = -request.Point,
+                };
+                await _uow.TransactionRepository.AddAsync(transaction);
                 await _uow.Commit(cancellationToken);
+
                 var emailSubject = "Refund Processed Successfully";
                 var emailBody = $"Dear {wallet.User.Fullname},\n\n" +
                                 $"Your refund request of {request.Point} points has been processed successfully. " +
                                 $"Your current wallet balance is {wallet.Point} points.\n\nThank you.";
                 await _emailService.SendEmailAsync(wallet.User.Email, emailSubject, emailBody);
+
+
                 return true;
             }
             catch(Exception ex)
@@ -54,7 +66,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<bool> SendRequestRefund(RefundRequest request, CancellationToken cancellationToken)
         {
-            var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.WalletId == request.WalletId);
+            var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.WalletId == request.WalletId, cancellationToken, include: w => w.Include(u => u.User)) ;
             if(wallet == null) { throw new KeyNotFoundException("Wallet not found!"); }
             
             if (request.Point > wallet.Point)
@@ -64,7 +76,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var notification = new Notification
             {
                 NotificationName = "Refund Request",
-                NotificationDescription = $"A refund request for Wallet ID {request.WalletId} with {request.Point} points has been created and is pending approval.",
+                NotificationDescription = $"A refund request for Wallet ID {request.WalletId} (Name: {wallet.User.Fullname} with {request.Point} points has been created and is pending approval.",
                 CreationDate = DateTime.UtcNow,
                 Role = "Admin",
                 IsRead = false,
