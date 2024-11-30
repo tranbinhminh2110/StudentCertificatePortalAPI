@@ -6,5 +6,6 @@
         Success = 2,
         Failed = 3,
         Canceled = 4,
+        Refunded = 5,
     }
 }

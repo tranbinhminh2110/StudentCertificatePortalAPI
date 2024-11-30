@@ -11,7 +11,7 @@ namespace StudentCertificatePortal_API.Controllers
         private readonly IRefundService _service;
         public RefundController(IRefundService service) { _service = service; }
 
-        [HttpPost]
+        [HttpPost("SendRequestRefund")]
         public async Task<IActionResult> RequestRefund ([FromBody] RefundRequest request)
         {
             if (!ModelState.IsValid)
