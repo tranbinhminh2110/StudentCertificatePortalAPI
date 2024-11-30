@@ -14,5 +14,6 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<UserDto> DeleteUserByIdAsync(int userId, CancellationToken cancellationToken);
 
         Task<UserDto> ChangeStatusAccountAsync(int userId, CancellationToken cancellationToken);
+        Task<bool> SelectedCertForUser(CreateCertForUserRequest request, CancellationToken cancellationToken);
     }
 }

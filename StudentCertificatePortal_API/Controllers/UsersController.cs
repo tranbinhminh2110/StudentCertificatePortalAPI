@@ -8,7 +8,7 @@ using StudentCertificatePortal_API.Services.Interface;
 
 namespace StudentCertificatePortal_API.Controllers
 {
-    public class UsersController: ApiControllerBase
+    public class UsersController : ApiControllerBase
     {
         private readonly IUserService _service;
         private readonly IMapper _mapper;
@@ -60,6 +60,44 @@ namespace StudentCertificatePortal_API.Controllers
         {
             var result = await _service.ChangeStatusAccountAsync(userId, new CancellationToken());
             return Ok(Result<UserDto>.Succeed(result));
+        }
+
+        [HttpPost("select-certifications")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> SelectCertificationsForUser(
+        [FromBody] CreateCertForUserRequest request,
+        CancellationToken cancellationToken)
+        {
+            if (request == null || request.UserId <= 0 ||
+            request.CertificationId == null || !request.CertificationId.Any())
+            {
+                return BadRequest("Invalid request parameters.");
+            }
+
+            try
+            {
+                bool result = await _service.SelectedCertForUser(request, cancellationToken);
+
+                if (result)
+                {
+                    return Ok("Certifications successfully selected for the user.");
+                }
+                else
+                {
+                    return BadRequest("Failed to select certifications for the user.");
+                }
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "An unexpected error occurred.");
+            }
         }
     }
 }
