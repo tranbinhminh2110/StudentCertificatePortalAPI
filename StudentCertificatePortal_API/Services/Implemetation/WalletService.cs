@@ -127,7 +127,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                             foreach (var datapmt in paymentResponse.Data.Transactions)
                             {
-                                transaction.TransDesription += $"Payment for Order #{paymentResponse.Data.OrderCode} - Account: {datapmt.AccountNumber} on {datapmt.TransactionDateTime:yyyy-MM-dd HH:mm}.";
+                                transaction.TransDesription += $"Payment for Order #{paymentResponse.Data.OrderCode} - A refund of {datapmt.Amount/1000} points has been processed. The new balance is {wallet.Point} points.";
                             }
 
                             wallet.Point += transaction.Point;

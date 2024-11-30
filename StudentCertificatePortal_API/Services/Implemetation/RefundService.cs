@@ -39,7 +39,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 _uow.WalletRepository.Update(wallet);
                 var transaction = new Transaction()
                 {
-                    TransDesription = $"Transaction for Wallet ID {request.WalletId} with {request.Point} points has been refunded. The new balance is {wallet.Point} points.",
+                    TransDesription = $"A refund of {request.Point} points has been processed. The new balance is {wallet.Point} points.",
                     Amount = request.Point * 1000,
                     TransStatus = Enums.EnumTransaction.Refunded.ToString(),
                     WalletId = request.WalletId,
@@ -76,7 +76,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var notification = new Notification
             {
                 NotificationName = "Refund Request",
-                NotificationDescription = $"A refund request for Wallet ID {request.WalletId} (Name: {wallet.User.Fullname} with {request.Point} points has been created and is pending approval.",
+                NotificationDescription = $"A refund request for {wallet.User.Fullname} with {request.Point} points has been created and is pending approval.",
                 CreationDate = DateTime.UtcNow,
                 Role = "Admin",
                 IsRead = false,
