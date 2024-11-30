@@ -44,4 +44,6 @@ public partial class User
     public virtual ICollection<Score> Scores { get; set; } = new List<Score>();
 
     public virtual Wallet? Wallet { get; set; }
+
+    public virtual ICollection<Certification> Certs { get; set; } = new List<Certification>();
 }
