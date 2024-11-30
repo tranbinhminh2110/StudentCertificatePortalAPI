@@ -71,7 +71,7 @@ builder.Services.AddCors(options =>
 });
 
 //Add Validation && not use "ModelStateInvalidFilter"
-
+    
 builder.Services.Configure<ApiBehaviorOptions>(opts =>
 {
     opts.SuppressModelStateInvalidFilter = true;
@@ -150,6 +150,7 @@ builder.Services.AddScoped<ITopSearchService, TopSearchService>();
 builder.Services.AddScoped<IScoreService, ScoreService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ForbiddenWordsService>();
+builder.Services.AddScoped<IRefundService, RefundService>();
 builder.Services.AddSingleton<IRedisService>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
