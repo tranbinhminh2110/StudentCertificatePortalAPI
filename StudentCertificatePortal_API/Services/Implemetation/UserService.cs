@@ -37,7 +37,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<UserDto> ChangeStatusAccountAsync(int userId, CancellationToken cancellationToken)
         {
             var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == userId);
-            if(user == null)
+            if (user == null)
             {
                 throw new KeyNotFoundException("User not found.");
             }
@@ -80,8 +80,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             var addedUser = await _uow.UserRepository.AddAsync(userEntity);
             await _uow.Commit(cancellationToken);
-            var cartRequest = new CreateCartRequest { UserId = addedUser.UserId }; 
-            var cartDto = await _cartservice.CreateCartAsync(cartRequest, cancellationToken); 
+            var cartRequest = new CreateCartRequest { UserId = addedUser.UserId };
+            var cartDto = await _cartservice.CreateCartAsync(cartRequest, cancellationToken);
             return _mapper.Map<UserDto>(addedUser);
         }
 
@@ -104,7 +104,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 Email = request.Email?.Trim(),
                 Fullname = request.Fullname?.Trim(),
                 Dob = request.Dob,
-                Address = request.Address?.Trim(), 
+                Address = request.Address?.Trim(),
                 PhoneNumber = request.PhoneNumber?.Trim(),
                 Role = request.Role,
                 Status = request.Status,
@@ -129,9 +129,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         .Include(c => c.ExamsEnrollments)
                         .Include(c => c.Cart).Include(c => c.Notifications).Include(c => c.Scores));
 
-            
 
-            if(user == null)
+
+            if (user == null)
             {
                 throw new KeyNotFoundException("User not found.");
             }
@@ -139,11 +139,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             user.Feedbacks?.Clear();
             user.CoursesEnrollments?.Clear();
             user.ExamsEnrollments?.Clear();
-            
+
             user.Notifications?.Clear();
             user.Scores?.Clear();
             var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.UserId == user.UserId);
-            if(wallet != null)
+            if (wallet != null)
             {
                 _uow.WalletRepository.Delete(wallet);
                 await _uow.Commit(cancellationToken);
@@ -184,6 +184,41 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
 
             return _mapper.Map<UserDto>(result);
+        }
+
+        public async Task<bool> SelectedCertForUser(CreateCertForUserRequest request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken, include: u => u.Include(c => c.Certs));
+
+                if (user is null || user.Status == false) { throw new KeyNotFoundException("User not found or deactived."); }
+
+                foreach (var certId in request.CertificationId)
+                {
+                    var certExisting = await _uow.CertificationRepository.FirstOrDefaultAsync(
+                        x => x.CertId == certId,
+                        cancellationToken
+                    );
+                    if (certExisting == null)
+                    {
+                        throw new KeyNotFoundException($"Certification with ID {certId} not found.");
+                    }
+
+                    if (user.Certs.Any(c => c.CertId == certId))
+                    {
+                        continue;
+                    }
+
+                    user.Certs.Add(certExisting);
+                    await _uow.Commit(cancellationToken);   
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
 
         public async Task<UserDto> UpdateUserAsync(int userId, UpdateUserRequest request, CancellationToken cancellationToken)
