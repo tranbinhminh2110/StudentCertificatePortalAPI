@@ -5,7 +5,9 @@ using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_API.Utils;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
+using System.Text;
 using System.Threading;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace StudentCertificatePortal_API.Services.Implemetation
 {
@@ -73,7 +75,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 return false;
             }
-            var notification = new Notification
+            /*var notification = new Notification
             {
                 NotificationName = "Refund Request",
                 NotificationDescription = $"A refund request for {wallet.User.Fullname} with {request.Point} points has been created and is pending approval.",
@@ -85,7 +87,35 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             await _uow.NotificationRepository.AddAsync(notification);
             await _uow.Commit(cancellationToken);
             var notifications = await _notificationService.GetNotificationByRoleAsync("Admin", new CancellationToken());
-            await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);*/
+            try
+            {
+                string adminEmail = "unicert79@gmail.com";
+                var emailSubject = "Refund Request Created";
+                var emailBody = new StringBuilder();
+                emailBody.AppendLine("Dear Admin,");
+                emailBody.AppendLine();
+                emailBody.AppendLine($"A refund request has been created for the user {wallet.User.Fullname}.");
+                emailBody.AppendLine();
+                emailBody.AppendLine("Refund Details:");
+                emailBody.AppendLine($"- User Name: {wallet.User.Fullname}");
+                emailBody.AppendLine($"- Account Number: {request.BankAccount.AccountNumber}");
+                emailBody.AppendLine($"- Bank Name: {request.BankAccount.BankName}");
+                emailBody.AppendLine($"- Points Requested: {request.Point}");
+                emailBody.AppendLine($"- Wallet Balance: {wallet.Point}");
+                emailBody.AppendLine();
+                emailBody.AppendLine("Please process this request as soon as possible.");
+                emailBody.AppendLine();
+                emailBody.AppendLine("Thank you.");
+
+
+                await _emailService.SendEmailAsync(adminEmail, emailSubject, emailBody.ToString());
+            }
+            catch(Exception ex) {
+                
+            }
+
+
 
             return true;
         }

@@ -11,5 +11,8 @@ namespace StudentCertificatePortal_API.Contracts.Requests
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Point must be greater than 0.")]
         public int Point { get; set; }
+
+        [Required]
+        public BankAccountRequest BankAccount { get; set; }
     }
 }

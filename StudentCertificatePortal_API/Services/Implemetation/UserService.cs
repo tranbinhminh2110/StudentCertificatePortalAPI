@@ -186,40 +186,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return _mapper.Map<UserDto>(result);
         }
 
-        public async Task<bool> SelectedCertForUser(CreateCertForUserRequest request, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken, include: u => u.Include(c => c.Certs));
-
-                if (user is null || user.Status == false) { throw new KeyNotFoundException("User not found or deactived."); }
-
-                foreach (var certId in request.CertificationId)
-                {
-                    var certExisting = await _uow.CertificationRepository.FirstOrDefaultAsync(
-                        x => x.CertId == certId,
-                        cancellationToken
-                    );
-                    if (certExisting == null)
-                    {
-                        throw new KeyNotFoundException($"Certification with ID {certId} not found.");
-                    }
-
-                    if (user.Certs.Any(c => c.CertId == certId))
-                    {
-                        continue;
-                    }
-
-                    user.Certs.Add(certExisting);
-                    await _uow.Commit(cancellationToken);   
-                }
-                return true;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-        }
+        
 
         public async Task<UserDto> UpdateUserAsync(int userId, UpdateUserRequest request, CancellationToken cancellationToken)
         {
