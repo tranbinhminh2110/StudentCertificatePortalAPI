@@ -36,21 +36,21 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             _notificationService = notificationService;
         }
 
-            public async Task<JobPositionDto> CreateJobPositionAsync(CreateJobPositionRequest request, CancellationToken cancellationToken)
+        public async Task<JobPositionDto> CreateJobPositionAsync(CreateJobPositionRequest request, CancellationToken cancellationToken)
+        {
+            var validation = await _addJobPositonValidator.ValidateAsync(request, cancellationToken);
+            if (!validation.IsValid)
             {
-                var validation = await _addJobPositonValidator.ValidateAsync(request, cancellationToken);
-                if (!validation.IsValid)
-                {
-                    throw new RequestValidationException(validation.Errors);
-                }
-                var jobEntity = new JobPosition()
-                {
-                    JobPositionId = new Random().Next(1, 10000),
-                    JobPositionCode = request.JobPositionCode,
-                    JobPositionName = request.JobPositionName,
-                    JobPositionDescription = request.JobPositionDescription,
-                    JobPositionPermission = "Pending",
-                };
+                throw new RequestValidationException(validation.Errors);
+            }
+            var jobEntity = new JobPosition()
+            {
+                JobPositionId = new Random().Next(1, 10000),
+                JobPositionCode = request.JobPositionCode,
+                JobPositionName = request.JobPositionName,
+                JobPositionDescription = request.JobPositionDescription,
+                JobPositionPermission = "Pending",
+            };
             if (request.MajorId != null && request.MajorId.Any())
             {
                 foreach (var majorId in request.MajorId)
@@ -361,7 +361,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 {
                     NotificationName = "Job Position Updated",
                     NotificationDescription = $"The job position '{job.JobPositionName}' has been updated and is pending approval.",
-                    NotificationImage = null,  
+                    NotificationImage = null,
                     CreationDate = DateTime.UtcNow,
                     Role = "Manager",
                     IsRead = false,
@@ -377,7 +377,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                 var jobPositionDto = _mapper.Map<JobPositionDto>(job);
                 jobPositionDto.MajorId = job.Majors.Select(m => m.MajorId).ToList();
-                jobPositionDto.CertId = job.Certs.Select(c => c.CertId).ToList(); 
+                jobPositionDto.CertId = job.Certs.Select(c => c.CertId).ToList();
 
                 return jobPositionDto;
             }
@@ -473,5 +473,26 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return jobPositionDtoList;
         }
 
+        public async Task<List<JobPositionDto>> FilterJobPositionByRecommended(int userId, CancellationToken cancellationToken)
+        {
+            var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken, include: u => u.Include(c => c.Certs));
+
+            if (user == null || user.Status == false) { throw new KeyNotFoundException("User not found or deactive."); }
+            var userCerts = user.Certs.Select(c => c.CertId).ToList();
+            var jobs = await _uow.JobPositionRepository.WhereAsync(j => true, cancellationToken, include: j => j.Include(c => c.Certs));
+
+            var recommendedJobs = jobs.Select(job => new
+            {
+                Job = job,
+                MatchingCertCount = job.Certs.Count(jobCert => userCerts.Contains(jobCert.CertId)),
+            })
+                .OrderByDescending(j => j.MatchingCertCount)
+                .Select(j => j.Job)
+                .ToList();
+            var recommendedJobDtos = _mapper.Map<List<JobPositionDto>>(recommendedJobs);
+
+            return recommendedJobDtos;
+
+        }
     }
 }

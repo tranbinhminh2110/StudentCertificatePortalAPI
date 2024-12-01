@@ -65,6 +65,23 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _jobPositionService.GetJobPositionByTwoIdAsync(jobPositionId, organizeId, new CancellationToken());
             return Ok(Result<List<JobPositionTwoIdDto>>.Succeed(result));
         }
+        [HttpGet("recommended/{userId}")]
+        public async Task<IActionResult> GetRecommendedJob(int userId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var recommendedJob = await _jobPositionService.FilterJobPositionByRecommended(userId, cancellationToken);
 
+                return Ok(recommendedJob); 
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message }); 
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred.", details = ex.Message });
+            }
+        }
     }
 }
