@@ -151,6 +151,7 @@ builder.Services.AddScoped<IScoreService, ScoreService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ForbiddenWordsService>();
 builder.Services.AddScoped<IRefundService, RefundService>();
+builder.Services.AddScoped<ISelectedCertService, SelectedCertService>();
 builder.Services.AddSingleton<IRedisService>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
