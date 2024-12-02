@@ -14,18 +14,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
     public class RefundService : IRefundService
     {
         private readonly IUnitOfWork _uow;
-        private readonly INotificationService _notificationService;
-        private readonly IHubContext<NotificationHub> _hubContext;
         public readonly IEmailService _emailService;
-        public RefundService(IUnitOfWork uow, INotificationService notificationService, IHubContext<NotificationHub> hubContext, IEmailService emailService)
+        public RefundService(IUnitOfWork uow, IEmailService emailService)
         {
             _uow = uow;
-            _notificationService = notificationService;
-            _hubContext = hubContext;
             _emailService = emailService;
         }
 
-        public async Task<bool> ProcessRefund(RefundRequest request, CancellationToken cancellationToken)
+        public async Task<bool> ProcessRefund(ProcessRefundRequest request, CancellationToken cancellationToken)
         {
             var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.WalletId == request.WalletId, cancellationToken, include: w => w.Include(c => c.User));
             if (wallet == null) { throw new KeyNotFoundException("Wallet not found!"); }

@@ -45,7 +45,7 @@ namespace StudentCertificatePortal_API.Controllers
             }
         }
         [HttpPost("ProcessRefund")]
-        public async Task<IActionResult> ProcessRefund([FromBody] RefundRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> ProcessRefund([FromBody] ProcessRefundRequest request, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid)
             {
