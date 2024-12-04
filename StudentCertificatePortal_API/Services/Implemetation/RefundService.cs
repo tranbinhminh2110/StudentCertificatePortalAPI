@@ -95,8 +95,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 emailBody.AppendLine();
                 emailBody.AppendLine("Refund Details:");
                 emailBody.AppendLine($"- User Name: {wallet.User.Fullname}");
-                emailBody.AppendLine($"- Account Number: {request.BankAccount.AccountNumber}");
                 emailBody.AppendLine($"- Bank Name: {request.BankAccount.BankName}");
+                emailBody.AppendLine($"- Account Number: {request.BankAccount.AccountNumber}");
                 emailBody.AppendLine($"- Points Requested: {request.Point}");
                 emailBody.AppendLine($"- Wallet Balance: {wallet.Point}");
                 emailBody.AppendLine();
