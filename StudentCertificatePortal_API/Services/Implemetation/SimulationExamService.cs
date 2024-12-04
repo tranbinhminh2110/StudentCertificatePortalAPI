@@ -67,7 +67,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CertId = request.CertId,
                 Duration = request.Duration,
                 QuestionCount = request.QuestionCount,
-                ExamPermission = Enums.EnumPermission.Pending.ToString()
+                ExamPermission = Enums.EnumPermission.Pending.ToString(),
+                PassingScore = request.PassingScore
             };
 
             var result = await _uow.SimulationExamRepository.AddAsync(exam);
@@ -267,6 +268,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             exam.Duration = request.Duration;
             exam.QuestionCount = request.QuestionCount;
             exam.ExamPermission = Enums.EnumPermission.Pending.ToString();
+            exam.PassingScore = request.PassingScore;
 
             float? totalDiscount = 1;
 
