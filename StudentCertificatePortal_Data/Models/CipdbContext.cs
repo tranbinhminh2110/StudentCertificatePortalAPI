@@ -608,6 +608,7 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.ExamPermission)
                 .HasMaxLength(100)
                 .HasColumnName("exam_permission");
+            entity.Property(e => e.PassingScore).HasColumnName("passing_score");
             entity.Property(e => e.QuestionCount).HasColumnName("question_count");
 
             entity.HasOne(d => d.Cert).WithMany(p => p.SimulationExams)

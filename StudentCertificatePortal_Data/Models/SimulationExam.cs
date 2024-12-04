@@ -27,6 +27,8 @@ public partial class SimulationExam
 
     public int? QuestionCount { get; set; }
 
+    public int PassingScore { get; set; }
+
     public virtual Certification? Cert { get; set; }
 
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
