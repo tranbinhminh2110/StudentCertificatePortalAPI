@@ -25,6 +25,7 @@ namespace StudentCertificatePortal_API.DTOs
         public int? QuestionCount { get; set; }
 
         public int? FeedbackCount { get; set; }
+        public int PassingScore { get; set; }
 
         public List<ExamList> ListQuestions { get; set; } = new List<ExamList>();
         public List<CertificationDetailsDto> CertificationDetails { get; set; } = new List<CertificationDetailsDto>();
