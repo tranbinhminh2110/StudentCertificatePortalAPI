@@ -25,7 +25,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         private readonly IHubContext<NotificationHub> _hubContext;
         private readonly INotificationService _notificationService;
 
-        public FeedbackService(IUnitOfWork uow, IMapper mapper, IValidator<CreateFeedbackRequest> addFeedbackValidator, IValidator<UpdateFeedbackRequest> updateFeedbackValidator, 
+        public FeedbackService(IUnitOfWork uow, IMapper mapper, IValidator<CreateFeedbackRequest> addFeedbackValidator, IValidator<UpdateFeedbackRequest> updateFeedbackValidator,
             ForbiddenWordsService forbiddenWordsService, IHubContext<NotificationHub> hubContext, INotificationService notificationService)
         {
             _uow = uow;
@@ -55,6 +55,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new KeyNotFoundException("SimulationExam not found.");
             }
+            request.FeedbackRatingvalue ??= 0;
 
             bool containsForbiddenWord = _forbiddenWordsService.ContainsForbiddenWords(request.FeedbackDescription);
 
@@ -64,10 +65,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 UserId = request.UserId,
                 ExamId = request.ExamId,
+                FeedbackRatingvalue = request.FeedbackRatingvalue,
                 FeedbackDescription = request.FeedbackDescription,
                 FeedbackImage = request.FeedbackImage,
                 FeedbackCreatedAt = request.FeedbackCreatedAt,
-                FeedbackPermission = feedbackPermission, 
+                FeedbackPermission = feedbackPermission,
 
             };
             var result = await _uow.FeedbackRepository.AddAsync(feedbackEntity);
@@ -92,12 +94,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
             }
             return _mapper.Map<FeedbackDto>(result);
-            
+
         }
 
         public async Task<FeedbackDto> DeleteFeedbackAsync(int feedbackId, CancellationToken cancellationToken)
         {
-            var result = await _uow.FeedbackRepository.FirstOrDefaultAsync(x => x.FeedbackId  == feedbackId, cancellationToken);
+            var result = await _uow.FeedbackRepository.FirstOrDefaultAsync(x => x.FeedbackId == feedbackId, cancellationToken);
             if (result is null)
             {
                 throw new KeyNotFoundException("Feedback not found.");
@@ -115,7 +117,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var feedbackDtos = result.Select(feedback =>
             {
                 var feedbackDto = _mapper.Map<FeedbackDto>(feedback);
-                
+
                 // Ánh xạ thông tin UserDetailsDto vào FeedbackDto
                 feedbackDto.UserDetails = feedback.User != null ? new UserDetailsDto
                 {
@@ -218,7 +220,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 x => x.Exam != null && x.Exam.CertId == certId, cancellationToken,
                 include: query => query.Include(f => f.Exam)
                                        .ThenInclude(e => e.Cert)
-                                       .Include(f => f.User) 
+                                       .Include(f => f.User)
             );
 
             if (result == null || !result.Any())
@@ -254,8 +256,13 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new KeyNotFoundException("Feedback not found.");
             }
+            if (request.FeedbackRatingvalue == null || request.FeedbackRatingvalue == 0)
+            {
+                request.FeedbackRatingvalue = feedback.FeedbackRatingvalue;
+            }
             bool containsForbiddenWord = _forbiddenWordsService.ContainsForbiddenWords(request.FeedbackDescription);
             feedback.FeedbackPermission = !containsForbiddenWord;
+            feedback.FeedbackRatingvalue = request.FeedbackRatingvalue.Value;
             feedback.FeedbackDescription = request.FeedbackDescription;
             feedback.FeedbackImage = request.FeedbackImage;
 
@@ -295,6 +302,29 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
             return _mapper.Map<FeedbackDto>(feedback);
         }
-        
+        public async Task<AverageRatingDto> CalculateAverageFeedbackRatingAsync(int simulationExamId, CancellationToken cancellationToken)
+        {
+            var feedbacks = await _uow.FeedbackRepository.WhereAsync(
+                x => x.ExamId == simulationExamId &&
+                     x.FeedbackRatingvalue >= 1 && x.FeedbackRatingvalue <= 5 &&
+                     x.FeedbackPermission == true,
+                cancellationToken: cancellationToken);
+
+            if (feedbacks == null || !feedbacks.Any())
+            {
+                throw new KeyNotFoundException("No valid feedback found for this exam.");
+            }
+
+            // Tính toán điểm trung bình và số lượng đánh giá
+            var averageRating = feedbacks.Average(f => f.FeedbackRatingvalue) ?? 0;
+            var feedbackCount = feedbacks.Count();
+
+            // Trả về đối tượng AverageRatingDto
+            return new AverageRatingDto
+            {
+                AverageRating = averageRating,
+                FeedbackCount = feedbackCount
+            };
+        }
     }
 }
