@@ -368,7 +368,6 @@ public partial class CipdbContext : DbContext
                 .HasColumnType("text")
                 .HasColumnName("feedback_image");
             entity.Property(e => e.FeedbackPermission).HasColumnName("feedback_permission");
-            entity.Property(e => e.FeedbackRatingvalue).HasColumnName("feedback_ratingvalue");
             entity.Property(e => e.UserId).HasColumnName("user_id");
 
             entity.HasOne(d => d.Exam).WithMany(p => p.Feedbacks)

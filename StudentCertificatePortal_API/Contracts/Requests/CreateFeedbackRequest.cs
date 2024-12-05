@@ -5,7 +5,7 @@
         public int? UserId { get; set; }
 
         public int? ExamId { get; set; }
-        public int? FeedbackRatingvalue { get; set; }
+
         public string? FeedbackDescription { get; set; }
 
         public string? FeedbackImage { get; set; }

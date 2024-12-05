@@ -19,8 +19,6 @@ public partial class Feedback
 
     public bool? FeedbackPermission { get; set; }
 
-    public int? FeedbackRatingvalue { get; set; }
-
     public virtual SimulationExam? Exam { get; set; }
 
     public virtual User? User { get; set; }

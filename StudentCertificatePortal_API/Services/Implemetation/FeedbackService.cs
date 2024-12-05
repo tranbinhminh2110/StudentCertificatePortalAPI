@@ -55,7 +55,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new KeyNotFoundException("SimulationExam not found.");
             }
-            request.FeedbackRatingvalue ??= 0;
 
             bool containsForbiddenWord = _forbiddenWordsService.ContainsForbiddenWords(request.FeedbackDescription);
 
@@ -65,7 +64,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 UserId = request.UserId,
                 ExamId = request.ExamId,
-                FeedbackRatingvalue = request.FeedbackRatingvalue,
                 FeedbackDescription = request.FeedbackDescription,
                 FeedbackImage = request.FeedbackImage,
                 FeedbackCreatedAt = request.FeedbackCreatedAt,
@@ -256,13 +254,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new KeyNotFoundException("Feedback not found.");
             }
-            if (request.FeedbackRatingvalue == null || request.FeedbackRatingvalue == 0)
-            {
-                request.FeedbackRatingvalue = feedback.FeedbackRatingvalue;
-            }
             bool containsForbiddenWord = _forbiddenWordsService.ContainsForbiddenWords(request.FeedbackDescription);
             feedback.FeedbackPermission = !containsForbiddenWord;
-            feedback.FeedbackRatingvalue = request.FeedbackRatingvalue.Value;
             feedback.FeedbackDescription = request.FeedbackDescription;
             feedback.FeedbackImage = request.FeedbackImage;
 
