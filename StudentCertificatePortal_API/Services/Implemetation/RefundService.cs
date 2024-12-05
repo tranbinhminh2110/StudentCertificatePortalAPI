@@ -1,13 +1,11 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
-using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_API.Utils;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 
@@ -16,13 +14,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
     public class RefundService : IRefundService
     {
         private readonly IUnitOfWork _uow;
-        private readonly IEmailService _emailService;
-        private readonly IHttpClientFactory _httpClientFactory;
-        public RefundService(IUnitOfWork uow, IEmailService emailService, IHttpClientFactory httpClientFactory)
+        public readonly IEmailService _emailService;
+        public RefundService(IUnitOfWork uow, IEmailService emailService)
         {
             _uow = uow;
             _emailService = emailService;
-            _httpClientFactory = httpClientFactory;
         }
 
         public async Task<bool> ProcessRefund(ProcessRefundRequest request, CancellationToken cancellationToken)
@@ -68,41 +64,28 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<bool> SendRequestRefund(RefundRequest request, CancellationToken cancellationToken)
         {
-            var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.WalletId == request.WalletId, cancellationToken, include: w => w.Include(u => u.User));
-            if (wallet == null) throw new KeyNotFoundException("Wallet not found!");
-
+            var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.WalletId == request.WalletId, cancellationToken, include: w => w.Include(u => u.User)) ;
+            if(wallet == null) { throw new KeyNotFoundException("Wallet not found!"); }
+            
             if (request.Point > wallet.Point)
             {
                 return false;
             }
+            /*var notification = new Notification
+            {
+                NotificationName = "Refund Request",
+                NotificationDescription = $"A refund request for {wallet.User.Fullname} with {request.Point} points has been created and is pending approval.",
+                CreationDate = DateTime.UtcNow,
+                Role = "Admin",
+                IsRead = false,
+            };
 
+            await _uow.NotificationRepository.AddAsync(notification);
+            await _uow.Commit(cancellationToken);
+            var notifications = await _notificationService.GetNotificationByRoleAsync("Admin", new CancellationToken());
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);*/
             try
             {
-                var client = _httpClientFactory.CreateClient();
-                var response = await client.GetAsync("https://api.httzip.com/api/bank/list");
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new Exception($"Failed to fetch banks data. Status code: {(int)response.StatusCode}");
-                }
-
-                var responseData = await response.Content.ReadAsStringAsync();
-
-                var banksResponse = JsonSerializer.Deserialize<ApiResponse<BankDto>>(responseData, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                var banks = banksResponse?.Data ?? new List<BankDto>();
-
-                var bank = banks.FirstOrDefault(b => b.Code == request.BankAccount.BankCode);
-                if (bank == null)
-                {
-                    throw new Exception("Bank with the provided code not found.");
-                }
-
-                string bankName = bank.Name;
-
                 string adminEmail = "unicert79@gmail.com";
                 var emailSubject = "Refund Request Created";
                 var emailBody = new StringBuilder();
@@ -112,7 +95,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 emailBody.AppendLine();
                 emailBody.AppendLine("Refund Details:");
                 emailBody.AppendLine($"- User Name: {wallet.User.Fullname}");
-                emailBody.AppendLine($"- Bank Name: {bankName}");
+                emailBody.AppendLine($"- Bank Name: {request.BankAccount.BankName}");
                 emailBody.AppendLine($"- Account Number: {request.BankAccount.AccountNumber}");
                 emailBody.AppendLine($"- Points Requested: {request.Point}");
                 emailBody.AppendLine($"- Wallet Balance: {wallet.Point}");
@@ -121,17 +104,18 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 emailBody.AppendLine();
                 emailBody.AppendLine("Thank you.");
 
+
                 await _emailService.SendEmailAsync(adminEmail, emailSubject, emailBody.ToString());
             }
-            catch (Exception ex)
-            {
-                return false;
+            catch(Exception ex) {
+                
             }
+
+
 
             return true;
         }
 
-
-
+        
     }
 }
