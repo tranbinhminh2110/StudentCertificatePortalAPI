@@ -1,4 +1,6 @@
-﻿using StudentCertificatePortal_API.Contracts.Requests;
+﻿using Microsoft.AspNetCore.Mvc;
+using StudentCertificatePortal_API.Commons;
+using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 
 namespace StudentCertificatePortal_API.Services.Interface
@@ -13,7 +15,6 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<List<FeedbackDto>> GetFeedbackByUserIdAsync(int userId, CancellationToken cancellationToken);
         Task<List<FeedbackDto>> GetFeedbackByExamIdAsync(int examId, CancellationToken cancellationToken);
         Task<List<FeedbackDto>> GetFeedbackByCertIdAsync(int certId, CancellationToken cancellationToken);
-        Task<(double averageRating, int feedbackCount)> CalculateAverageFeedbackRatingAsync(int simulationExamId, CancellationToken cancellationToken);
-
+        Task<AverageRatingDto> CalculateAverageFeedbackRatingAsync(int simulationExamId, CancellationToken cancellationToken);
     }
 }
