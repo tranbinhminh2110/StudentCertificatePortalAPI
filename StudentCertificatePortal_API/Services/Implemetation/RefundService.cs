@@ -6,6 +6,7 @@ using StudentCertificatePortal_API.Utils;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 
