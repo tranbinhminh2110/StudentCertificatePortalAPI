@@ -302,29 +302,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
             return _mapper.Map<FeedbackDto>(feedback);
         }
-        public async Task<AverageRatingDto> CalculateAverageFeedbackRatingAsync(int simulationExamId, CancellationToken cancellationToken)
-        {
-            var feedbacks = await _uow.FeedbackRepository.WhereAsync(
-                x => x.ExamId == simulationExamId &&
-                     x.FeedbackRatingvalue >= 1 && x.FeedbackRatingvalue <= 5 &&
-                     x.FeedbackPermission == true,
-                cancellationToken: cancellationToken);
-
-            if (feedbacks == null || !feedbacks.Any())
-            {
-                throw new KeyNotFoundException("No valid feedback found for this exam.");
-            }
-
-            // Tính toán điểm trung bình và số lượng đánh giá
-            var averageRating = feedbacks.Average(f => f.FeedbackRatingvalue) ?? 0;
-            var feedbackCount = feedbacks.Count();
-
-            // Trả về đối tượng AverageRatingDto
-            return new AverageRatingDto
-            {
-                AverageRating = averageRating,
-                FeedbackCount = feedbackCount
-            };
-        }
+        
     }
 }
