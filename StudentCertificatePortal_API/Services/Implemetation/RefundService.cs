@@ -101,6 +101,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     throw new Exception("Bank with the provided code not found.");
                 }
 
+
+
                 string bankName = bank.Name;
 
                 string adminEmail = "unicert79@gmail.com";
