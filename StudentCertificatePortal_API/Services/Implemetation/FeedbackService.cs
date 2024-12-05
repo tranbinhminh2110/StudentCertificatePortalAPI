@@ -302,5 +302,24 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
             return _mapper.Map<FeedbackDto>(feedback);
         }
+        public async Task<(double averageRating, int feedbackCount)> CalculateAverageFeedbackRatingAsync(int simulationExamId, CancellationToken cancellationToken)
+        {
+            var feedbacks = await _uow.FeedbackRepository.WhereAsync(
+                x => x.ExamId == simulationExamId &&
+                     x.FeedbackRatingvalue >= 1 && x.FeedbackRatingvalue <= 5 &&
+                     x.FeedbackPermission == true, 
+                cancellationToken: cancellationToken);
+
+            if (feedbacks == null || !feedbacks.Any())
+            {
+                throw new KeyNotFoundException("No valid feedback found for this exam.");
+            }
+
+            var averageRating = feedbacks.Average(f => f.FeedbackRatingvalue) ?? 0.0;
+            var feedbackCount = feedbacks.Count(); 
+
+            return (averageRating, feedbackCount);
+        }
+
     }
 }
