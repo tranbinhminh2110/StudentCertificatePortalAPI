@@ -6,6 +6,7 @@ namespace StudentCertificatePortal_API.DTOs
     public class FeedbackDto : IMapFrom<Feedback>
     {
         public int FeedbackId { get; set; }
+        public int? FeedbackRatingvalue { get; set; }
 
         public string? FeedbackDescription { get; set; }
 
