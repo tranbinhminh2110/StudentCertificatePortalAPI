@@ -65,11 +65,6 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.GetFeedbackByCertIdAsync(certId, new CancellationToken());
             return Ok(Result<List<FeedbackDto>>.Succeed(result));
         }
-        [HttpGet("average/{examId:int}")]
-        public async Task<ActionResult<Result<AverageRatingDto>>> GetAverageRatingByExamId([FromRoute] int examId)
-        {
-            var result = await _service.CalculateAverageFeedbackRatingAsync(examId, new CancellationToken());
-            return Ok(Result<AverageRatingDto>.Succeed(result));
-        }
+        
     }
 }
