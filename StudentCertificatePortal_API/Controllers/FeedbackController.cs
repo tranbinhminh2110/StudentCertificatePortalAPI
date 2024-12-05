@@ -65,5 +65,6 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.GetFeedbackByCertIdAsync(certId, new CancellationToken());
             return Ok(Result<List<FeedbackDto>>.Succeed(result));
         }
+        
     }
 }

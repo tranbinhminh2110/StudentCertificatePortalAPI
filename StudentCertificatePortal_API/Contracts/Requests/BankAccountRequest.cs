@@ -6,7 +6,7 @@ namespace StudentCertificatePortal_API.Contracts.Requests
     {
         [Required(ErrorMessage = "Bank name is required.")]
         [StringLength(100, ErrorMessage = "Bank name cannot exceed 100 characters.")]
-        public string BankCode { get; set; }
+        public string BankName { get; set; }
 
 
         [Required(ErrorMessage = "Account number is required.")]
