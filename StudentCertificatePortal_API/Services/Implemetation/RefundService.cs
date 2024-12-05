@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
+using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_API.Utils;
 using StudentCertificatePortal_Data.Models;
@@ -16,10 +17,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
     {
         private readonly IUnitOfWork _uow;
         public readonly IEmailService _emailService;
-        public RefundService(IUnitOfWork uow, IEmailService emailService)
+        private readonly IHttpClientFactory _httpClientFactory;
+        public RefundService(IUnitOfWork uow, IEmailService emailService, IHttpClientFactory httpClientFactory)
         {
             _uow = uow;
             _emailService = emailService;
+            _httpClientFactory = httpClientFactory;
         }
 
         public async Task<bool> ProcessRefund(ProcessRefundRequest request, CancellationToken cancellationToken)
@@ -123,7 +126,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 emailBody.AppendLine();
                 emailBody.AppendLine("Refund Details:");
                 emailBody.AppendLine($"- User Name: {wallet.User.Fullname}");
-                emailBody.AppendLine($"- Bank Name: {request.BankAccount.BankName}");
+                emailBody.AppendLine($"- Bank Name: {bankName}");
                 emailBody.AppendLine($"- Account Number: {request.BankAccount.AccountNumber}");
                 emailBody.AppendLine($"- Points Requested: {request.Point}");
                 emailBody.AppendLine($"- Wallet Balance: {wallet.Point}");
@@ -136,7 +139,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 await _emailService.SendEmailAsync(adminEmail, emailSubject, emailBody.ToString());
             }
             catch(Exception ex) {
-                
+                return false;
             }
 
 
