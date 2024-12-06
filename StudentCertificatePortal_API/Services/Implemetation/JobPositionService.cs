@@ -475,24 +475,55 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<List<JobPositionDto>> FilterJobPositionByRecommended(int userId, CancellationToken cancellationToken)
         {
-            var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken, include: u => u.Include(c => c.Certs));
 
-            if (user == null || user.Status == false) { throw new KeyNotFoundException("User not found or deactive."); }
-            var userCerts = user.Certs.Select(c => c.CertId).ToList();
-            var jobs = await _uow.JobPositionRepository.WhereAsync(j => true, cancellationToken, include: j => j.Include(c => c.Certs));
+            var user = await _uow.UserRepository.FirstOrDefaultAsync(
+                x => x.UserId == userId,
+                cancellationToken,
+                include: u => u.Include(c => c.Certs).ThenInclude(cert => cert.Organize));
 
-            var recommendedJobs = jobs.Select(job => new
+            if (user == null || user.Status == false)
             {
-                Job = job,
-                MatchingCertCount = job.Certs.Count(jobCert => userCerts.Contains(jobCert.CertId)),
-            })
-                .OrderByDescending(j => j.MatchingCertCount)
-                .Select(j => j.Job)
+                throw new KeyNotFoundException("User not found or deactivated.");
+            }
+
+            var userCertIds = user.Certs.Select(c => c.CertId).ToList();
+            var userOrganizeIds = user.Certs
+                .Where(c => c.Organize != null)
+                .Select(c => c.Organize.OrganizeId)
+                .Distinct()
                 .ToList();
-            var recommendedJobDtos = _mapper.Map<List<JobPositionDto>>(recommendedJobs);
+
+            var recommendedJobs = await _uow.JobPositionRepository.WhereAsync(
+                j => j.Certs.Any(cert => userCertIds.Contains(cert.CertId) &&
+                                         cert.Organize != null &&
+                                         userOrganizeIds.Contains(cert.Organize.OrganizeId)),
+                cancellationToken,
+                include: j => j.Include(job => job.Certs).ThenInclude(cert => cert.Organize));
+
+            var recommendedJobDtos = recommendedJobs.Select(job => new JobPositionDto
+            {
+                JobPositionId = job.JobPositionId,
+                JobPositionCode = job.JobPositionCode,
+                JobPositionName = job.JobPositionName,
+                JobPositionDescription = job.JobPositionDescription,
+                JobPositionPermission = job.JobPositionPermission,
+                CertOrganizes = job.Certs
+                    .Where(cert => userCertIds.Contains(cert.CertId) &&
+                                   cert.Organize != null &&
+                                   userOrganizeIds.Contains(cert.Organize.OrganizeId))
+                    .Select(cert => new CertOrganizeDto
+                    {
+                        CertId = cert.CertId,
+                        CertName = cert.CertName,
+                        OrganizeId = cert.Organize.OrganizeId,
+                        OrganizeName = cert.Organize.OrganizeName
+                    })
+                    .ToList()
+            }).ToList();
 
             return recommendedJobDtos;
-
         }
+
+
     }
 }

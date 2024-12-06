@@ -19,6 +19,7 @@ namespace StudentCertificatePortal_API.DTOs
         public List<int>? CertId { get; set; } = new List<int>();
 
         public List<MajorDetailsDto> MajorDetails { get; set; } = new List<MajorDetailsDto>();
+        public List<CertOrganizeDto> CertOrganizes { get; set; } = new List<CertOrganizeDto>();
         public List<CertificationDetailsDto> CertificationDetails { get; set; } = new List<CertificationDetailsDto>();
         public List<CertificationTwoIdDto> CertificationTwoId { get; set; } = new List<CertificationTwoIdDto>();
 
