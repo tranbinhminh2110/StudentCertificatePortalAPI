@@ -6,7 +6,7 @@ namespace StudentCertificatePortal_API.Services.Interface
     public interface IUserService
     {
         Task<UserDto> CreateUserAsync(CreateUserRequest request, CancellationToken cancellationToken);
-        Task<List<UserDto>> GetAll();
+        Task<List<UserDto>> GetAll(CancellationToken cancellationToken);
 
         Task<UserDto> CreateRegisterUserAsync(CreateRegisterUserRequest request, CancellationToken cancellationToken);
         Task<UserDto> GetUserByIdAsync(int userId, CancellationToken cancellationToken);

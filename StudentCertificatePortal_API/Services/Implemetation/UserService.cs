@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
+using StudentCertificatePortal_API.Utils;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
 
@@ -20,11 +22,15 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         private readonly IValidator<UpdateUserRequest> _updateUserValidator;
         private readonly IValidator<CreateRegisterUserRequest> _addregisterUserValidator;
 
+        private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly INotificationService _notificationService;
+
 
         public UserService(IUnitOfWork uow, IMapper mapper,
             IValidator<CreateUserRequest> addUserValidator,
             IValidator<UpdateUserRequest> updateUserValidator,
-            IValidator<CreateRegisterUserRequest> addregisterUserValidator, ICartService cartservice)
+            IValidator<CreateRegisterUserRequest> addregisterUserValidator, ICartService cartservice,
+            IHubContext<NotificationHub> hubContext, INotificationService notificationService)
         {
             _uow = uow;
             _mapper = mapper;
@@ -32,6 +38,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             _updateUserValidator = updateUserValidator;
             _addregisterUserValidator = addregisterUserValidator;
             _cartservice = cartservice;
+            _hubContext = hubContext;
+            _notificationService = notificationService;
         }
 
         public async Task<UserDto> ChangeStatusAccountAsync(int userId, CancellationToken cancellationToken)
@@ -43,11 +51,29 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
 
             user.Status = !user.Status;
+            if (user.Status == true)
+            {
+                user.UserOffenseCount = 0;
+                var notification = new Notification()
+                {
+                    NotificationName = "Account Status Activated",
+                    NotificationDescription = $"The account of user {user.Username} has been activated and reset to 0 violations.",
+                    NotificationImage = user.UserImage,
+                    CreationDate = DateTime.UtcNow,
+                    Role = "Admin",
+                    IsRead = false,
+                };
+                await _uow.NotificationRepository.AddAsync(notification);
+            }
 
             _uow.UserRepository.Update(user);
 
             await _uow.Commit(cancellationToken);
-            return _mapper.Map<UserDto>(user);
+            var userDto = _mapper.Map<UserDto>(user);
+            var notifications = await _notificationService.GetNotificationByRoleAsync("Admin", cancellationToken);
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
+
+            return userDto;
 
         }
 
@@ -168,10 +194,37 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return _mapper.Map<UserDto>(user);
         }
 
-        public async Task<List<UserDto>> GetAll()
+        public async Task<List<UserDto>> GetAll(CancellationToken cancellationToken)
         {
-            var result = await _uow.UserRepository.GetAll();
-            return _mapper.Map<List<UserDto>>(result);
+            var users = await _uow.UserRepository.GetAll();
+
+            foreach (var user in users)
+            {
+                if (user.UserOffenseCount >= 3 && user.Status == true)
+                {
+                    user.Status = false;
+                    _uow.UserRepository.Update(user);
+                    var notification = new Notification()
+                    {
+                        NotificationName = "Account Status Deactivated",
+                        NotificationDescription = $"The account of user {user.Username} has been recorded by the system for 3 or more violations and has been deactivated.",
+                        NotificationImage = user.UserImage,
+                        CreationDate = DateTime.UtcNow,
+                        Role = "Admin",
+                        IsRead = false,
+                    };
+                    await _uow.NotificationRepository.AddAsync(notification);
+                }
+            }
+
+            await _uow.Commit(cancellationToken);
+
+            var usersDto = _mapper.Map<List<UserDto>>(users);
+
+            var notifications = await _notificationService.GetNotificationByRoleAsync("Admin", cancellationToken);
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
+
+            return usersDto;
         }
 
         public async Task<UserDto> GetUserByIdAsync(int userId, CancellationToken cancellationToken)
