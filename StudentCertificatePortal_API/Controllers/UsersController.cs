@@ -22,7 +22,7 @@ namespace StudentCertificatePortal_API.Controllers
         [HttpGet]
         public async Task<ActionResult<Result<List<UserDto>>>> GetAllUser()
         {
-            var result = await _service.GetAll();
+            var result = await _service.GetAll(new CancellationToken());
             return Ok(Result<List<UserDto>>.Succeed(result));
         }
         [HttpGet("{userId:int}")]
