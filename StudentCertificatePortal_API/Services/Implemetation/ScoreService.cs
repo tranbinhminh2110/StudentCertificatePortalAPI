@@ -13,15 +13,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
     {
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
+        private readonly ITextSimilarityService _similarityService;
 
-        public ScoreService(IUnitOfWork uow, IMapper mapper)
+        public ScoreService(IUnitOfWork uow, IMapper mapper, ITextSimilarityService similarityService)
         {
             _uow = uow;
             _mapper = mapper;
+            _similarityService = similarityService;
         }
         public async Task<ScoreDto> Scoring(UserAnswerRequest request, CancellationToken cancellationToken)
         {
-            int countQuestionCorrect = 0;
+            double totalScore = 0;
             var exam = await _uow.SimulationExamRepository.FirstOrDefaultAsync(x => x.ExamId == request.ExamId);
             var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId);
             if (user is null) throw new KeyNotFoundException("User not found!");
@@ -33,15 +35,24 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new InvalidOperationException("User is not enrolled in this exam.");
             }
             var numberQuestion = exam.QuestionCount ?? 0;
+            var pointsPerQuestion = 100 / numberQuestion;
             foreach (var model in request.QuestionRequests)
             {
-                bool checkQuestion = await CheckAnswerCorrect(model.QuestionId, model.UserAnswerId, cancellationToken);
-                if (checkQuestion)
+                if (!string.IsNullOrEmpty(model.UserAnswerText))
                 {
-                    countQuestionCorrect++;
+                    var essayScore = await CheckAnswerEssay(model.QuestionId, model.UserAnswerText, pointsPerQuestion, cancellationToken);
+                    totalScore += essayScore;
+                }
+                else
+                {
+                    bool checkQuestion = await CheckAnswerCorrect(model.QuestionId, model.UserAnswerId, cancellationToken);
+                    if (checkQuestion)
+                    {
+                        totalScore += pointsPerQuestion;
+                    }
                 }
             }
-            Double finalScore = Math.Round(countQuestionCorrect * (100f / numberQuestion), 2);
+            Double finalScore = Math.Round(totalScore, 2);
 
             var scoreEntity = new Score()
             {
@@ -56,6 +67,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return _mapper.Map<ScoreDto>(result);
         }
 
+
+        public async Task<double> CheckAnswerEssay(int questionId, string userAnswerText, double pointsPerQuestion, CancellationToken cancellationToken)
+        {
+            var question = await _uow.QuestionRepository.FirstOrDefaultAsync(x => x.QuestionId == questionId, cancellationToken, include: x => x.Include(a => a.Answers));
+            if (question == null) { return 0.0; }
+            var answerText = question.Answers.FirstOrDefault()?.Text;
+            if (answerText == null) { return 0.0; }
+            var similarityScore = await _similarityService.GetSimilarityScoreAsync(new CompareAnswersRequest { SampleAnswer = answerText, UserAnswer = userAnswerText });
+            double finalScore = Math.Round(similarityScore * pointsPerQuestion, 2);
+            return finalScore;
+        }
         public async Task<bool> CheckAnswerCorrect(int questionId, List<int> answerId, CancellationToken cancellationToken)
         {
             if (questionId <= 0)

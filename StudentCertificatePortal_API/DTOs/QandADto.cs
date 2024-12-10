@@ -9,6 +9,7 @@ namespace StudentCertificatePortal_API.DTOs
         public int QuestionId { get; set; }
         public string? QuestionName { get; set; }
         public int? ExamId { get; set; }
+        public string QuestionType { get; set; } = null!;
 
         [Ignore]
         public List<AnswerDto>? Answers { get; set; }

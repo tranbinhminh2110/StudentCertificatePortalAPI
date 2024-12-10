@@ -11,6 +11,8 @@ public partial class Question
 
     public string? QuestionText { get; set; }
 
+    public string QuestionType { get; set; } = null!;
+
     public virtual ICollection<Answer> Answers { get; set; } = new List<Answer>();
 
     public virtual SimulationExam? Exam { get; set; }

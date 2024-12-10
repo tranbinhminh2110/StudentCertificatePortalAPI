@@ -10,7 +10,8 @@
     public class QuestionRequest
     {
         public int QuestionId { get; set;}
-        public List<int> UserAnswerId { get; set; } = new List<int>(); 
+        public List<int> UserAnswerId { get; set; } = new List<int>();
+        public string UserAnswerText { get; set; } = string.Empty;
     }
 
 }
