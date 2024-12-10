@@ -111,7 +111,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 notification.IsRead = true;
 
-                if (notification.NotificationName == "Feedback contains forbidden words")
+                if (notification.NotificationName == "Feedback contains forbidden words" || notification.NotificationName == "User Feedback Spam Detected")
                 {
                     var userId = notification.UserId;
 
@@ -122,8 +122,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                         var studentNotification = new Notification()
                         {
-                            NotificationName = "Feedback flagged for review",
-                            NotificationDescription = $"Your feedback has been flagged for containing inappropriate language. Please ensure compliance with community guidelines to avoid further issues.",
+                            NotificationName = notification.NotificationName == "Feedback contains forbidden words"
+                        ? "Feedback contains forbidden words"
+                        : "Spam feedback detected",
+                            NotificationDescription = notification.NotificationName == "Feedback contains forbidden words"
+                        ? "Your feedback has been flagged for containing inappropriate language. Please ensure compliance with community guidelines to avoid further issues."
+                        : "Your feedback has been flagged for spamming. Please follow community guidelines to avoid account restrictions.",
                             NotificationImage = user.UserImage,
                             CreationDate = DateTime.UtcNow,
                             Role = "Student",
