@@ -2,6 +2,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Exceptions;
@@ -25,8 +26,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         private readonly IHubContext<NotificationHub> _hubContext;
         private readonly INotificationService _notificationService;
 
+        private readonly IMemoryCache _memoryCache;
+        private readonly int _maxFeedbacksPerMinute = 10;
+
         public FeedbackService(IUnitOfWork uow, IMapper mapper, IValidator<CreateFeedbackRequest> addFeedbackValidator, IValidator<UpdateFeedbackRequest> updateFeedbackValidator,
-            ForbiddenWordsService forbiddenWordsService, IHubContext<NotificationHub> hubContext, INotificationService notificationService)
+            ForbiddenWordsService forbiddenWordsService, IHubContext<NotificationHub> hubContext, INotificationService notificationService, IMemoryCache memoryCache)
         {
             _uow = uow;
             _mapper = mapper;
@@ -35,6 +39,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             _forbiddenWordsService = forbiddenWordsService;
             _hubContext = hubContext;
             _notificationService = notificationService;
+            _memoryCache = memoryCache;
         }
 
         public async Task<FeedbackDto> CreateFeedbackAsync(CreateFeedbackRequest request, CancellationToken cancellationToken)
@@ -55,6 +60,37 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new KeyNotFoundException("SimulationExam not found.");
             }
+            var cacheKey = $"FeedbackCount_{request.UserId}";
+            if (!_memoryCache.TryGetValue(cacheKey, out int feedbackCount))
+            {
+                feedbackCount = 0;
+            }
+
+            if (feedbackCount >= _maxFeedbacksPerMinute)
+            {
+                var notification = new Notification()
+                {
+                    NotificationName = "User Feedback Spam Detected",
+                    NotificationDescription = $"User '{user.Username}' is sending feedback for the exam '{exam.ExamName}' too frequently and has been flagged for spam monitoring.",
+                    NotificationImage = user.UserImage,
+                    CreationDate = DateTime.UtcNow,
+                    Role = "Admin",
+                    IsRead = false,
+                    UserId = request.UserId,
+                };
+
+                await _uow.NotificationRepository.AddAsync(notification);
+                await _uow.Commit(cancellationToken);
+
+                var notifications = await _notificationService.GetNotificationByRoleAsync("Admin", cancellationToken);
+                await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
+
+                throw new Exception("You are sending feedback too frequently. Please try again later.");
+            }
+
+            feedbackCount++;
+            _memoryCache.Set(cacheKey, feedbackCount, TimeSpan.FromMinutes(1));
+            
             request.FeedbackRatingvalue ??= 0;
 
             bool containsForbiddenWord = _forbiddenWordsService.ContainsForbiddenWords(request.FeedbackDescription);
