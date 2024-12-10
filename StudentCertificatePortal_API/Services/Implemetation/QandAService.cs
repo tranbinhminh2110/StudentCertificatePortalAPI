@@ -42,6 +42,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 {
                     QuestionText = request.QuestionName,
                     ExamId = request.ExamId,
+                    QuestionType = request.QuestionType.ToString()
                 };
                 var questionResult = await _uow.QuestionRepository.AddAsync(questionEntity);
                 await _uow.Commit(cancellationToken);
@@ -50,6 +51,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     QuestionId = questionResult.QuestionId,
                     QuestionName = questionResult.QuestionText,
                     ExamId = questionResult.ExamId,
+                    QuestionType = questionResult.QuestionType,
                     Answers = new List<AnswerDto>()
                 };
 
@@ -115,6 +117,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     QuestionId = question.QuestionId,
                     QuestionName = question.QuestionText,
                     ExamId = question.ExamId,
+                    QuestionType = question.QuestionType,
                     Answers = _mapper.Map<List<AnswerDto>>(answers)
                 });
             }
@@ -133,6 +136,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             result.QuestionId = question.QuestionId;
             result.QuestionName = question.QuestionText;
             result.ExamId = question.ExamId;
+            result.QuestionType = question.QuestionType;
             var answers = await _uow.AnswerRepository.WhereAsync(x => x.QuestionId == question.QuestionId);
             result.Answers = _mapper.Map<List<AnswerDto>>(answers);
             return _mapper.Map<QandADto>(result);
@@ -154,6 +158,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     QuestionId = question.QuestionId,
                     QuestionName = question.QuestionText,
                     ExamId = question.ExamId,
+                    QuestionType = question.QuestionType,
                     Answers = _mapper.Map<List<AnswerDto>>(answers)
                 });
             }
@@ -189,6 +194,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     QuestionId = question.QuestionId,
                     QuestionName = question.QuestionText,
                     ExamId = question.ExamId,
+                    QuestionType = question.QuestionType,
                     Answers = _mapper.Map<List<AnswerDto>>(answers)
                 });
             }
@@ -217,6 +223,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             result.QuestionId = question.QuestionId;
             result.QuestionName = question.QuestionText;
             result.ExamId = question.ExamId;
+            result.QuestionType = question.QuestionType;
             result.Answers = new List<AnswerDto>();
 
             var answers = await _uow.AnswerRepository.WhereAsync(x => x.QuestionId == questionId);
@@ -263,7 +270,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
 
             var existingQuestion = await _uow.QuestionRepository
-                .WhereAsync(q => q.ExamId == request.ExamId && q.QuestionText != null, cancellationToken, include: q => q.Include( a => a.Answers));
+                .WhereAsync(q => q.ExamId == request.ExamId && q.QuestionText != null, cancellationToken, include: q => q.Include(a => a.Answers));
             var matchingQuestion = existingQuestion
                 .Where(q => StripHTMLTags(q.QuestionText.Trim().ToLower()) == StripHTMLTags(request.QuestionName.Trim().ToLower()))
                 .ToList();

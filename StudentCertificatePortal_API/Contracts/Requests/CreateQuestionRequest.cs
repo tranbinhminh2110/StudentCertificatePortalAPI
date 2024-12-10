@@ -1,4 +1,5 @@
 ﻿using AutoMapper.Configuration.Annotations;
+using StudentCertificatePortal_API.Enums;
 using StudentCertificatePortal_API.Mapping;
 using StudentCertificatePortal_Data.Models;
 
@@ -8,6 +9,7 @@ namespace StudentCertificatePortal_API.Contracts.Requests
     {
         public string? QuestionName { get; set; }
         public int ExamId { get; set; }
+        public EnumQuestionType QuestionType { get; set; }
 
         public List<AnswerRequest>? Answers { get; set; }
     }

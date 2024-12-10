@@ -553,6 +553,11 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.QuestionText)
                 .HasColumnType("text")
                 .HasColumnName("question_text");
+            entity.Property(e => e.QuestionType)
+                .HasMaxLength(255)
+                .IsUnicode(false)
+                .HasDefaultValue("choice")
+                .HasColumnName("question_type");
 
             entity.HasOne(d => d.Exam).WithMany(p => p.Questions)
                 .HasForeignKey(d => d.ExamId)
