@@ -36,6 +36,7 @@ namespace StudentCertificatePortal_API.DTOs
         public int QuestionId { get; set; }
 
         public string? QuestionName { get; set; }    
+        public string? QuestionType { get; set; }
         public List<AnswerList> Answers { get; set; } = new List<AnswerList>();
     }
     public class AnswerList

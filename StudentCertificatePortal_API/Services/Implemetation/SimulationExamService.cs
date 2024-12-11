@@ -230,6 +230,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 {
                     QuestionId = question.QuestionId,
                     QuestionName = question.QuestionText,
+                    QuestionType = question.QuestionType,
                     Answers = question.Answers.Select(answer => new AnswerList
                     {
                         AnswerId = answer.AnswerId,
