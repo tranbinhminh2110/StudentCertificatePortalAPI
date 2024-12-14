@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentValidation;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using StudentCertificatePortal_API.Contracts.Requests;
@@ -7,6 +8,7 @@ using StudentCertificatePortal_API.Contracts.Responses;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Enums;
 using StudentCertificatePortal_API.Services.Interface;
+using StudentCertificatePortal_API.Utils;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
 using System.Net.Http.Headers;
@@ -19,9 +21,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         private readonly IMapper _mapper;
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
+        private readonly INotificationService _notificationService;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
 
-        public WalletService(IUnitOfWork uow, IMapper mapper, IConfiguration configuration)
+        public WalletService(IUnitOfWork uow, IMapper mapper, IConfiguration configuration, INotificationService notificationService, IHubContext<NotificationHub> hubContext)
         {
             _uow = uow;
             _mapper = mapper;
@@ -31,6 +35,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             _httpClient.DefaultRequestHeaders.Add("x-client-id", _configuration["PayOS:ClientId"]);
             _httpClient.DefaultRequestHeaders.Add("x-api-key", _configuration["PayOS:APIKey"]);
+            _notificationService = notificationService;
+            _hubContext = hubContext;
         }
         public async Task<WalletDto> CreateWalletAsync(int userId, CancellationToken cancellationToken)
         {
@@ -134,6 +140,24 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                             _uow.WalletRepository.Update(wallet);
                             _uow.TransactionRepository.Update(transaction);
                             await _uow.Commit(cancellationToken);
+                            // Notify Wallet 
+                            if (wallet.Point > 1000) {
+                                var notification = new Notification()
+                                {
+                                    NotificationName = "High Balance Alert",
+                                    NotificationDescription = $"User {user.Username} has exceeded a balance of 1000 points. The current balance is {wallet.Point} points. Please review the account as necessary.",
+                                    Role = "Admin",
+                                    IsRead = false,
+                                    CreationDate = DateTime.Now,
+                                };
+
+                                await _uow.NotificationRepository.AddAsync(notification);
+                                await _uow.Commit(cancellationToken);
+
+                                var notifications = await _notificationService.GetNotificationByRoleAsync("admin", new CancellationToken());
+                                await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
+                            }
+                           
                         }
                         else
                         {
@@ -197,6 +221,24 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             var result = _uow.WalletRepository.Update(wallet);
             await _uow.Commit(cancellationToken);
+
+            if (wallet.Point > 1000)
+            {
+                var notification = new Notification()
+                {
+                    NotificationName = "High Balance Alert",
+                    NotificationDescription = $"User {user.Username} has exceeded a balance of 1000 points. The current balance is {wallet.Point} points. Please review the account as necessary.",
+                    Role = "Admin",
+                    IsRead = false,
+                    CreationDate = DateTime.UtcNow,
+                };
+
+                await _uow.NotificationRepository.AddAsync(notification);
+                await _uow.Commit(cancellationToken);
+
+                var notifications = await _notificationService.GetNotificationByRoleAsync("Admin", new CancellationToken());
+                await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
+            }
 
             return _mapper.Map<WalletDto>(result);
         }
