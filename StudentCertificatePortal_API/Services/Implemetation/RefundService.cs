@@ -18,11 +18,13 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         private readonly IUnitOfWork _uow;
         public readonly IEmailService _emailService;
         private readonly IHttpClientFactory _httpClientFactory;
-        public RefundService(IUnitOfWork uow, IEmailService emailService, IHttpClientFactory httpClientFactory)
+        private readonly IMemoryCacheService _cacheService;
+        public RefundService(IUnitOfWork uow, IEmailService emailService, IHttpClientFactory httpClientFactory, IMemoryCacheService cacheService)
         {
             _uow = uow;
             _emailService = emailService;
             _httpClientFactory = httpClientFactory;
+            _cacheService = cacheService;
         }
 
         public async Task<bool> ProcessRefund(ProcessRefundRequest request, CancellationToken cancellationToken)
@@ -68,26 +70,30 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<bool> SendRequestRefund(RefundRequest request, CancellationToken cancellationToken)
         {
-            var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.WalletId == request.WalletId, cancellationToken, include: w => w.Include(u => u.User)) ;
-            if(wallet == null) { throw new KeyNotFoundException("Wallet not found!"); }
-            
+            var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.WalletId == request.WalletId, cancellationToken, include: w => w.Include(u => u.User));
+            if (wallet == null)
+            {
+                throw new KeyNotFoundException("Wallet not found!");
+            }
+
+
             if (request.Point > wallet.Point)
             {
-                return false;
+                return false; 
             }
-            /*var notification = new Notification
-            {
-                NotificationName = "Refund Request",
-                NotificationDescription = $"A refund request for {wallet.User.Fullname} with {request.Point} points has been created and is pending approval.",
-                CreationDate = DateTime.UtcNow,
-                Role = "Admin",
-                IsRead = false,
-            };
 
-            await _uow.NotificationRepository.AddAsync(notification);
-            await _uow.Commit(cancellationToken);
-            var notifications = await _notificationService.GetNotificationByRoleAsync("Admin", new CancellationToken());
-            await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);*/
+            var cacheKey = $"refund_requests_{request.WalletId}";
+            var currentRequests = await _cacheService.GetAsync<int>(cacheKey);
+
+            int maxRequestsPerDay = 2; 
+
+            if (currentRequests >= maxRequestsPerDay)
+            {
+                throw new Exception($"User {wallet.User.Fullname} has exceeded the request limit of {maxRequestsPerDay} refund requests in the last 24 hours.");
+            }
+
+            await _cacheService.SetAsync(cacheKey, currentRequests + 1, TimeSpan.FromHours(24)); 
+
             try
             {
                 var client = _httpClientFactory.CreateClient();
@@ -99,24 +105,21 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 }
 
                 var responseData = await response.Content.ReadAsStringAsync();
-
                 var banksResponse = JsonSerializer.Deserialize<ApiResponse<BankDto>>(responseData, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 });
 
                 var banks = banksResponse?.Data ?? new List<BankDto>();
-
                 var bank = banks.FirstOrDefault(b => b.Code == request.BankAccount.BankCode);
                 if (bank == null)
                 {
                     throw new Exception("Bank with the provided code not found.");
                 }
 
-
-
                 string bankName = bank.Name;
 
+                // Gửi email thông báo cho admin
                 string adminEmail = "unicert79@gmail.com";
                 var emailSubject = "Refund Request Created";
                 var emailBody = new StringBuilder();
@@ -135,18 +138,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 emailBody.AppendLine();
                 emailBody.AppendLine("Thank you.");
 
-
                 await _emailService.SendEmailAsync(adminEmail, emailSubject, emailBody.ToString());
             }
-            catch(Exception ex) {
+            catch (Exception ex)
+            {
                 return false;
             }
-
-
 
             return true;
         }
 
-        
+
+
     }
 }
