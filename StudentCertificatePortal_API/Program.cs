@@ -43,6 +43,9 @@ builder.Services.AddAuthentication(options =>
     options.CallbackPath = "/sign-in-google"; 
 });
 
+// Memory cache
+builder.Services.AddMemoryCache();
+
 // Initial Scheduler 
 builder.Services.AddQuartz(q =>
 {
@@ -153,6 +156,7 @@ builder.Services.AddScoped<ForbiddenWordsService>();
 builder.Services.AddScoped<IRefundService, RefundService>();
 builder.Services.AddScoped<ISelectedCertService, SelectedCertService>();
 builder.Services.AddScoped<ITextSimilarityService, TextSimilarityService>();
+builder.Services.AddScoped<IMemoryCacheService, MemoryCacheService>();
 builder.Services.AddSingleton<IRedisService>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
