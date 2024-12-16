@@ -11,5 +11,6 @@
         public int TotalStudents { get; set; }
         public int TotalPoint {  get; set; }
         public int TotalAmountOfTopUp { get; set; }
+        public int TotalAmoutOfRefund { get; set; }
     }
 }

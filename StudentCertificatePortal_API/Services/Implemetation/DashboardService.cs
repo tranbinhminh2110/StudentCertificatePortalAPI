@@ -25,6 +25,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var totalStudents = students.Count();
             var totalPoint = (await _uow.PaymentRepository.GetAll()).Select(p => p.PaymentPoint).Sum();
             var totalAmountOfTopUp = (await _uow.TransactionRepository.WhereAsync(x => x.TransStatus == Enums.EnumTransaction.Success.ToString())).Select(t => t.Amount).Sum();
+            var totalAmoutOfRefund = (await _uow.TransactionRepository.WhereAsync(x => x.TransStatus == Enums.EnumTransaction.Refunded.ToString())).Select(t => t.Amount).Sum();
 
             return new DashboardSummaryDto()
             {
@@ -35,7 +36,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 TotalSimulationExams = totalSimulationExam,
                 TotalStudents = totalStudents,
                 TotalPoint = totalPoint ?? 0,
-                TotalAmountOfTopUp = totalAmountOfTopUp
+                TotalAmountOfTopUp = totalAmountOfTopUp,
+                TotalAmoutOfRefund = totalAmoutOfRefund,
             };
 
         }
