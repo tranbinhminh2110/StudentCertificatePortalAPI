@@ -91,7 +91,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         public async Task<List<TransactionDto>> GetAll()
         {
             var trans = await _uow.TransactionRepository.GetAll();
-            return _mapper.Map<List<TransactionDto>>(trans);    
+            var sortTrans = trans.OrderByDescending(x => x.CreatedAt);
+            return _mapper.Map<List<TransactionDto>>(sortTrans);    
         }
 
         public async Task<TransactionDto> GetTransactionByIdAsync(int transId, CancellationToken cancellationToken)
