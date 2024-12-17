@@ -116,6 +116,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<decimal> GetTotalAmountAsync(TimePeriod period, DateTime? startDate = null, DateTime? endDate = null, CancellationToken cancellationToken = default)
         {
+            if (startDate > endDate) { throw new Exception("StartDate is greater than endDate."); }
             IEnumerable<Payment> query = await _uow.PaymentRepository.GetAll();
 
             Func<DateTime?, DateTime?, bool> isValidDateRange = (start, end) =>
