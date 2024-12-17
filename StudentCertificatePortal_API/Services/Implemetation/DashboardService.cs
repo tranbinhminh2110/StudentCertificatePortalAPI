@@ -116,75 +116,74 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<decimal> GetTotalAmountAsync(TimePeriod period, DateTime? startDate = null, DateTime? endDate = null, CancellationToken cancellationToken = default)
         {
-            if (startDate > endDate) { throw new Exception("StartDate is greater than endDate."); }
+            if (!startDate.HasValue || !endDate.HasValue)
+            {
+                throw new ArgumentNullException("StartDate and EndDate must not be null.");
+            }
+
+            if (startDate > DateTime.Now || endDate > DateTime.Now)
+            {
+                throw new ArgumentException("StartDate and EndDate cannot both be in the future.");
+            }
+
+            if (startDate > endDate)
+            {
+                throw new ArgumentException("EndDate must be greater than StartDate.");
+            }
+
+            if (startDate.Value.Date == endDate.Value.Date)
+            {
+                startDate = startDate.Value.Date.AddHours(0).AddMinutes(0).AddSeconds(0);
+                endDate = endDate.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59);
+            }
+
             IEnumerable<Payment> query = await _uow.PaymentRepository.GetAll();
 
             Func<DateTime?, DateTime?, bool> isValidDateRange = (start, end) =>
             {
-                if (start.HasValue && end.HasValue)
-                {
-                    return start.Value.Year == end.Value.Year && start.Value.Month == end.Value.Month && start.Value.Day == end.Value.Day;
-                }
-                return true;
+                return start.HasValue && end.HasValue &&
+                       start.Value.Year == end.Value.Year &&
+                       start.Value.Month == end.Value.Month &&
+                       start.Value.Day == end.Value.Day;
             };
 
             switch (period)
             {
                 case TimePeriod.Week:
-                    if (!startDate.HasValue || !endDate.HasValue || !isValidDateRange(startDate, endDate))
+                    if (!isValidDateRange(startDate, endDate))
                     {
                         throw new ArgumentException("For Week period, startDate and endDate must be provided and within the same week.");
                     }
-                    query = query.Where(p => p.PaymentDate >= startDate.Value && p.PaymentDate <= endDate.Value);
+                    query = query.Where(p => p.PaymentDate >= startDate && p.PaymentDate <= endDate);
                     break;
 
                 case TimePeriod.Month:
-                    if (!startDate.HasValue || !endDate.HasValue)
-                    {
-                        var monthStartDate = startDate.Value;
-                        var monthEndDate = monthStartDate.AddMonths(1).AddDays(-1);
-                        query = query.Where(p => p.PaymentDate >= monthStartDate && p.PaymentDate <= monthEndDate);
-                    }
-                    else if (!isValidDateRange(startDate, endDate))
+                    if (!isValidDateRange(startDate, endDate))
                     {
                         throw new ArgumentException("Start date and end date must be within the same month.");
                     }
-                    else
-                    {
-                        query = query.Where(p => p.PaymentDate >= startDate.Value && p.PaymentDate <= endDate.Value);
-                    }
+                    query = query.Where(p => p.PaymentDate >= startDate && p.PaymentDate <= endDate);
                     break;
 
                 case TimePeriod.Year:
-                    if (!startDate.HasValue || !endDate.HasValue)
-                    {
-                        var currentYearStart = startDate.Value;
-                        var currentYearEnd = currentYearStart.AddYears(1).AddDays(-1);
-                        query = query.Where(p => p.PaymentDate >= currentYearStart && p.PaymentDate <= currentYearEnd);
-                    }
-                    else if (startDate.Value.Year != endDate.Value.Year)
+                    if (startDate.Value.Year != endDate.Value.Year)
                     {
                         throw new ArgumentException("Start date and end date must be within the same year.");
                     }
-                    else
-                    {
-                        query = query.Where(p => p.PaymentDate >= startDate.Value && p.PaymentDate <= endDate.Value);
-                    }
+                    query = query.Where(p => p.PaymentDate >= startDate && p.PaymentDate <= endDate);
                     break;
 
                 case TimePeriod.Custom:
-                    if (startDate.HasValue && endDate.HasValue)
-                    {
-                        query = query.Where(p => p.PaymentDate >= startDate.Value && p.PaymentDate <= endDate.Value);
-                    }
-                    else
-                    {
-                        throw new ArgumentException("For custom date range, both startDate and endDate must be provided.");
-                    }
+                    query = query.Where(p => p.PaymentDate >= startDate && p.PaymentDate <= endDate);
                     break;
+
+                default:
+                    throw new ArgumentException("Invalid time period specified.");
             }
+
             return query.Sum(p => p.PaymentPoint ?? 0);
         }
+
 
         public async Task<Dictionary<int, decimal>> GetWeeklyRevenueAsync(int year, int month, CancellationToken cancellationToken = default)
         {
