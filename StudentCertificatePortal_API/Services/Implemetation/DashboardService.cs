@@ -218,5 +218,29 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             return weeklyRevenue;
         }
+
+        public async Task<Dictionary<int, decimal>> GetDailyRevenueAsync(int year, int month, CancellationToken cancellationToken = default)
+        {
+            int daysInMonth = DateTime.DaysInMonth(year, month);
+           
+            IEnumerable<Payment> query = await _uow.PaymentRepository.WhereAsync(x => x.PaymentDate.Value.Year == year && x.PaymentDate.Value.Month == month);
+
+            var dailyRevenue = new Dictionary<int, decimal>();
+
+            for (int day = 1; day <= daysInMonth; day++)
+            {
+                var dayStart = new DateTime(year, month, day);
+                var dayEnd = dayStart.AddDays(1).AddTicks(-1);
+
+                decimal totalForDay = query
+                    .Where(p => p.PaymentDate >= dayStart && p.PaymentDate <= dayEnd)
+                    .Sum(p => p.PaymentPoint ?? 0);
+
+                dailyRevenue[day] = totalForDay;
+            }
+
+            return dailyRevenue;
+
+        }
     }
 }

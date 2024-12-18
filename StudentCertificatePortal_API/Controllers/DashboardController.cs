@@ -94,5 +94,22 @@ namespace StudentCertificatePortal_API.Controllers
                 return StatusCode(500, "An error occurred while calculating weekly revenue." + ex.Message);
             }
         }
+
+        [HttpGet("daily-revenue/{year}/{month}")]
+        public async Task<IActionResult> GetDailyRevenue(int year, int month, CancellationToken cancellationToken)
+        {
+            try
+            {
+
+                Dictionary<int, decimal> dailyRevenue = await _service.GetDailyRevenueAsync(year, month, cancellationToken);
+
+                return Ok(Result<Dictionary<int, decimal>>.Succeed(dailyRevenue));
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, "An error occurred while calculating weekly revenue." + ex.Message);
+            }
+        }
     }
 }

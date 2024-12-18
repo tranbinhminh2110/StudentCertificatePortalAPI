@@ -11,5 +11,7 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<Dictionary<int, decimal>> GetWeeklyRevenueAsync(int year, int month, CancellationToken cancellationToken = default);
         Task<StudentDataDto> GetPercentageDistribution();
 
+        Task<Dictionary<int, decimal>> GetDailyRevenueAsync(int year, int month, CancellationToken cancellationToken = default);
+
     }
 }
