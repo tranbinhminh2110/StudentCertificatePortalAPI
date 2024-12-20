@@ -39,6 +39,8 @@ public partial class SimulationExam
 
     public virtual ICollection<StudentOfExam> StudentOfExams { get; set; } = new List<StudentOfExam>();
 
+    public virtual ICollection<UserAnswer> UserAnswers { get; set; } = new List<UserAnswer>();
+
     public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
 
     public virtual ICollection<Voucher> Vouchers { get; set; } = new List<Voucher>();
