@@ -57,6 +57,8 @@ public partial class CipdbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<UserAnswer> UserAnswers { get; set; }
+
     public virtual DbSet<Voucher> Vouchers { get; set; }
 
     public virtual DbSet<Wallet> Wallets { get; set; }
@@ -783,6 +785,46 @@ public partial class CipdbContext : DbContext
                         j.IndexerProperty<int>("UserId").HasColumnName("user_id");
                         j.IndexerProperty<int>("CertId").HasColumnName("cert_id");
                     });
+        });
+
+        modelBuilder.Entity<UserAnswer>(entity =>
+        {
+            entity.HasKey(e => e.UserAnswerId).HasName("PK__UserAnsw__6BBB07503799F07B");
+
+            entity.ToTable("UserAnswer");
+
+            entity.Property(e => e.UserAnswerId).HasColumnName("user_answer_id");
+            entity.Property(e => e.AnswerContent).HasColumnName("answer_content");
+            entity.Property(e => e.AnswerId).HasColumnName("answer_id");
+            entity.Property(e => e.ExamId).HasColumnName("exam_id");
+            entity.Property(e => e.QuestionId).HasColumnName("question_id");
+            entity.Property(e => e.QuestionType)
+                .HasMaxLength(50)
+                .HasColumnName("question_type");
+            entity.Property(e => e.ScoreId).HasColumnName("score_id");
+            entity.Property(e => e.ScoreValue)
+                .HasColumnType("decimal(5, 2)")
+                .HasColumnName("score_value");
+            entity.Property(e => e.SubmittedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("submitted_at");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.Exam).WithMany(p => p.UserAnswers)
+                .HasForeignKey(d => d.ExamId)
+                .HasConstraintName("FK_UserAnswer_Exam");
+
+            entity.HasOne(d => d.Question).WithMany(p => p.UserAnswers)
+                .HasForeignKey(d => d.QuestionId)
+                .HasConstraintName("FK_UserAnswer_Question");
+
+            entity.HasOne(d => d.Score).WithMany(p => p.UserAnswers)
+                .HasForeignKey(d => d.ScoreId)
+                .HasConstraintName("FK_UserAnswer_Score");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserAnswers)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("FK_UserAnswer_User");
         });
 
         modelBuilder.Entity<Voucher>(entity =>
