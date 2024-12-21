@@ -42,6 +42,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 UserId = request.UserId,
                 ExamId = request.ExamId,
             };
+            var result = await _uow.ScoreRepository.AddAsync(scoreEntity);
+            await _uow.Commit(cancellationToken);
             foreach (var model in request.QuestionRequests)
             {
                 if (!string.IsNullOrEmpty(model.UserAnswerText))
@@ -57,7 +59,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         ScoreValue = (decimal)essayScore,
                         SubmittedAt = DateTime.UtcNow,
                         QuestionType = "Essay",
+                        IsCorrect = essayScore >= (pointsPerQuestion / 2) ? true : false,
                         ScoreId = scoreEntity.ScoreId,
+                        
                     };
 
                     var userAnswerResult = await _uow.UserAnswerRepository.AddAsync(userAnswer);
@@ -107,9 +111,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                                 ScoreId= scoreEntity.ScoreId,
                             };
                             var userAnswerResult = await _uow.UserAnswerRepository.AddAsync(userAnswer);
-                            
+                            await _uow.Commit(cancellationToken);
                         }
-                        await _uow.Commit(cancellationToken);
+                        
 
 
                     }
@@ -120,7 +124,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             scoreEntity.ScoreValue = (decimal)finalScore;
 
-            var result = await _uow.ScoreRepository.AddAsync(scoreEntity);
+             _uow.ScoreRepository.Update(scoreEntity);
             await _uow.Commit(cancellationToken);
 
             return _mapper.Map<ScoreDto>(result);
