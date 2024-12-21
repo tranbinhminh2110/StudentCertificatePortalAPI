@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.DTOs;
+using StudentCertificatePortal_API.Enums;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
@@ -49,6 +50,27 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
             return certificationDtos;
         }
-        
+
+        public async Task<List<SimulationExamDto>> GetSimulationExamByTopSearchAsync(int topN, EnumPermission permission)
+        {
+            var exams = await _uow.SimulationExamRepository.GetAllAsync(query => query
+                .Where(exam => exam.ExamPermission == permission.ToString())
+                .Include(exam => exam.StudentOfExams));
+
+            var topExams = exams
+                .Select(exam => new
+                {
+                    Exam = exam,
+                    TotalStudents = exam.StudentOfExams.Count
+                })
+                .OrderByDescending(exam => exam.TotalStudents)
+                .Take(topN)
+                .Select(exam => exam.Exam)
+                .ToList();
+
+            var examDtos = _mapper.Map<List<SimulationExamDto>>(topExams);
+            return examDtos;
+        }
+
     }
 }
