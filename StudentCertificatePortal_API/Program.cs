@@ -118,6 +118,7 @@ builder.Services.AddTransient<IBaseRepository<Voucher>, VoucherRepository>();
 builder.Services.AddTransient<IBaseRepository<Payment>, PaymentRepository>();
 builder.Services.AddTransient<IBaseRepository<Cart>, CartRepository>();
 builder.Services.AddTransient<IBaseRepository<Notification>, NotificationRepository>();
+builder.Services.AddTransient<IBaseRepository<UserAnswer>, UserAnswerRepository>();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
 
