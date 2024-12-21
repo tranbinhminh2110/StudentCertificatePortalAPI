@@ -34,32 +34,91 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new InvalidOperationException("User is not enrolled in this exam.");
             }
+
             var numberQuestion = exam.QuestionCount ?? 0;
             var pointsPerQuestion = 100 / numberQuestion;
+            var scoreEntity = new Score()
+            {
+                UserId = request.UserId,
+                ExamId = request.ExamId,
+            };
             foreach (var model in request.QuestionRequests)
             {
                 if (!string.IsNullOrEmpty(model.UserAnswerText))
                 {
                     var essayScore = await CheckAnswerEssay(model.QuestionId, model.UserAnswerText, pointsPerQuestion, cancellationToken);
                     totalScore += essayScore;
+                    var userAnswer = new UserAnswer()
+                    {
+                        UserId = user.UserId,
+                        ExamId = exam.ExamId,
+                        QuestionId = model.QuestionId,
+                        AnswerContent = model.UserAnswerText,
+                        ScoreValue = (decimal)essayScore,
+                        SubmittedAt = DateTime.UtcNow,
+                        QuestionType = "Essay",
+                        ScoreId = scoreEntity.ScoreId,
+                    };
+
+                    var userAnswerResult = await _uow.UserAnswerRepository.AddAsync(userAnswer);
+                    await _uow.Commit(cancellationToken);
                 }
                 else
                 {
                     bool checkQuestion = await CheckAnswerCorrect(model.QuestionId, model.UserAnswerId, cancellationToken);
+
                     if (checkQuestion)
                     {
                         totalScore += pointsPerQuestion;
+                        foreach(var index in model.UserAnswerId)
+                        {
+                            var userAnswer = new UserAnswer()
+                            {
+                                UserId = user.UserId,
+                                ExamId = exam.ExamId,
+                                QuestionId = model.QuestionId,
+                                AnswerId = index,
+                                ScoreValue = pointsPerQuestion,
+                                SubmittedAt = DateTime.UtcNow,
+                                IsCorrect = true,
+                                QuestionType = "Choice",
+                                ScoreId= scoreEntity.ScoreId,
+                            };
+                            var userAnswerResult = await _uow.UserAnswerRepository.AddAsync(userAnswer);
+                            
+                        }
+                        await _uow.Commit(cancellationToken);
+
+                    }
+                    else
+                    {
+                        foreach (var index in model.UserAnswerId)
+                        {
+                            var userAnswer = new UserAnswer()
+                            {
+                                UserId = user.UserId,
+                                ExamId = exam.ExamId,
+                                QuestionId = model.QuestionId,
+                                AnswerId = index,
+                                ScoreValue = 0,
+                                SubmittedAt = DateTime.UtcNow,
+                                IsCorrect = false,
+                                QuestionType = "Choice",
+                                ScoreId= scoreEntity.ScoreId,
+                            };
+                            var userAnswerResult = await _uow.UserAnswerRepository.AddAsync(userAnswer);
+                            
+                        }
+                        await _uow.Commit(cancellationToken);
+
+
                     }
                 }
             }
             Double finalScore = Math.Round(totalScore, 2);
 
-            var scoreEntity = new Score()
-            {
-                UserId = request.UserId,
-                ExamId = request.ExamId,
-                ScoreValue = (decimal)finalScore,
-            };
+
+            scoreEntity.ScoreValue = (decimal)finalScore;
 
             var result = await _uow.ScoreRepository.AddAsync(scoreEntity);
             await _uow.Commit(cancellationToken);
