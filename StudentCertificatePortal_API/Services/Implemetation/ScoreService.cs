@@ -138,7 +138,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var answerText = question.Answers.FirstOrDefault()?.Text;
             if (answerText == null) { return 0.0; }
             var similarityScore = await _similarityService.GetSimilarityScoreAsync(new CompareAnswersRequest { SampleAnswer = answerText, UserAnswer = userAnswerText });
-            double finalScore = Math.Round(similarityScore * pointsPerQuestion, 2);
+            double finalScore = Math.Round(similarityScore * pointsPerQuestion, 2) > 0 ? Math.Round(similarityScore * pointsPerQuestion, 2) : 0.00;
             return finalScore;
         }
         public async Task<bool> CheckAnswerCorrect(int questionId, List<int> answerId, CancellationToken cancellationToken)
