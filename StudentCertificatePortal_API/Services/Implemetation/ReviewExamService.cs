@@ -12,6 +12,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         {
             _uow = uow;
         }
+
         public async Task<ExamReviewDto> GetExamReviewAsync(int examId, int userId, int scoreId, CancellationToken cancellationToken)
         {
             // Lấy danh sách câu hỏi của kỳ thi
@@ -47,7 +48,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 var questionId = question.QuestionId;
 
-                // Lấy danh sách đáp án hệ thống
+                // Lấy danh sách đáp án hệ thống (nếu không phải là Essay)
                 var systemAnswers = new List<AnswerDto>();
                 if (question.QuestionType == "Choice" || question.QuestionType == "MultipleChoice")
                 {
@@ -60,17 +61,26 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         }).ToList();
                 }
 
-                // Lấy câu trả lời của người dùng cho câu hỏi này (nếu có)
+                // Lấy câu trả lời của người dùng cho câu hỏi này
                 var userAnswersForQuestion = userAnswers.Where(x => x.QuestionId == questionId).ToList();
+
+                // Với câu hỏi essay, lấy nội dung trả lời từ AnswerContent
+                var userAnswerContent = question.QuestionType == "Essay"
+    ? (string.IsNullOrEmpty(userAnswersForQuestion.FirstOrDefault()?.AnswerContent) ? "No Answer" : userAnswersForQuestion.FirstOrDefault()?.AnswerContent)
+    : null;
+
+
                 var userAnswerIds = userAnswersForQuestion
                     .Where(x => x.AnswerId.HasValue)
                     .Select(x => x.AnswerId.Value)
                     .ToList();
 
                 // Xác định câu hỏi đúng hay sai
-                var isCorrectQuestion = userAnswersForQuestion.Any() && userAnswersForQuestion.All(x => x.IsCorrect);
+                var isCorrectQuestion = question.QuestionType != "Essay" &&
+                                        userAnswersForQuestion.Any() &&
+                                        userAnswersForQuestion.All(x => x.IsCorrect);
 
-                // Điểm và thời gian nộp của người dùng (nếu có)
+                // Điểm và thời gian nộp của người dùng
                 var scoreValue = userAnswersForQuestion.FirstOrDefault()?.ScoreValue ?? 0;
                 var submittedAt = userAnswersForQuestion.FirstOrDefault()?.SubmittedAt ?? DateTime.UtcNow;
 
@@ -79,8 +89,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 {
                     QuestionId = questionId,
                     QuestionType = question.QuestionType,
-                    UserAnswers = userAnswerIds,
-                    SystemAnswers = systemAnswers,
+                    UserAnswersForChoice = question.QuestionType == "Essay" ? null : userAnswerIds, // Với bài essay không trả UserAnswers dạng ID
+                    UserAnswerContentForEssay = userAnswerContent, // Thêm nội dung trả lời của bài essay
+                    SystemAnswers = question.QuestionType == "Essay" ? new List<AnswerDto>() : systemAnswers, // Không trả SystemAnswers nếu là essay
                     IsCorrectQuestion = isCorrectQuestion,
                     ScoreValue = scoreValue,
                     SubmittedAt = submittedAt
@@ -89,10 +100,5 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             return reviewDto;
         }
-
-
-
-
-
     }
 }
