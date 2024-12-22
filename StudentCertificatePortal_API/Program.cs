@@ -158,6 +158,7 @@ builder.Services.AddScoped<IRefundService, RefundService>();
 builder.Services.AddScoped<ISelectedCertService, SelectedCertService>();
 builder.Services.AddScoped<ITextSimilarityService, TextSimilarityService>();
 builder.Services.AddScoped<IMemoryCacheService, MemoryCacheService>();
+builder.Services.AddScoped<IReviewExamService, ReviewExamService>();
 builder.Services.AddSingleton<IRedisService>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
