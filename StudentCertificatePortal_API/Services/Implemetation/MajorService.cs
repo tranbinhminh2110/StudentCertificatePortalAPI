@@ -105,7 +105,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CreationDate = DateTime.UtcNow,
                     Role = "Manager",
                     IsRead = false,
-                    NotificationType = "major",
+                    NotificationType = "Major",
                     NotificationTypeId = majorEntity.MajorId,
 
                 };
@@ -425,7 +425,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CreationDate = DateTime.UtcNow,
                     Role = "Manager",
                     IsRead = false,
-                    NotificationType = "major",
+                    NotificationType = "Major",
                     NotificationTypeId = major.MajorId,
 
                 };
@@ -479,7 +479,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CreationDate = DateTime.UtcNow,
                 Role = "Staff",
                 IsRead = false,
-                NotificationType = "major",
+                NotificationType = "Major",
                 NotificationTypeId = major.MajorId,
 
             };
