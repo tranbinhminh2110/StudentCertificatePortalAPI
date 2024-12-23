@@ -86,10 +86,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         imageUrl = imageProperty.GetValue(entity)?.ToString();
                     }
                 }
-                string notificationType = typeof(T) == typeof(Certification) ? "certificate" : "exam";
-                int? notificationTypeId = _idFieldMapping.TryGetValue(typeof(T), out var idFieldForNotification)
-    ? EF.Property<int>(entity, idFieldForNotification)
-    : null;
+
                 var notification = new Notification
                 {
                     NotificationName = $"{typeof(T).Name} Permission Update",
@@ -98,8 +95,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CreationDate = DateTime.UtcNow,
                     Role = "Staff",
                     IsRead = false,
-                    NotificationType = notificationType,
-                    NotificationTypeId = notificationTypeId,
                 };
 
                 await _uow.NotificationRepository.AddAsync(notification);
