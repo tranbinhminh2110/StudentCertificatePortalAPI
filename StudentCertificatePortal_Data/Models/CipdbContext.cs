@@ -483,6 +483,10 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.NotificationName)
                 .HasMaxLength(500)
                 .HasColumnName("notification_name");
+            entity.Property(e => e.NotificationType)
+                .HasMaxLength(255)
+                .HasColumnName("notification_type");
+            entity.Property(e => e.NotificationTypeId).HasColumnName("notification_type_id");
             entity.Property(e => e.Role)
                 .HasMaxLength(255)
                 .HasColumnName("role");

@@ -17,6 +17,9 @@ namespace StudentCertificatePortal_API.DTOs
 
         public string? Role { get; set; }
         public bool? IsRead { get; set; }
+        public string? NotificationType { get; set; }
+
+        public int? NotificationTypeId { get; set; }
 
     }
 }

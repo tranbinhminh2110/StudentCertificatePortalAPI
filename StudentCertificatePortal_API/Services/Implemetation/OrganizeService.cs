@@ -57,6 +57,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CreationDate = DateTime.UtcNow,
                 Role = "Manager",
                 IsRead = false,
+                NotificationType = "organize",
+                NotificationTypeId = organizeEntity.OrganizeId,
 
             };
             await _uow.NotificationRepository.AddAsync(notification);
@@ -221,6 +223,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CreationDate = DateTime.UtcNow,
                 Role = "Manager",
                 IsRead = false,
+                NotificationType = "organize",
+                NotificationTypeId = organize.OrganizeId,
 
             };
 
@@ -254,6 +258,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CreationDate = DateTime.UtcNow,
                 Role = "Staff",
                 IsRead = false,
+                NotificationType = "organize",
+                NotificationTypeId = organize.OrganizeId,
 
             };
 
