@@ -75,7 +75,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var result = await _uow.SimulationExamRepository.AddAsync(exam);
             await _uow.Commit(cancellationToken);
 
-            float? totalDiscount = 1;
+            float totalDiscount = 0f; // Đảm bảo totalDiscount là kiểu float.
 
             foreach (var voucherId in request.VoucherIds)
             {
@@ -98,8 +98,13 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         result.Vouchers.Add(_mapper.Map<Voucher>(voucher));
                     }
 
-                    totalDiscount = totalDiscount * (1 - voucher.Percentage / 100f);
+                    totalDiscount += (float)voucher.Percentage;
                 }
+            }
+            if (exam.ExamFee.HasValue && totalDiscount > 0)
+            {
+                float discountAmount = exam.ExamFee.Value * (totalDiscount / 100f);
+                exam.ExamDiscountFee = (int?)(exam.ExamFee.Value - discountAmount);
             }
 
             result.ExamDiscountFee = (int?)(result.ExamFee.Value * totalDiscount);
@@ -274,7 +279,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             exam.ExamPermission = Enums.EnumPermission.Pending.ToString();
             exam.PassingScore = request.PassingScore;
 
-            float? totalDiscount = 1;
+            float totalDiscount = 0f; // Đảm bảo totalDiscount là kiểu float.
 
             exam.Vouchers.Clear();
 
@@ -298,13 +303,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         exam.Vouchers.Add(_mapper.Map<Voucher>(voucher));
                     }
 
-                    totalDiscount *= (1 - voucher.Percentage / 100f);
+                    totalDiscount += (float)voucher.Percentage;
                 }
             }
 
-            if (exam.ExamFee.HasValue)
+            if (exam.ExamFee.HasValue && totalDiscount > 0)
             {
-                exam.ExamDiscountFee = (int?)(exam.ExamFee.Value * totalDiscount);
+                float discountAmount = exam.ExamFee.Value * (totalDiscount / 100f);
+                exam.ExamDiscountFee = (int?)(exam.ExamFee.Value - discountAmount);
             }
 
             _uow.SimulationExamRepository.Update(exam);

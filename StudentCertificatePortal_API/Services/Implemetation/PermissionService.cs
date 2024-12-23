@@ -95,6 +95,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CreationDate = DateTime.UtcNow,
                     Role = "Staff",
                     IsRead = false,
+                    NotificationType = typeof(T).Name,
+                    NotificationTypeId = id,
+                    
                 };
 
                 await _uow.NotificationRepository.AddAsync(notification);
