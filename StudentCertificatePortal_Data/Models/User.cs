@@ -41,6 +41,10 @@ public partial class User
 
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
+    public virtual ICollection<PeerReview> PeerReviewReviewedUsers { get; set; } = new List<PeerReview>();
+
+    public virtual ICollection<PeerReview> PeerReviewReviewers { get; set; } = new List<PeerReview>();
+
     public virtual ICollection<Score> Scores { get; set; } = new List<Score>();
 
     public virtual ICollection<UserAnswer> UserAnswers { get; set; } = new List<UserAnswer>();

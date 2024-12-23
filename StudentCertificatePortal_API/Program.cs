@@ -119,6 +119,7 @@ builder.Services.AddTransient<IBaseRepository<Payment>, PaymentRepository>();
 builder.Services.AddTransient<IBaseRepository<Cart>, CartRepository>();
 builder.Services.AddTransient<IBaseRepository<Notification>, NotificationRepository>();
 builder.Services.AddTransient<IBaseRepository<UserAnswer>, UserAnswerRepository>();
+builder.Services.AddTransient<IBaseRepository<PeerReview>, PeerReviewRepository>();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
 
@@ -159,6 +160,7 @@ builder.Services.AddScoped<ISelectedCertService, SelectedCertService>();
 builder.Services.AddScoped<ITextSimilarityService, TextSimilarityService>();
 builder.Services.AddScoped<IMemoryCacheService, MemoryCacheService>();
 builder.Services.AddScoped<IReviewExamService, ReviewExamService>();
+builder.Services.AddScoped<IPeerReviewService, PeerReviewService>();
 builder.Services.AddSingleton<IRedisService>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
