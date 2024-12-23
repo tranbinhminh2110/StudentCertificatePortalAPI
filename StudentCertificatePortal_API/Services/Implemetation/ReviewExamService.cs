@@ -50,7 +50,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
                 // Lấy danh sách đáp án hệ thống (nếu không phải là Essay)
                 var systemAnswers = new List<AnswerDto>();
-                if (question.QuestionType == "Choice" || question.QuestionType == "MultipleChoice")
+                if (question.QuestionType == "Choice" || question.QuestionType == "choice")
                 {
                     systemAnswers = (await _uow.AnswerRepository.WhereAsync(a => a.QuestionId == questionId, cancellationToken))
                         .Select(a => new AnswerDto
