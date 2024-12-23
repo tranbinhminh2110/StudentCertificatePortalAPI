@@ -105,6 +105,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CreationDate = DateTime.UtcNow,
                     Role = "Manager",
                     IsRead = false,
+                    NotificationType = "major",
+                    NotificationTypeId = majorEntity.MajorId,
 
                 };
                 await _uow.NotificationRepository.AddAsync(notification);
@@ -423,6 +425,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CreationDate = DateTime.UtcNow,
                     Role = "Manager",
                     IsRead = false,
+                    NotificationType = "major",
+                    NotificationTypeId = major.MajorId,
 
                 };
                 await _uow.NotificationRepository.AddAsync(notification);
@@ -475,6 +479,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CreationDate = DateTime.UtcNow,
                 Role = "Staff",
                 IsRead = false,
+                NotificationType = "major",
+                NotificationTypeId = major.MajorId,
 
             };
 
