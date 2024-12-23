@@ -97,6 +97,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CreationDate = DateTime.UtcNow,
                 Role = "Manager",
                 IsRead = false,
+                NotificationType = "jobPosition",
+                NotificationTypeId = jobEntity.JobPositionId,
 
             };
             await _uow.NotificationRepository.AddAsync(notification);
@@ -365,6 +367,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CreationDate = DateTime.UtcNow,
                     Role = "Manager",
                     IsRead = false,
+                    NotificationType = "jobPosition",
+                    NotificationTypeId = job.JobPositionId,
 
                 };
 
@@ -417,6 +421,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CreationDate = DateTime.UtcNow,
                 Role = "Staff",
                 IsRead = false,
+                NotificationType = "jobPosition",
+                NotificationTypeId = job.JobPositionId,
             };
 
             await _uow.NotificationRepository.AddAsync(notification);

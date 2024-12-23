@@ -21,5 +21,9 @@ public partial class Notification
 
     public int? UserId { get; set; }
 
+    public string? NotificationType { get; set; }
+
+    public int? NotificationTypeId { get; set; }
+
     public virtual User? User { get; set; }
 }

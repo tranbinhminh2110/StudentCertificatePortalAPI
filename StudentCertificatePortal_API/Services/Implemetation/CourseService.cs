@@ -2,6 +2,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using StudentCertificatePortal_API.Commons;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Enums;
@@ -103,6 +104,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CreationDate = DateTime.UtcNow,
                 Role = "Manager",
                 IsRead = false,
+                NotificationType = "course",
+                NotificationTypeId = result.CourseId,
             };
             await _uow.NotificationRepository.AddAsync(notification);
 
@@ -342,6 +345,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CreationDate = DateTime.UtcNow,
                 Role = "Manager",
                 IsRead = false,
+                NotificationType = "course",
+                NotificationTypeId = course.CourseId,
 
             };
             await _uow.NotificationRepository.AddAsync(notification);
