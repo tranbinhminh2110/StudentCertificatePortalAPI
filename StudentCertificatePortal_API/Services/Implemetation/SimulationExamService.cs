@@ -119,7 +119,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CreationDate = DateTime.UtcNow,
                 Role = "Manager",
                 IsRead = false,
-                NotificationType = "simulationExam",
+                NotificationType = "SimulationExam",
                 NotificationTypeId = result.ExamId,
 
             };
@@ -323,7 +323,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CreationDate = DateTime.UtcNow,
                 Role = "Manager",
                 IsRead = false,
-                NotificationType = "simulationExam",
+                NotificationType = "SimulationExam",
                 NotificationTypeId = exam.ExamId,
 
             };
@@ -464,7 +464,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             exam.Vouchers.Clear();
 
             // Biến để tính tổng giảm giá
-            float? totalDiscount = 1;
+            float totalDiscount = 0f; // Đảm bảo totalDiscount là kiểu float.
 
             // Thêm các voucher mới
             foreach (var voucherId in voucherIds)
@@ -490,15 +490,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     }
 
                     // Tính tổng giảm giá
-                    totalDiscount *= (1 - voucher.Percentage / 100f);
+                    totalDiscount += (float)voucher.Percentage;
                 }
             }
 
             // Cập nhật giá sau giảm
-            if (exam.ExamFee.HasValue)
+            if(exam.ExamFee.HasValue && totalDiscount > 0)
             {
-                exam.ExamDiscountFee = (int?)(exam.ExamFee.Value * totalDiscount);
+                float discountAmount = exam.ExamFee.Value * (totalDiscount / 100f);
+                exam.ExamDiscountFee = (int?)(exam.ExamFee.Value - discountAmount);
             }
+
 
             // Cập nhật dữ liệu
             _uow.SimulationExamRepository.Update(exam);
