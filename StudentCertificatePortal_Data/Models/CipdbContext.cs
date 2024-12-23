@@ -43,6 +43,8 @@ public partial class CipdbContext : DbContext
 
     public virtual DbSet<Payment> Payments { get; set; }
 
+    public virtual DbSet<PeerReview> PeerReviews { get; set; }
+
     public virtual DbSet<Question> Questions { get; set; }
 
     public virtual DbSet<Score> Scores { get; set; }
@@ -548,6 +550,38 @@ public partial class CipdbContext : DbContext
             entity.HasOne(d => d.Wallet).WithMany(p => p.Payments)
                 .HasForeignKey(d => d.WalletId)
                 .HasConstraintName("FK__Payments__wallet__1332DBDC");
+        });
+
+        modelBuilder.Entity<PeerReview>(entity =>
+        {
+            entity.HasKey(e => e.PeerReviewId).HasName("PK__PeerRevi__CD1E31B9DAC759D9");
+
+            entity.Property(e => e.PeerReviewId).HasColumnName("peer_review_id");
+            entity.Property(e => e.FeedbackPeerReviewer).HasColumnName("feedback_peer_reviewer");
+            entity.Property(e => e.ReviewDate)
+                .HasColumnType("datetime")
+                .HasColumnName("review_date");
+            entity.Property(e => e.ReviewedUserId).HasColumnName("reviewed_user_id");
+            entity.Property(e => e.ReviewerId).HasColumnName("reviewer_id");
+            entity.Property(e => e.ScoreId).HasColumnName("score_id");
+            entity.Property(e => e.ScorePeerReviewer)
+                .HasColumnType("decimal(5, 2)")
+                .HasColumnName("score_peer_reviewer");
+
+            entity.HasOne(d => d.ReviewedUser).WithMany(p => p.PeerReviewReviewedUsers)
+                .HasForeignKey(d => d.ReviewedUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__PeerRevie__revie__214BF109");
+
+            entity.HasOne(d => d.Reviewer).WithMany(p => p.PeerReviewReviewers)
+                .HasForeignKey(d => d.ReviewerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__PeerRevie__revie__2057CCD0");
+
+            entity.HasOne(d => d.Score).WithMany(p => p.PeerReviews)
+                .HasForeignKey(d => d.ScoreId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__PeerRevie__score__22401542");
         });
 
         modelBuilder.Entity<Question>(entity =>

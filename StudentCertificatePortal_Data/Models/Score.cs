@@ -17,6 +17,8 @@ public partial class Score
 
     public virtual SimulationExam? Exam { get; set; }
 
+    public virtual ICollection<PeerReview> PeerReviews { get; set; } = new List<PeerReview>();
+
     public virtual User? User { get; set; }
 
     public virtual ICollection<UserAnswer> UserAnswers { get; set; } = new List<UserAnswer>();
