@@ -86,6 +86,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         imageUrl = imageProperty.GetValue(entity)?.ToString();
                     }
                 }
+                string notificationType = null;
+                if (typeof(T) == typeof(Certification))
+                {
+                    notificationType = "certificate";  // Chuyển "Certification" thành "certificate"
+                }
+                else if (typeof(T) == typeof(SimulationExam))
+                {
+                    notificationType = "simulationExam";  // Chuyển "SimulationExam" thành "simulationExam"
+                }
+
 
                 var notification = new Notification
                 {
@@ -93,9 +103,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     NotificationDescription = $"{entityName} has been {newPermission}.",
                     NotificationImage = imageUrl,
                     CreationDate = DateTime.UtcNow,
-                    Role = "Staff",
+                    Role = "staff",
                     IsRead = false,
-                    NotificationType = typeof(T).Name,
+                    NotificationType = notificationType,
                     NotificationTypeId = id,
                     
                 };
