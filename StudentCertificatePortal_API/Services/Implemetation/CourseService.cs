@@ -104,7 +104,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CreationDate = DateTime.UtcNow,
                 Role = "Manager",
                 IsRead = false,
-                NotificationType = "course",
+                NotificationType = "Course",
                 NotificationTypeId = result.CourseId,
             };
             await _uow.NotificationRepository.AddAsync(notification);
@@ -345,7 +345,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CreationDate = DateTime.UtcNow,
                 Role = "Manager",
                 IsRead = false,
-                NotificationType = "course",
+                NotificationType = "Course",
                 NotificationTypeId = course.CourseId,
 
             };
@@ -382,7 +382,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CreationDate = DateTime.UtcNow,
                 Role = "Staff",
                 IsRead = false,
-                NotificationType = "course",
+                NotificationType = "Course",
                 NotificationTypeId = course.CourseId,
 
             };

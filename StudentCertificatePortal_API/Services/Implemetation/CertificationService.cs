@@ -109,7 +109,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CreationDate = DateTime.UtcNow,
                 Role = "Manager",
                 IsRead = false,
-                NotificationType = "certificate",
+                NotificationType = "Certificate",
                 NotificationTypeId = certificationEntity.CertId,
             };
             await _uow.NotificationRepository.AddAsync(notification);
@@ -577,7 +577,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     CreationDate = DateTime.UtcNow,
                     Role = "Manager",
                     IsRead = false,
-                    NotificationType = "certificate",
+                    NotificationType = "Certificate",
                     NotificationTypeId = certification.CertId,
                 };
                 await _uow.NotificationRepository.AddAsync(notification);

@@ -57,7 +57,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CreationDate = DateTime.UtcNow,
                 Role = "Manager",
                 IsRead = false,
-                NotificationType = "organize",
+                NotificationType = "Organize",
                 NotificationTypeId = organizeEntity.OrganizeId,
 
             };
@@ -223,7 +223,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CreationDate = DateTime.UtcNow,
                 Role = "Manager",
                 IsRead = false,
-                NotificationType = "organize",
+                NotificationType = "Organize",
                 NotificationTypeId = organize.OrganizeId,
 
             };
@@ -258,7 +258,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 CreationDate = DateTime.UtcNow,
                 Role = "Staff",
                 IsRead = false,
-                NotificationType = "organize",
+                NotificationType = "Organize",
                 NotificationTypeId = organize.OrganizeId,
 
             };
