@@ -65,7 +65,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var result = await _uow.CourseRepository.AddAsync(courseEntity);
             await _uow.Commit(cancellationToken);
 
-            float? totalDiscount = 1;
+            float totalDiscount = 0f; // Đảm bảo totalDiscount là kiểu float.
 
             foreach (var voucherId in request.VoucherIds)
             {
@@ -88,10 +88,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         result.Vouchers.Add(_mapper.Map<Voucher>(voucher));
                     }
 
-                    totalDiscount = totalDiscount * (1 - voucher.Percentage / 100f);
+                    totalDiscount += (float)voucher.Percentage;
                 }
             }
-
+            if (courseEntity.CourseFee.HasValue && totalDiscount > 0)
+            {
+                float discountAmount = courseEntity.CourseFee.Value * (totalDiscount / 100f);
+                courseEntity.CourseDiscountFee = (int?)(courseEntity.CourseFee.Value - discountAmount);
+            }
             result.CourseDiscountFee = (int?)(result.CourseFee.Value * totalDiscount);
 
             _uow.CourseRepository.Update(result);
@@ -302,7 +306,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             course.CoursePermission = "Pending";
 
 
-            float? totalDiscount = 1;
+            float totalDiscount = 0f; // Đảm bảo totalDiscount là kiểu float.
 
             course.Vouchers.Clear();
 
@@ -326,13 +330,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         course.Vouchers.Add(_mapper.Map<Voucher>(voucher));
                     }
 
-                    totalDiscount *= (1 - voucher.Percentage / 100f);
+                    totalDiscount += (float)voucher.Percentage;
                 }
             }
 
-            if (course.CourseFee.HasValue)
+            if (course.CourseFee.HasValue && totalDiscount > 0)
             {
-                course.CourseDiscountFee = (int?)(course.CourseFee.Value * totalDiscount);
+                float discountAmount = course.CourseFee.Value * (totalDiscount / 100f);
+                course.CourseDiscountFee = (int?)(course.CourseFee.Value - discountAmount);
             }
 
             _uow.CourseRepository.Update(course);
@@ -414,7 +419,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             // Xóa các voucher hiện tại
             course.Vouchers.Clear();
 
-            float? totalDiscount = 1;
+            float totalDiscount = 0f; // Đảm bảo totalDiscount là kiểu float.
 
             foreach (var voucherId in voucherIds)
             {
@@ -442,14 +447,15 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         course.Vouchers.Add(_mapper.Map<Voucher>(voucher));
                     }
 
-                    totalDiscount *= (1 - voucher.Percentage / 100f);
+                    totalDiscount += (float)voucher.Percentage;
                 }
             }
 
             // Tính lại giá giảm
-            if (course.CourseFee.HasValue)
+            if (course.CourseFee.HasValue && totalDiscount > 0)
             {
-                course.CourseDiscountFee = (int?)(course.CourseFee.Value * totalDiscount);
+                float discountAmount = course.CourseFee.Value * (totalDiscount / 100f);
+                course.CourseDiscountFee = (int?)(course.CourseFee.Value - discountAmount);
             }
 
             // Cập nhật course
