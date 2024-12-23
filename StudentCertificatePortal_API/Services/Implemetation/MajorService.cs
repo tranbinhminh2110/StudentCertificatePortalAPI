@@ -103,9 +103,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     NotificationDescription = $"A new major '{request.MajorName}' has been created and is pending approval.",
                     NotificationImage = request.MajorImage,
                     CreationDate = DateTime.UtcNow,
-                    Role = "Manager",
+                    Role = "manager",
                     IsRead = false,
-                    NotificationType = "Major",
+                    NotificationType = "major",
                     NotificationTypeId = majorEntity.MajorId,
 
                 };
@@ -423,9 +423,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     NotificationDescription = $"The major '{major.MajorName}' has been updated and is pending approval.",
                     NotificationImage = request.MajorImage,
                     CreationDate = DateTime.UtcNow,
-                    Role = "Manager",
+                    Role = "manager",
                     IsRead = false,
-                    NotificationType = "Major",
+                    NotificationType = "major",
                     NotificationTypeId = major.MajorId,
 
                 };
@@ -477,9 +477,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 NotificationDescription = $"The major '{major.MajorName}' has been {majorPermission}.",
                 NotificationImage = major.MajorImage,
                 CreationDate = DateTime.UtcNow,
-                Role = "Staff",
+                Role = "staff",
                 IsRead = false,
-                NotificationType = "Major",
+                NotificationType = "major",
                 NotificationTypeId = major.MajorId,
 
             };

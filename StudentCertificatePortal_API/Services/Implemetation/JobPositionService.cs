@@ -95,9 +95,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 NotificationDescription = $"A new job position '{request.JobPositionName}' has been created and is pending approval.",
                 NotificationImage = null,
                 CreationDate = DateTime.UtcNow,
-                Role = "Manager",
+                Role = "manager",
                 IsRead = false,
-                NotificationType = "JobPosition",
+                NotificationType = "jobPosition",
                 NotificationTypeId = jobEntity.JobPositionId,
 
             };
@@ -365,9 +365,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     NotificationDescription = $"The job position '{job.JobPositionName}' has been updated and is pending approval.",
                     NotificationImage = null,
                     CreationDate = DateTime.UtcNow,
-                    Role = "Manager",
+                    Role = "manager",
                     IsRead = false,
-                    NotificationType = "JobPosition",
+                    NotificationType = "jobPosition",
                     NotificationTypeId = job.JobPositionId,
 
                 };
@@ -419,9 +419,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 NotificationName = "Job Position Permission Update",
                 NotificationDescription = $"The job position '{job.JobPositionName}' has been {jobPositionPermission}.",
                 CreationDate = DateTime.UtcNow,
-                Role = "Staff",
+                Role = "staff",
                 IsRead = false,
-                NotificationType = "JobPosition",
+                NotificationType = "jobPosition",
                 NotificationTypeId = job.JobPositionId,
             };
 

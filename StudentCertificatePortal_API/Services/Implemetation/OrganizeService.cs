@@ -55,9 +55,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 NotificationDescription = $"A new organization '{request.OrganizeName}' has been created and is pending approval.",
                 NotificationImage = null, 
                 CreationDate = DateTime.UtcNow,
-                Role = "Manager",
+                Role = "manager",
                 IsRead = false,
-                NotificationType = "Organize",
+                NotificationType = "organizations",
                 NotificationTypeId = organizeEntity.OrganizeId,
 
             };
@@ -221,9 +221,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 NotificationDescription = $"The organization '{organize.OrganizeName}' has been updated and is pending approval.",
                 NotificationImage = null,
                 CreationDate = DateTime.UtcNow,
-                Role = "Manager",
+                Role = "manager",
                 IsRead = false,
-                NotificationType = "Organize",
+                NotificationType = "organizations",
                 NotificationTypeId = organize.OrganizeId,
 
             };
@@ -256,9 +256,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 NotificationName = "Organize Permission Update",
                 NotificationDescription = $"The organization '{organize.OrganizeName}' has been {organizePermission}.",
                 CreationDate = DateTime.UtcNow,
-                Role = "Staff",
+                Role = "staff",
                 IsRead = false,
-                NotificationType = "Organize",
+                NotificationType = "organizations",
                 NotificationTypeId = organize.OrganizeId,
 
             };

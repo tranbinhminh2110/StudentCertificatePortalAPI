@@ -106,9 +106,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 NotificationDescription = $"A new course '{request.CourseName}' has been created and is pending approval.",
                 NotificationImage = request.CourseImage,
                 CreationDate = DateTime.UtcNow,
-                Role = "Manager",
+                Role = "manager",
                 IsRead = false,
-                NotificationType = "Course",
+                NotificationType = "internalCourses",
                 NotificationTypeId = result.CourseId,
             };
             await _uow.NotificationRepository.AddAsync(notification);
@@ -348,9 +348,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 NotificationDescription = $"The certification '{course.CourseName}' has been updated and is pending approval.",
                 NotificationImage = request.CourseImage,
                 CreationDate = DateTime.UtcNow,
-                Role = "Manager",
+                Role = "manager",
                 IsRead = false,
-                NotificationType = "Course",
+                NotificationType = "internalCourses",
                 NotificationTypeId = course.CourseId,
 
             };
@@ -385,9 +385,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 NotificationDescription = $"The course '{course.CourseName}' has been {coursePermission}.",
                 NotificationImage = course.CourseImage,
                 CreationDate = DateTime.UtcNow,
-                Role = "Staff",
+                Role = "staff",
                 IsRead = false,
-                NotificationType = "Course",
+                NotificationType = "internalCourses",
                 NotificationTypeId = course.CourseId,
 
             };
