@@ -46,7 +46,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             await _uow.Commit(cancellationToken);
             foreach (var model in request.QuestionRequests)
             {
-                if (!string.IsNullOrEmpty(model.UserAnswerText))
+                if (model.QuestionType == Enums.EnumQuestionType.Essay)
                 {
                     var essayScore = await CheckAnswerEssay(model.QuestionId, model.UserAnswerText, pointsPerQuestion, cancellationToken);
                     totalScore += essayScore;
