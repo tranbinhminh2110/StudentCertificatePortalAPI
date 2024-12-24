@@ -554,7 +554,7 @@ public partial class CipdbContext : DbContext
 
         modelBuilder.Entity<PeerReview>(entity =>
         {
-            entity.HasKey(e => e.PeerReviewId).HasName("PK__PeerRevi__CD1E31B9DAC759D9");
+            entity.HasKey(e => e.PeerReviewId).HasName("PK__PeerRevi__CD1E31B9DEAD03DE");
 
             entity.Property(e => e.PeerReviewId).HasColumnName("peer_review_id");
             entity.Property(e => e.FeedbackPeerReviewer).HasColumnName("feedback_peer_reviewer");
@@ -570,18 +570,17 @@ public partial class CipdbContext : DbContext
 
             entity.HasOne(d => d.ReviewedUser).WithMany(p => p.PeerReviewReviewedUsers)
                 .HasForeignKey(d => d.ReviewedUserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__PeerRevie__revie__214BF109");
+                .HasConstraintName("FK__PeerRevie__revie__2610A626");
 
             entity.HasOne(d => d.Reviewer).WithMany(p => p.PeerReviewReviewers)
                 .HasForeignKey(d => d.ReviewerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__PeerRevie__revie__2057CCD0");
+                .HasConstraintName("FK__PeerRevie__revie__251C81ED");
 
             entity.HasOne(d => d.Score).WithMany(p => p.PeerReviews)
                 .HasForeignKey(d => d.ScoreId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__PeerRevie__score__22401542");
+                .HasConstraintName("FK__PeerRevie__score__2704CA5F");
         });
 
         modelBuilder.Entity<Question>(entity =>

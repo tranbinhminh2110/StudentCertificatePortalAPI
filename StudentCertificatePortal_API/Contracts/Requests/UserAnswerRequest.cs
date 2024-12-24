@@ -1,4 +1,6 @@
-﻿namespace StudentCertificatePortal_API.Contracts.Requests
+﻿using StudentCertificatePortal_API.Enums;
+
+namespace StudentCertificatePortal_API.Contracts.Requests
 {
     public class UserAnswerRequest
     {
@@ -10,6 +12,7 @@
     public class QuestionRequest
     {
         public int QuestionId { get; set;}
+        public EnumQuestionType QuestionType { get; set; }
         public List<int> UserAnswerId { get; set; } = new List<int>();
         public string UserAnswerText { get; set; } = string.Empty;
     }

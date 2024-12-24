@@ -15,11 +15,11 @@ public partial class PeerReview
 
     public decimal? ScorePeerReviewer { get; set; }
 
-    public string FeedbackPeerReviewer { get; set; } = null!;
+    public string? FeedbackPeerReviewer { get; set; }
 
     public DateTime ReviewDate { get; set; }
 
-    public virtual User ReviewedUser { get; set; } = null!;
+    public virtual User? ReviewedUser { get; set; }
 
     public virtual User Reviewer { get; set; } = null!;
 
