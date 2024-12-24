@@ -1,4 +1,4 @@
-﻿using StudentCertificatePortal_API.DTOs;
+using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_Repository.Interface;
 
@@ -47,7 +47,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             foreach (var question in questions)
             {
                 var questionId = question.QuestionId;
-
+                var questionText = question.QuestionText;
                 // Lấy danh sách đáp án hệ thống (nếu không phải là Essay)
                 var systemAnswers = new List<AnswerDto>();
                 if (question.QuestionType == "Choice" || question.QuestionType == "choice")
@@ -88,6 +88,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 reviewDto.Questions.Add(new QuestionReviewDto
                 {
                     QuestionId = questionId,
+                     QuestionName = questionText,
                     QuestionType = question.QuestionType,
                     UserAnswersForChoice = question.QuestionType == "Essay" ? null : userAnswerIds, // Với bài essay không trả UserAnswers dạng ID
                     UserAnswerContentForEssay = userAnswerContent, // Thêm nội dung trả lời của bài essay
