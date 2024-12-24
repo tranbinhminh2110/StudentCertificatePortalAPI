@@ -1,8 +1,9 @@
-﻿namespace StudentCertificatePortal_API.DTOs
+namespace StudentCertificatePortal_API.DTOs
 {
     public class QuestionReviewDto
     {
         public int QuestionId { get; set; }
+        public string QuestionName { get; set; }
         public string QuestionType { get; set; } = string.Empty;
         public List<int>? UserAnswersForChoice { get; set; }
         public string? UserAnswerContentForEssay { get; set; } 
