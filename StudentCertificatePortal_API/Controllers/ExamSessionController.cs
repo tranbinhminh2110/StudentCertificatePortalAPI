@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using StudentCertificatePortal_API.Commons;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
+using StudentCertificatePortal_API.Services.Implemetation;
 using StudentCertificatePortal_API.Services.Interface;
 
 namespace StudentCertificatePortal_API.Controllers
@@ -56,6 +57,12 @@ namespace StudentCertificatePortal_API.Controllers
         public async Task<ActionResult<Result<List<ExamSessionDto>>>> GetExamSessionBySessionDate([FromRoute] DateTime sessionDate)
         {
             var result = await _service.GetExamSessionBySessionDateAsync(sessionDate, new CancellationToken());
+            return Ok(Result<List<ExamSessionDto>>.Succeed(result));
+        }
+        [HttpGet("by-cert/{certId:int}")]
+        public async Task<ActionResult<Result<List<ExamSessionDto>>>> GetExamSessionsByCertId([FromRoute] int certId)
+        {
+            var result = await _service.GetExamSessionByCertIdAsync(certId, new CancellationToken());
             return Ok(Result<List<ExamSessionDto>>.Succeed(result));
         }
 
