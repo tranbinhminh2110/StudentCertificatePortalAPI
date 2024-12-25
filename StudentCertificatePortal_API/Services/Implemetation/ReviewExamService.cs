@@ -15,18 +15,15 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<ExamReviewDto> GetExamReviewAsync(int examId, int userId, int scoreId, CancellationToken cancellationToken)
         {
-            // Lấy danh sách câu hỏi của kỳ thi
-            var questions = await _uow.QuestionRepository.WhereAsync(q => q.ExamId == examId, cancellationToken);
-
-            if (!questions.Any())
-                throw new KeyNotFoundException("No questions found for this exam.");
-
-            // Lấy danh sách câu trả lời của người dùng cho kỳ thi
+            // Retrieve user answers for the given exam
             var userAnswers = await _uow.UserAnswerRepository.WhereAsync(
                 x => x.ExamId == examId && x.UserId == userId && x.ScoreId == scoreId,
                 cancellationToken);
 
-            // Lấy điểm số
+            if (!userAnswers.Any())
+                throw new KeyNotFoundException("No user answers found for this exam.");
+
+            // Retrieve score record
             var score = await _uow.ScoreRepository.FirstOrDefaultAsync(
                 x => x.ScoreId == scoreId && x.UserId == userId && x.ExamId == examId,
                 cancellationToken);
@@ -34,65 +31,77 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             if (score == null)
                 throw new KeyNotFoundException("Score record not found for this attempt.");
 
-            // Tạo ExamReviewDto
-            var reviewDto = new ExamReviewDto()
+            // Retrieve question IDs from user answers
+            var questionIds = userAnswers.Select(x => x.QuestionId).Distinct();
+
+            // Fetch question details from the repository
+            var questions = await _uow.QuestionRepository.WhereAsync(
+                q => questionIds.Contains(q.QuestionId),
+                cancellationToken);
+
+            if (!questions.Any())
+                throw new KeyNotFoundException("Questions not found for this exam.");
+
+            // Create ExamReviewDto
+            var reviewDto = new ExamReviewDto
             {
                 ExamId = examId,
                 UserId = userId,
-                TotalScore = score.ScoreValue, // Tổng điểm
+                TotalScore = score.ScoreValue, // Total score
                 Questions = new List<QuestionReviewDto>()
             };
 
-            // Duyệt qua tất cả các câu hỏi
+            // Process each question
             foreach (var question in questions)
             {
-                var questionId = question.QuestionId;
-                var questionText = question.QuestionText;
-                // Lấy danh sách đáp án hệ thống (nếu không phải là Essay)
+                // Retrieve system answers for the question (if not Essay)
                 var systemAnswers = new List<AnswerDto>();
-                if (question.QuestionType == "Choice" || question.QuestionType == "choice")
+                if (question.QuestionType.Equals("Choice", StringComparison.OrdinalIgnoreCase))
                 {
-                    systemAnswers = (await _uow.AnswerRepository.WhereAsync(a => a.QuestionId == questionId, cancellationToken))
+                    systemAnswers = (await _uow.AnswerRepository.WhereAsync(
+                        a => a.QuestionId == question.QuestionId,
+                        cancellationToken))
                         .Select(a => new AnswerDto
                         {
                             AnswerId = a.AnswerId,
                             IsCorrect = a.IsCorrect,
-                            Text = a.Text,
-                        }).ToList();
+                            Text = a.Text
+                        })
+                        .ToList();
                 }
 
-                // Lấy câu trả lời của người dùng cho câu hỏi này
-                var userAnswersForQuestion = userAnswers.Where(x => x.QuestionId == questionId).ToList();
+                // Retrieve user answers for the current question
+                var userAnswersForQuestion = userAnswers.Where(x => x.QuestionId == question.QuestionId).ToList();
 
-                // Với câu hỏi essay, lấy nội dung trả lời từ AnswerContent
-                var userAnswerContent = question.QuestionType == "Essay"
-    ? (string.IsNullOrEmpty(userAnswersForQuestion.FirstOrDefault()?.AnswerContent) ? "No Answer" : userAnswersForQuestion.FirstOrDefault()?.AnswerContent)
-    : null;
+                // Handle Essay question user answer content
+                var userAnswerContent = question.QuestionType.Equals("Essay", StringComparison.OrdinalIgnoreCase)
+                    ? userAnswersForQuestion.FirstOrDefault()?.AnswerContent ?? "No Answer"
+                    : null;
 
-
+                // Retrieve user-selected answer IDs (for Choice questions)
                 var userAnswerIds = userAnswersForQuestion
                     .Where(x => x.AnswerId.HasValue)
                     .Select(x => x.AnswerId.Value)
                     .ToList();
 
-                // Xác định câu hỏi đúng hay sai
+                // Determine if the question is correct (not Essay)
                 var isCorrectQuestion = question.QuestionType != "Essay" &&
                                         userAnswersForQuestion.Any() &&
                                         userAnswersForQuestion.All(x => x.IsCorrect);
 
-                // Điểm và thời gian nộp của người dùng
+                // Retrieve score and submission time for the user
                 var scoreValue = userAnswersForQuestion.FirstOrDefault()?.ScoreValue ?? 0;
                 var submittedAt = userAnswersForQuestion.FirstOrDefault()?.SubmittedAt ?? DateTime.UtcNow;
 
-                // Thêm vào danh sách QuestionReviewDto
+                // Add question review details to ExamReviewDto
                 reviewDto.Questions.Add(new QuestionReviewDto
                 {
-                    QuestionId = questionId,
-                     QuestionName = questionText,
+                    QuestionId = question.QuestionId,
+                    QuestionName = question.QuestionText,
                     QuestionType = question.QuestionType,
-                    UserAnswersForChoice = question.QuestionType == "Essay" ? null : userAnswerIds, // Với bài essay không trả UserAnswers dạng ID
-                    UserAnswerContentForEssay = userAnswerContent, // Thêm nội dung trả lời của bài essay
-                    SystemAnswers = question.QuestionType == "Essay" ? new List<AnswerDto>() : systemAnswers, // Không trả SystemAnswers nếu là essay
+                    UserAnswersForChoice = question.QuestionType == "Essay" ? null : userAnswerIds,
+                    UserAnswerContentForEssay = userAnswerContent,
+                    SystemAnswers = question.QuestionType == "Essay" ? new List<AnswerDto>() : systemAnswers,
                     IsCorrectQuestion = isCorrectQuestion,
                     ScoreValue = scoreValue,
                     SubmittedAt = submittedAt
@@ -101,5 +110,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             return reviewDto;
         }
+
     }
 }
