@@ -13,6 +13,7 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<ExamSessionDto> DeleteExamSessionAsync(int sessionId, CancellationToken cancellationToken);
         Task<List<ExamSessionDto>> GetExamSessionByNameAsync(string sessionName, CancellationToken cancellationToken);
         Task<List<ExamSessionDto>> GetExamSessionBySessionDateAsync(DateTime sessionDate, CancellationToken cancellationToken);
+        Task<List<ExamSessionDto>> GetExamSessionByCertIdAsync(int certId, CancellationToken cancellationToken);
 
     }
 }

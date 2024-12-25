@@ -75,6 +75,18 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return _mapper.Map<List<ExamSessionDto>>(sortedResult);
         }
 
+        public async Task<List<ExamSessionDto>> GetExamSessionByCertIdAsync(int certId, CancellationToken cancellationToken)
+        {
+            var examSessions = await _uow.ExamSessionRepository.WhereAsync(x => x.CertId == certId, cancellationToken);
+
+            if (examSessions is null || !examSessions.Any())
+            {
+                throw new KeyNotFoundException("No exam sessions found for the given CertId.");
+            }
+
+            return _mapper.Map<List<ExamSessionDto>>(examSessions);
+        }
+
         public async Task<ExamSessionDto> GetExamSessionByIdAsync(int sessionId, CancellationToken cancellationToken)
         {
             var result = await _uow.ExamSessionRepository.FirstOrDefaultAsync(x => x.SessionId == sessionId, cancellationToken);
