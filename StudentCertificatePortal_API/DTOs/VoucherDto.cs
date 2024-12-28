@@ -18,6 +18,9 @@ namespace StudentCertificatePortal_API.DTOs
         public DateTime? ExpiryDate { get; set; }
 
         public bool? VoucherStatus { get; set; }
+        public string? VoucherImage { get; set; }
+
+        public string? VoucherLevel { get; set; }
         public List<int>? ExamId { get; set; } = new List<int>();
         public List<int>? CourseId { get; set; } = new List<int>();
         public List<ExamDetailsDto> ExamDetails { get; set; } = new List<ExamDetailsDto>();

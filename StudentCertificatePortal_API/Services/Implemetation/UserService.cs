@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
+using StudentCertificatePortal_API.Enums;
 using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_API.Utils;
@@ -101,7 +102,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 Role = "Student",
                 Status = true,
                 UserCreatedAt = DateTime.UtcNow,
-                UserImage = request.UserImage
+                UserImage = request.UserImage,
+                UserLevel = EnumLevel.Bronze.ToString(),
             };
 
             var addedUser = await _uow.UserRepository.AddAsync(userEntity);
@@ -135,7 +137,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 Role = request.Role,
                 Status = request.Status,
                 UserCreatedAt = DateTime.UtcNow,
-                UserImage = request.UserImage
+                UserImage = request.UserImage,
+                UserLevel = EnumLevel.Bronze.ToString(),
             };
 
             var addedUser = await _uow.UserRepository.AddAsync(userEntity);

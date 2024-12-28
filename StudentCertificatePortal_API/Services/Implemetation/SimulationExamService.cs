@@ -500,7 +500,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 float discountAmount = exam.ExamFee.Value * (totalDiscount / 100f);
                 exam.ExamDiscountFee = (int?)(exam.ExamFee.Value - discountAmount);
             }
-
+            else
+            {
+                // Nếu không có voucher, trả về giá gốc
+                exam.ExamDiscountFee = exam.ExamFee;
+            }
 
             // Cập nhật dữ liệu
             _uow.SimulationExamRepository.Update(exam);

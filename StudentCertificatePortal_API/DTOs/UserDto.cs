@@ -29,6 +29,7 @@ namespace StudentCertificatePortal_API.DTOs
 
         public string? UserImage { get; set; }
         public int UserOffenseCount { get; set; }
+        public string? UserLevel { get; set; }
 
     }
 }

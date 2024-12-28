@@ -53,5 +53,11 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.GetVoucherByNameAsync(voucherName, new CancellationToken());
             return Ok(Result<List<VoucherDto>>.Succeed(result));
         }
+        [HttpGet("by-user-level/{userId:int}")]
+        public async Task<ActionResult<Result<List<VoucherDto>>>> GetVouchersByUserLevelAsync([FromRoute] int userId)
+        {
+            var result = await _service.GetVouchersByUserLevelAsync(userId, new CancellationToken());
+            return Ok(Result<List<VoucherDto>>.Succeed(result));
+        }
     }
 }
