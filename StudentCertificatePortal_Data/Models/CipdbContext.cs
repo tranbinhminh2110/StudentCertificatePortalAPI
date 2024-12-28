@@ -799,6 +799,9 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.UserImage)
                 .HasColumnType("text")
                 .HasColumnName("user_image");
+            entity.Property(e => e.UserLevel)
+                .HasMaxLength(255)
+                .HasColumnName("user_level");
             entity.Property(e => e.UserOffenseCount).HasColumnName("user_offenseCount");
             entity.Property(e => e.Username)
                 .HasMaxLength(255)
@@ -879,6 +882,12 @@ public partial class CipdbContext : DbContext
             entity.Property(e => e.VoucherDescription)
                 .HasColumnType("text")
                 .HasColumnName("voucher_description");
+            entity.Property(e => e.VoucherImage)
+                .HasColumnType("text")
+                .HasColumnName("voucher_image");
+            entity.Property(e => e.VoucherLevel)
+                .HasMaxLength(255)
+                .HasColumnName("voucher_level");
             entity.Property(e => e.VoucherName)
                 .HasMaxLength(255)
                 .HasColumnName("voucher_name");

@@ -11,5 +11,6 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<VoucherDto> UpdateVoucherAsync(int voucherId, UpdateVoucherRequest request, CancellationToken cancellationToken);
         Task<VoucherDto> DeleteVoucherAsync(int voucherId, CancellationToken cancellationToken);
         Task<List<VoucherDto>> GetVoucherByNameAsync(string voucherName, CancellationToken cancellationToken);
+        Task<List<VoucherDto>> GetVouchersByUserLevelAsync(int userId, CancellationToken cancellationToken);
     }
 }

@@ -31,6 +31,8 @@ public partial class User
 
     public int UserOffenseCount { get; set; }
 
+    public string? UserLevel { get; set; }
+
     public virtual Cart? Cart { get; set; }
 
     public virtual ICollection<CoursesEnrollment> CoursesEnrollments { get; set; } = new List<CoursesEnrollment>();

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
+using StudentCertificatePortal_API.Enums;
 using StudentCertificatePortal_API.Exceptions;
 using StudentCertificatePortal_API.Services.Interface;
 using StudentCertificatePortal_API.Utils;
@@ -43,7 +44,9 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 Percentage = request.Percentage,
                 CreationDate = request.CreationDate,
                 ExpiryDate = request.ExpiryDate,
-                VoucherStatus = request.ExpiryDate > DateTime.Now 
+                VoucherStatus = request.ExpiryDate > DateTime.Now,
+                VoucherImage = request.VoucherImage,
+                VoucherLevel = request.VoucherLevel.ToString(),
             };
             if (request.ExamId != null && request.ExamId.Any())
             {
@@ -104,7 +107,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 var voucherDto = _mapper.Map<VoucherDto>(voucherEntity);
                 voucherDto.ExamId = voucherEntity.Exams
                     .Select(voucherr => voucherr.ExamId)
-                    .ToList();                
+                    .ToList();
                 voucherDto.CourseId = voucherEntity.Courses
                     .Select(voucherr => voucherr.CourseId)
                     .ToList();
@@ -124,14 +127,15 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 x => x.VoucherId == voucherId,
                 cancellationToken, include: q => q.Include(c => c.Exams)
                 .Include(c => c.Courses));
-            if (voucher is null) {
+            if (voucher is null)
+            {
                 throw new KeyNotFoundException("Voucher not found.");
             }
             if (voucher.Courses != null && voucher.Courses.Any())
             {
                 foreach (var course in voucher.Courses)
                 {
-                    course.CourseDiscountFee = course.CourseFee; 
+                    course.CourseDiscountFee = course.CourseFee;
                 }
             }
             if (voucher.Exams != null && voucher.Exams.Any())
@@ -162,13 +166,13 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 foreach (var course in voucher.Courses)
                 {
-                    course.CourseDiscountFee = course.CourseFee; 
+                    course.CourseDiscountFee = course.CourseFee;
                     _uow.CourseRepository.Update(course);
                 }
 
                 foreach (var exam in voucher.Exams)
                 {
-                    exam.ExamDiscountFee = exam.ExamFee; 
+                    exam.ExamDiscountFee = exam.ExamFee;
                     _uow.SimulationExamRepository.Update(exam);
                 }
             }
@@ -183,13 +187,13 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 foreach (var course in voucher.Courses)
                 {
                     course.CourseDiscountFee = course.CourseFee;
-                    _uow.CourseRepository.Update(course);  
+                    _uow.CourseRepository.Update(course);
 
                 }
                 foreach (var exam in voucher.Exams)
                 {
                     exam.ExamDiscountFee = exam.ExamFee;
-                    _uow.SimulationExamRepository.Update(exam); 
+                    _uow.SimulationExamRepository.Update(exam);
                 }
 
                 _uow.VoucherRepository.Update(voucher);
@@ -234,7 +238,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         CourseFee = course.CourseFee,
                         CourseDiscountFee = course.CourseDiscountFee,
                         CourseImage = course.CourseImage,
-              
+
                     }).ToList();
                 return voucherDto;
             }).ToList();
@@ -250,7 +254,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 voucher.VoucherStatus = false;
                 _uow.VoucherRepository.Update(voucher);
-            }   
+            }
 
             var validVouchers = await _uow.VoucherRepository.WhereAsync(v =>
                 v.ExpiryDate > DateTime.Now && v.VoucherStatus == false);
@@ -378,6 +382,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             voucher.CreationDate = request.CreationDate;
             voucher.ExpiryDate = request.ExpiryDate;
             voucher.VoucherStatus = request.ExpiryDate > DateTime.Now;
+            voucher.VoucherImage = request.VoucherImage;
+            voucher.VoucherLevel = request.VoucherLevel.ToString();
 
             // Get existing Exam IDs
             var existingExamIds = voucher.Exams.Select(e => e.ExamId).ToList();
@@ -511,5 +517,74 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
         }
 
+        public async Task<List<VoucherDto>> GetVouchersByUserLevelAsync(int userId, CancellationToken cancellationToken)
+        {
+            // Lấy thông tin UserLevel của người dùng từ UserId (Giả sử UserLevel được lưu trong User)
+            var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found.");
+            }
+
+            var userLevel = user.UserLevel; // Giả sử UserLevel là EnumLevel
+
+            // Chuyển đổi UserLevel thành giá trị số nguyên (0, 1, 2, 3)
+            var userLevelIndex = (int)Enum.Parse(typeof(EnumLevel), userLevel);
+
+            // Lọc các voucher từ cơ sở dữ liệu trước
+            var vouchers = await _uow.VoucherRepository.WhereAsync(
+                v => v.ExpiryDate > DateTime.Now && v.VoucherStatus == true,
+                cancellationToken,
+                include: query => query.Include(c => c.Exams)
+                                      .Include(c => c.Courses)
+            );
+
+            if (vouchers == null || !vouchers.Any())
+            {
+                throw new KeyNotFoundException("No vouchers found for the given user level.");
+            }
+
+            // Lọc các voucher có cấp độ nhỏ hơn hoặc bằng UserLevel trong bộ nhớ (memory)
+            var validVouchers = vouchers.Where(v =>
+            {
+                // Chuyển VoucherLevel (chuỗi) thành EnumLevel và so sánh giá trị số nguyên
+                if (Enum.TryParse(v.VoucherLevel, out EnumLevel voucherLevelEnum))
+                {
+                    return (int)voucherLevelEnum <= userLevelIndex;
+                }
+                return false; // Trả về false nếu không thể chuyển đổi VoucherLevel
+            }).ToList();
+
+            var voucherDtos = _mapper.Map<List<VoucherDto>>(validVouchers);
+
+            // Chuyển đổi các thông tin chi tiết về khóa học và bài thi
+            foreach (var voucherDto in voucherDtos)
+            {
+                var voucher = validVouchers.FirstOrDefault(x => x.VoucherId == voucherDto.VoucherId);
+                voucherDto.ExamDetails = voucher.Exams
+                    .Select(exam => new ExamDetailsDto
+                    {
+                        ExamId = exam.ExamId,
+                        ExamName = exam.ExamName,
+                        ExamCode = exam.ExamCode,
+                        ExamFee = exam.ExamFee,
+                        ExamDiscountFee = exam.ExamDiscountFee,
+                        ExamImage = exam.ExamImage,
+                    }).ToList();
+                voucherDto.CourseDetails = voucher.Courses
+                    .Select(course => new CourseDetailsDto
+                    {
+                        CourseId = course.CourseId,
+                        CourseName = course.CourseName,
+                        CourseCode = course.CourseCode,
+                        CourseTime = course.CourseTime,
+                        CourseFee = course.CourseFee,
+                        CourseDiscountFee = course.CourseDiscountFee,
+                        CourseImage = course.CourseImage,
+                    }).ToList();
+            }
+
+            return voucherDtos;
+        }
     }
 }
