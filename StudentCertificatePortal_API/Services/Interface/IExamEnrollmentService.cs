@@ -14,5 +14,6 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<ExamEnrollmentDto> DeleteExamEnrollmentAsync(int examEnrollmentId, CancellationToken cancellationToken);
 
         /*Task<List<ExamEnrollmentDto>> GetExamEnrollmentByNameAsync(string examEnrollmentName, CancellationToken cancellationToken);*/
-    }
+/*        Task<ExamEnrollmentResponse> CreateExamEnrollmentVoucherAsync(CreateExamEnrollmentVoucherRequest request, CancellationToken cancellationToken);
+*/    }
 }

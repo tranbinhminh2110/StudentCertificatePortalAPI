@@ -18,6 +18,8 @@ namespace StudentCertificatePortal_API.DTOs
         public DateTime? CreationDate { get; set; }
 
         public DateTime? ExpiryDate { get; set; }
+        public int? TotalPriceVoucher { get; set; }
+
 
         public List<ExamDetailsDto> SimulationExamDetail { get; set; } = new List<ExamDetailsDto>();
     }
