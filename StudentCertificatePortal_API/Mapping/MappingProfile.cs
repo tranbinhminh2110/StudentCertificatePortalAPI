@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_Data.Models;
 using System.Reflection;
@@ -8,14 +8,19 @@ namespace StudentCertificatePortal_API.Mapping
     public class MappingProfile : Profile
     {
         public MappingProfile()
-        {
-            
-            ApplyMappingsFromAssembly(Assembly.GetExecutingAssembly());
-            CreateMap<Certification, CertificationDto>()
-            .ForMember(dest => dest.CertPrerequisite, opt => opt.Ignore())
-            .ForMember(dest => dest.CertCodePrerequisite, opt => opt.Ignore())
-            .ForMember(dest => dest.CertDescriptionPrerequisite, opt => opt.Ignore());
-        }
+{
+    
+    ApplyMappingsFromAssembly(Assembly.GetExecutingAssembly());
+    CreateMap<UserAnswer, UserAnswerForEssayDto>();
+    CreateMap<PeerReview, PeerReviewDto>()
+    .ForMember(dest => dest.ReviewedUserId, opt => opt.MapFrom(src => src.ReviewedUserId ?? 0)) // Default to 0 if null
+    .ForMember(dest => dest.ScorePeerReviewer, opt => opt.MapFrom(src => src.ScorePeerReviewer ?? 0)) // Default to 0 if null
+    .ForMember(dest => dest.FeedbackPeerReviewer, opt => opt.MapFrom(src => src.FeedbackPeerReviewer ?? string.Empty)); // Default to empty string if null
+    CreateMap<Certification, CertificationDto>()
+    .ForMember(dest => dest.CertPrerequisite, opt => opt.Ignore())
+    .ForMember(dest => dest.CertCodePrerequisite, opt => opt.Ignore())
+    .ForMember(dest => dest.CertDescriptionPrerequisite, opt => opt.Ignore());
+}
 
         private void ApplyMappingsFromAssembly(Assembly assembly)
         {
