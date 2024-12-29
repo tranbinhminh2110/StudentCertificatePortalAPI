@@ -75,5 +75,13 @@ namespace StudentCertificatePortal_API.Controllers
             var result = await _service.CreateExamEnrollmentVoucherAsync(request, new CancellationToken());
             return Ok(Result<ExamEnrollmentResponse>.Succeed(result));
         }
+
+        [HttpPut("update-with-voucher/{eEnrollmentId:int}")]
+        public async Task<ActionResult<Result<ExamEnrollmentDto>>> UpdateExamEnrollmentVoucher(int eEnrollmentId, UpdateExamEnrollmentVoucherRequest request)
+        {
+            var result = await _service.UpdateExamEnrollmentVoucherAsync(eEnrollmentId, request, new CancellationToken());
+            return Ok(Result<ExamEnrollmentDto>.Succeed(result));
+        }
+
     }
 }

@@ -369,11 +369,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 if (voucherId > 0)
                 {
                     var voucher = await _voucherService.GetVoucherByIdAsync(voucherId, cancellationToken);
-                    if (voucher is null || voucher.VoucherStatus == false)
+                    if (voucher == null || voucher.VoucherStatus == false)
                     {
-                        throw new KeyNotFoundException("Voucher not found or is expired.");
+                        throw new KeyNotFoundException($"Voucher with ID {voucherId} not found or is expired.");
                     }
+
+
                     totalVoucherDiscount += (float)voucher.Percentage;
+
                 }
             }
             int totalPriceVoucher = 0;
@@ -385,20 +388,25 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 {
                     throw new KeyNotFoundException($"Simulation Id {simulationId} not found.");
                 }
+
                 if (simulation.ExamFee.HasValue)
                 {
                     totalPrice += simulation.ExamFee.Value;  // Cộng giá gốc của bài thi vào tổng
                 }
-
                 if (simulation.ExamFee.HasValue && totalVoucherDiscount > 0)
                 {
-                    float discountAmount = simulation.ExamFee.Value * (totalVoucherDiscount / 100f);
-                    simulation.ExamDiscountFee = (int?)(simulation.ExamFee.Value - discountAmount);
+                    float discountAmount = totalPrice * (totalVoucherDiscount / 100f);
+                    totalPriceVoucher = (int)Math.Ceiling(totalPrice - discountAmount);
+                }
+                else
+                {
+                    totalPriceVoucher = totalPrice;
                 }
 
-                totalPriceVoucher += simulation.ExamDiscountFee ?? 0; 
+                simulations.Add(simulation);
 
             }
+
             var newEnrollmentEntity = new ExamsEnrollment()
             {
                 UserId = request.UserId,
@@ -406,6 +414,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 ExamEnrollmentStatus = EnumExamEnrollment.OnGoing.ToString(),
                 TotalPrice = totalPrice,
                 TotalPriceVoucher = totalPriceVoucher
+
             };
 
             var enrollmentResult = await _uow.ExamEnrollmentRepository.AddAsync(newEnrollmentEntity);
@@ -416,7 +425,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 var studentOfExamEntity = new StudentOfExam()
                 {
-                    Price = simulation.ExamDiscountFee,
+                    Price = simulation.ExamFee,
                     Status = "Unpaid",
                     ExamId = simulation.ExamId,
                     EnrollmentId = enrollmentResult.ExamEnrollmentId
@@ -700,6 +709,87 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return _mapper.Map<ExamEnrollmentDto>(exam);
         }
 
+        public async Task<ExamEnrollmentDto> UpdateExamEnrollmentVoucherAsync(int examEnrollmentId, UpdateExamEnrollmentVoucherRequest request, CancellationToken cancellationToken)
+        {
+            var validation = await _updateExamEnrollmentVoucherValidator.ValidateAsync(request, cancellationToken);
+            if (!validation.IsValid)
+            {
+                throw new RequestValidationException(validation.Errors);
+            }
 
+            var exam = await _uow.ExamEnrollmentRepository.FirstOrDefaultAsync(x => x.ExamEnrollmentId == examEnrollmentId, cancellationToken);
+            if (exam == null)
+            {
+                throw new KeyNotFoundException("Exam Enrollment not found.");
+            }
+
+            var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken);
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found. Exam Enrollment update requires a valid UserId.");
+            }
+
+            if (request.Simulation_Exams == null || !request.Simulation_Exams.Any())
+            {
+                throw new ArgumentException("Simulation_Exams cannot be null or empty.");
+            }
+
+            // Khởi tạo totalPrice và totalVoucherDiscount
+            int totalPrice = 0;
+            float totalVoucherDiscount = 0f;
+
+            // Xử lý voucher
+            foreach (var voucherId in request.VoucherIds)
+            {
+                if (voucherId > 0)
+                {
+                    var voucher = await _voucherService.GetVoucherByIdAsync(voucherId, cancellationToken);
+                    if (voucher == null || voucher.VoucherStatus == false)
+                    {
+                        throw new KeyNotFoundException($"Voucher with ID {voucherId} not found or is expired.");
+                    }
+                    totalVoucherDiscount += (float)voucher.Percentage;
+                }
+            }
+
+            // Xử lý SimulationExams
+            var simulations = new List<SimulationExam>();
+            foreach (var simulationId in request.Simulation_Exams)
+            {
+                var simulation = await _uow.SimulationExamRepository.FirstOrDefaultAsync(x => x.ExamId == simulationId, cancellationToken);
+                if (simulation == null)
+                {
+                    throw new KeyNotFoundException($"Simulation exam with ID {simulationId} not found.");
+                }
+
+                // Cộng giá gốc của bài thi vào tổng giá
+                if (simulation.ExamFee.HasValue)
+                {
+                    totalPrice += simulation.ExamFee.Value;
+                }
+
+                simulations.Add(simulation);
+            }
+
+            // Tính toán tổng giá trị sau khi áp dụng voucher
+            int totalPriceVoucher = totalPrice;
+            if (totalVoucherDiscount > 0)
+            {
+                float discountAmount = totalPrice * (totalVoucherDiscount / 100f);
+                totalPriceVoucher = (int)Math.Ceiling(totalPrice - discountAmount);
+            }
+
+            // Cập nhật thông tin ExamEnrollment
+            exam.UserId = request.UserId;
+            exam.TotalPrice = totalPrice;
+            exam.TotalPriceVoucher = totalPriceVoucher;
+            exam.ExamEnrollmentDate = DateTime.UtcNow;
+
+            // Lưu các thay đổi
+            _uow.ExamEnrollmentRepository.Update(exam);
+            await _uow.Commit(cancellationToken);
+
+            return _mapper.Map<ExamEnrollmentDto>(exam);
+        }
     }
 }
