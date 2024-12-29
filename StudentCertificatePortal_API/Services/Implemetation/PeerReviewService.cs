@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
@@ -69,25 +69,33 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         }
 
         public async Task<PeerReviewDto> GetPeerReviewByIdAsync(int peerReviewId, CancellationToken cancellationToken)
-        {
-            // Lấy PeerReview theo ID
-            var peerReview = await _uow.PeerReviewRepository.FirstOrDefaultAsync(x => x.PeerReviewId == peerReviewId);
-            if (peerReview == null)
-            {
-                throw new KeyNotFoundException("Peer review not found.");
-            }
+{
+    // Lấy PeerReview theo ID
+    var peerReview = await _uow.PeerReviewRepository.FirstOrDefaultAsync(x => x.PeerReviewId == peerReviewId);
+    if (peerReview == null)
+    {
+        throw new KeyNotFoundException("Peer review not found.");
+    }
 
-            // Lấy tất cả UserAnswers của người dùng dựa trên ScoreId
-            var userAnswers = await _uow.UserAnswerRepository.WhereAsync(x => x.ScoreId == peerReview.ScoreId, cancellationToken);
+    // Lấy tất cả UserAnswers của người dùng dựa trên ScoreId
+    var userAnswers = await _uow.UserAnswerRepository.WhereAsync(x => x.ScoreId == peerReview.ScoreId && x.QuestionType == Enums.EnumQuestionType.Essay.ToString(), cancellationToken, 
+        include: x => x.Include(q => q.Question));
 
-            // Chuyển đổi PeerReview thành DTO
-            var peerReviewDto = _mapper.Map<PeerReviewDto>(peerReview);
 
-            // Chuyển đổi danh sách UserAnswers thành danh sách UserAnswerForEssayDto và gắn vào PeerReviewDto
-            peerReviewDto.UserAnswers = _mapper.Map<List<UserAnswerForEssayDto>>(userAnswers);
+    // Chuyển đổi PeerReview thành DTO
+    var peerReviewDto = _mapper.Map<PeerReviewDto>(peerReview);
 
-            return peerReviewDto;
-        }
+    peerReviewDto.UserAnswers = userAnswers.Select(userAnswer => new UserAnswerForEssayDto
+    {
+        UserAnswerId = userAnswer.UserAnswerId,
+        QuestionId = userAnswer.QuestionId?? 0,
+        QuestionName = userAnswer.Question?.QuestionText ?? "Unknown",
+        ScoreValue = userAnswer.ScoreValue ?? 0,
+        AnswerContent = userAnswer.AnswerContent
+    }).ToList();
+
+    return peerReviewDto;
+}
 
 
         public async Task<PeerReviewDto> UpdatePeerReviewAsync(int peerReviewId, UpdatePeerReviewRequest request, CancellationToken cancellationToken)
