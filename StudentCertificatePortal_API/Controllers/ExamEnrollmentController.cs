@@ -68,12 +68,12 @@ namespace StudentCertificatePortal_API.Controllers
             return Ok(Result<ExamEnrollmentDto>.Succeed(result));
         }
 
-        /*[HttpPost]
+        [HttpPost]
         [Route("create-with-voucher")]
         public async Task<ActionResult<Result<ExamEnrollmentResponse>>> CreateExamEnrollmentVoucher([FromBody] CreateExamEnrollmentVoucherRequest request)
         {
             var result = await _service.CreateExamEnrollmentVoucherAsync(request, new CancellationToken());
             return Ok(Result<ExamEnrollmentResponse>.Succeed(result));
-        }*/
+        }
     }
 }

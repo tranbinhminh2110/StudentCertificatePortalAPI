@@ -17,5 +17,7 @@ public partial class Question
 
     public virtual SimulationExam? Exam { get; set; }
 
+    public virtual ICollection<PeerReviewDetail> PeerReviewDetails { get; set; } = new List<PeerReviewDetail>();
+
     public virtual ICollection<UserAnswer> UserAnswers { get; set; } = new List<UserAnswer>();
 }

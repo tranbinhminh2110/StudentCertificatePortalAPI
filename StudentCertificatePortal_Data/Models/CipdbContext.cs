@@ -45,6 +45,8 @@ public partial class CipdbContext : DbContext
 
     public virtual DbSet<PeerReview> PeerReviews { get; set; }
 
+    public virtual DbSet<PeerReviewDetail> PeerReviewDetails { get; set; }
+
     public virtual DbSet<Question> Questions { get; set; }
 
     public virtual DbSet<Score> Scores { get; set; }
@@ -582,6 +584,37 @@ public partial class CipdbContext : DbContext
                 .HasForeignKey(d => d.ScoreId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__PeerRevie__score__2704CA5F");
+        });
+
+        modelBuilder.Entity<PeerReviewDetail>(entity =>
+        {
+            entity.HasKey(e => e.PeerReviewDetailId).HasName("PK__Peer_Rev__D7EAE94043085AEE");
+
+            entity.ToTable("Peer_Review_Detail");
+
+            entity.Property(e => e.PeerReviewDetailId).HasColumnName("peer_review_detail_id");
+            entity.Property(e => e.Feedback).HasColumnName("feedback");
+            entity.Property(e => e.PeerReviewId).HasColumnName("peer_review_id");
+            entity.Property(e => e.QuestionId).HasColumnName("question_id");
+            entity.Property(e => e.ScoreEachQuestion)
+                .HasColumnType("decimal(10, 2)")
+                .HasColumnName("score_each_question");
+            entity.Property(e => e.UserAnswerId).HasColumnName("user_answer_id");
+
+            entity.HasOne(d => d.PeerReview).WithMany(p => p.PeerReviewDetails)
+                .HasForeignKey(d => d.PeerReviewId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PeerReview");
+
+            entity.HasOne(d => d.Question).WithMany(p => p.PeerReviewDetails)
+                .HasForeignKey(d => d.QuestionId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Question");
+
+            entity.HasOne(d => d.UserAnswer).WithMany(p => p.PeerReviewDetails)
+                .HasForeignKey(d => d.UserAnswerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_UserAnswer");
         });
 
         modelBuilder.Entity<Question>(entity =>

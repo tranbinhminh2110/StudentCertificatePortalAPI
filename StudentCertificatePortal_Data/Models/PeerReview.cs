@@ -19,6 +19,8 @@ public partial class PeerReview
 
     public DateTime ReviewDate { get; set; }
 
+    public virtual ICollection<PeerReviewDetail> PeerReviewDetails { get; set; } = new List<PeerReviewDetail>();
+
     public virtual User? ReviewedUser { get; set; }
 
     public virtual User Reviewer { get; set; } = null!;

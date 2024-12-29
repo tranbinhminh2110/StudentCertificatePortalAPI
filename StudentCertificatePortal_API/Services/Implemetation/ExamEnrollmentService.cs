@@ -232,9 +232,216 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 ExamEnrollment = _mapper.Map<ExamEnrollmentDto>(enrollmentResult)
             };
         }
+        public async Task<ExamEnrollmentResponse> CreateExamEnrollmentVoucherAsync(CreateExamEnrollmentVoucherRequest request, CancellationToken cancellationToken)
+        {
+            // Validate request using validator
+            var validation = await _addExamEnrollmentVoucherValidator.ValidateAsync(request, cancellationToken);
+            if (!validation.IsValid)
+            {
+                throw new RequestValidationException(validation.Errors);
+            }
 
-       
-            public async Task<ExamEnrollmentDto> DeleteExamEnrollmentAsync(int examEnrollmentId, CancellationToken cancellationToken)
+            // Check if user exists
+            var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == request.UserId, cancellationToken);
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found. Exam Enrollment creation requires a valid UserId.");
+            }
+
+            if (request.Simulation_Exams == null || !request.Simulation_Exams.Any())
+            {
+                throw new ArgumentException("Simulation_Exams cannot be null or empty.");
+            }
+
+            // Fetch existing enrollments for the user
+            var userEnrollments = await _uow.ExamEnrollmentRepository
+                .Include(x => x.StudentOfExams)
+                .Where(x => x.UserId == request.UserId)
+                .ToListAsync(cancellationToken);
+
+            // Get all StudentOfExams for this user that are either unpaid or expired
+            var existingStudentExams = userEnrollments
+                .SelectMany(e => e.StudentOfExams)
+                .ToList();
+
+            var duplicateExamsToRemove = existingStudentExams
+                .Where(exam =>
+                    request.Simulation_Exams.Contains(exam.ExamId) &&
+                    (exam.Status == "Unpaid" || exam.Status == "Expired"))
+                .ToList();
+
+            // Remove duplicate exams from their enrollments
+            foreach (var examToRemove in duplicateExamsToRemove)
+            {
+                var enrollment = userEnrollments.First(e => e.ExamEnrollmentId == examToRemove.EnrollmentId);
+                enrollment.StudentOfExams.Remove(examToRemove);
+
+                // Mark enrollment as Cancelled if it becomes empty
+                if (!enrollment.StudentOfExams.Any())
+                {
+                    enrollment.ExamEnrollmentStatus = "Cancelled";
+                }
+                // Recalculate total price for the enrollment
+                else
+                {
+                    enrollment.TotalPrice = enrollment.StudentOfExams.Sum(e => e.Price ?? 0);
+                }
+
+                _uow.ExamEnrollmentRepository.Update(enrollment);
+            }
+            await _uow.Commit(cancellationToken);
+
+            // Check for already purchased (valid) exams
+            var purchasedExamIds = existingStudentExams
+                .Where(exam => exam.Status != "Unpaid" && exam.Status != "Expired")
+                .Select(exam => exam.ExamId)
+                .ToList();
+
+            // Remove purchased exams from the request
+            var remainingExams = request.Simulation_Exams
+                .Where(examId => !purchasedExamIds.Contains(examId))
+                .ToList();
+
+            // If all exams are already purchased
+            if (!remainingExams.Any())
+            {
+                return new ExamEnrollmentResponse
+                {
+                    IsEnrolled = true,
+                    Status = "Purchased",
+                    ExamEnrollmentId = userEnrollments
+                        .SelectMany(e => e.StudentOfExams)
+                        .First(e => purchasedExamIds.Contains(e.ExamId))
+                        .EnrollmentId,
+                    Message = "All requested simulation exams have already been purchased."
+                };
+            }
+
+            // Find matching enrollment for remaining exams
+            var matchingEnrollment = userEnrollments
+                .Where(enrollment =>
+                    enrollment.StudentOfExams.All(exam => exam.Status == "Unpaid") && // All exams must be unpaid
+                    enrollment.StudentOfExams.Count == remainingExams.Count && // Must have same count
+                    enrollment.StudentOfExams.All(exam => remainingExams.Contains(exam.ExamId))) // All exams must match
+                .FirstOrDefault();
+
+            // If we found a matching enrollment with exact exam count, reuse it
+            if (matchingEnrollment != null)
+            {
+                // Update the enrollment date
+                matchingEnrollment.TotalPrice = matchingEnrollment.StudentOfExams.Sum(e => e.Price ?? 0);
+                matchingEnrollment.ExamEnrollmentDate = DateTime.UtcNow;
+                _uow.ExamEnrollmentRepository.Update(matchingEnrollment);
+                await _uow.Commit(cancellationToken);
+
+                var message = purchasedExamIds.Any()
+                    ? "Some exams were already purchased. Existing unpaid enrollment reused for remaining exams."
+                    : "Existing unpaid enrollment reused.";
+
+                return new ExamEnrollmentResponse
+                {
+                    IsEnrolled = false,
+                    Status = "Created",
+                    ExamEnrollmentId = matchingEnrollment.ExamEnrollmentId,
+                    Message = message,
+                    ExamEnrollment = _mapper.Map<ExamEnrollmentDto>(matchingEnrollment)
+                };
+            }
+
+            // Update status of old unpaid enrollments to "Cancelled"
+            foreach (var enrollment in userEnrollments)
+            {
+                if (enrollment.StudentOfExams.All(exam => exam.Status == "Unpaid"))
+                {
+                    enrollment.ExamEnrollmentStatus = "Cancelled";
+                    _uow.ExamEnrollmentRepository.Update(enrollment);
+                }
+            }
+            await _uow.Commit(cancellationToken);
+
+            // Create new enrollment for remaining exams
+            var simulations = new List<SimulationExam>();
+            int totalPrice = 0;
+            float totalVoucherDiscount = 0f;
+
+            foreach (var voucherId in request.VoucherIds)
+            {
+                if (voucherId > 0)
+                {
+                    var voucher = await _voucherService.GetVoucherByIdAsync(voucherId, cancellationToken);
+                    if (voucher is null || voucher.VoucherStatus == false)
+                    {
+                        throw new KeyNotFoundException("Voucher not found or is expired.");
+                    }
+                    totalVoucherDiscount += (float)voucher.Percentage;
+                }
+            }
+            int totalPriceVoucher = 0;
+
+            foreach (var simulationId in remainingExams)
+            {
+                var simulation = await _uow.SimulationExamRepository.FirstOrDefaultAsync(x => x.ExamId == simulationId, cancellationToken);
+                if (simulation == null)
+                {
+                    throw new KeyNotFoundException($"Simulation Id {simulationId} not found.");
+                }
+                if (simulation.ExamFee.HasValue)
+                {
+                    totalPrice += simulation.ExamFee.Value;  // Cộng giá gốc của bài thi vào tổng
+                }
+
+                if (simulation.ExamFee.HasValue && totalVoucherDiscount > 0)
+                {
+                    float discountAmount = simulation.ExamFee.Value * (totalVoucherDiscount / 100f);
+                    simulation.ExamDiscountFee = (int?)(simulation.ExamFee.Value - discountAmount);
+                }
+
+                totalPriceVoucher += simulation.ExamDiscountFee ?? 0; 
+
+            }
+            var newEnrollmentEntity = new ExamsEnrollment()
+            {
+                UserId = request.UserId,
+                ExamEnrollmentDate = DateTime.UtcNow,
+                ExamEnrollmentStatus = EnumExamEnrollment.OnGoing.ToString(),
+                TotalPrice = totalPrice,
+                TotalPriceVoucher = totalPriceVoucher
+            };
+
+            var enrollmentResult = await _uow.ExamEnrollmentRepository.AddAsync(newEnrollmentEntity);
+            await _uow.Commit(cancellationToken);
+
+            // Add each remaining exam to the StudentOfExam table
+            foreach (var simulation in simulations)
+            {
+                var studentOfExamEntity = new StudentOfExam()
+                {
+                    Price = simulation.ExamDiscountFee,
+                    Status = "Unpaid",
+                    ExamId = simulation.ExamId,
+                    EnrollmentId = enrollmentResult.ExamEnrollmentId
+                };
+
+                await _uow.StudentOfExamRepository.AddAsync(studentOfExamEntity);
+            }
+
+            await _uow.Commit(cancellationToken);
+
+            var responseMessage = purchasedExamIds.Any()
+                ? "New enrollment created for unpurchased exams. Some requested exams were already purchased."
+                : "New exam enrollment created. Previous unpaid enrollments have been marked as cancelled.";
+
+            return new ExamEnrollmentResponse
+            {
+                IsEnrolled = false,
+                Status = "Created",
+                ExamEnrollmentId = enrollmentResult.ExamEnrollmentId,
+                Message = responseMessage,
+                ExamEnrollment = _mapper.Map<ExamEnrollmentDto>(enrollmentResult)
+            };
+        }
+
+        public async Task<ExamEnrollmentDto> DeleteExamEnrollmentAsync(int examEnrollmentId, CancellationToken cancellationToken)
         {
             var examEnrollment = await _uow.ExamEnrollmentRepository.FirstOrDefaultAsync(
                 x => x.ExamEnrollmentId == examEnrollmentId,
@@ -276,6 +483,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 ExamEnrollmentDate = ee.ExamEnrollmentDate,
                 ExamEnrollmentStatus = ee.ExamEnrollmentStatus,
                 TotalPrice = ee.TotalPrice,
+                TotalPriceVoucher = ee.TotalPriceVoucher,
                 UserId = ee.UserId,
                 CreationDate = ee.StudentOfExams.FirstOrDefault() != null
                ? ee.StudentOfExams.FirstOrDefault().CreationDate
@@ -317,6 +525,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 ExamEnrollmentDate = result.ExamEnrollmentDate,
                 ExamEnrollmentStatus = result.ExamEnrollmentStatus,
                 TotalPrice = result.TotalPrice,
+                TotalPriceVoucher = result.TotalPriceVoucher,
                 UserId = result.UserId,
                 CreationDate = result.StudentOfExams.FirstOrDefault() != null
                ? result.StudentOfExams.FirstOrDefault().CreationDate
@@ -364,6 +573,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 ExamEnrollmentDate = ee.ExamEnrollmentDate,
                 ExamEnrollmentStatus = ee.ExamEnrollmentStatus,
                 TotalPrice = ee.TotalPrice,
+                TotalPriceVoucher = ee.TotalPriceVoucher,
                 UserId = ee.UserId,
                 CreationDate = ee.StudentOfExams.FirstOrDefault() != null
                 ? ee.StudentOfExams.FirstOrDefault().CreationDate
