@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.Services.Interface;
 
@@ -19,7 +19,7 @@ namespace StudentCertificatePortal_API.Controllers
             try
             {
                 var result = await _peerReviewService.CreatePeerReviewAsync(request, cancellationToken);
-                return CreatedAtAction(nameof(GetPeerReviewByIdAsync), new { peerReviewId = result.PeerReviewId }, result);
+                 return Ok(Result<PeerReviewDto>.Succeed(result));
             }
             catch (Exception ex)
             {
