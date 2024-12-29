@@ -18,19 +18,29 @@ namespace StudentCertificatePortal_API.Services.Implemetation
     {
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
+        private readonly IVoucherService _voucherService;
+
 
         private readonly IValidator<CreateExamEnrollmentRequest> _addExamEnrollmentValidator;
         private readonly IValidator<UpdateExamEnrollmentRequest> _updateExamEnrollmentValidator;
 
+        private readonly IValidator<CreateExamEnrollmentVoucherRequest> _addExamEnrollmentVoucherValidator;
+        private readonly IValidator<UpdateExamEnrollmentVoucherRequest> _updateExamEnrollmentVoucherValidator;
 
         public ExamEnrollmentService(IUnitOfWork uow, IMapper mapper,
             IValidator<CreateExamEnrollmentRequest> addExamEnrollmentValidator,
-            IValidator<UpdateExamEnrollmentRequest> updateExamEnrollmentValidator)
+            IValidator<UpdateExamEnrollmentRequest> updateExamEnrollmentValidator,
+            IValidator<CreateExamEnrollmentVoucherRequest> addExamEnrollmentVoucherValidator,
+            IValidator<UpdateExamEnrollmentVoucherRequest> updateExamEnrollmentVoucherValidator,
+            IVoucherService voucherService)
         {
             _uow = uow;
             _mapper = mapper;
             _addExamEnrollmentValidator = addExamEnrollmentValidator;
             _updateExamEnrollmentValidator = updateExamEnrollmentValidator;
+            _addExamEnrollmentVoucherValidator = addExamEnrollmentVoucherValidator;
+            _updateExamEnrollmentVoucherValidator = updateExamEnrollmentVoucherValidator;
+            _voucherService = voucherService;
         }
         public async Task<ExamEnrollmentResponse> CreateExamEnrollmentAsync(CreateExamEnrollmentRequest request, CancellationToken cancellationToken)
         {
@@ -223,18 +233,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             };
         }
 
-
-
-
-
-
-
-
-
-
-
-
-        public async Task<ExamEnrollmentDto> DeleteExamEnrollmentAsync(int examEnrollmentId, CancellationToken cancellationToken)
+       
+            public async Task<ExamEnrollmentDto> DeleteExamEnrollmentAsync(int examEnrollmentId, CancellationToken cancellationToken)
         {
             var examEnrollment = await _uow.ExamEnrollmentRepository.FirstOrDefaultAsync(
                 x => x.ExamEnrollmentId == examEnrollmentId,

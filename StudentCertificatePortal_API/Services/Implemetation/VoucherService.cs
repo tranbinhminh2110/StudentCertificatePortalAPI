@@ -271,7 +271,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 .Include(c => c.Courses));
             if (result is null)
             {
-                throw new KeyNotFoundException("Voucher not founc.");
+                throw new KeyNotFoundException("Voucher not found.");
             }
             var voucherDto = _mapper.Map<VoucherDto>(result);
             voucherDto.ExamDetails = result.Exams

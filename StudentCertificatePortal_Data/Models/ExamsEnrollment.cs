@@ -15,6 +15,8 @@ public partial class ExamsEnrollment
 
     public int? UserId { get; set; }
 
+    public int? TotalPriceVoucher { get; set; }
+
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
     public virtual ICollection<StudentOfExam> StudentOfExams { get; set; } = new List<StudentOfExam>();
