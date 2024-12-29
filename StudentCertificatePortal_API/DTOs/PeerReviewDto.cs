@@ -1,4 +1,4 @@
-﻿using StudentCertificatePortal_API.Mapping;
+using StudentCertificatePortal_API.Mapping;
 using StudentCertificatePortal_Data.Models;
 
 namespace StudentCertificatePortal_API.DTOs
@@ -25,8 +25,9 @@ namespace StudentCertificatePortal_API.DTOs
     {
         public int UserAnswerId { get; set; }
         public int QuestionId { get; set; }
+        public string QuestionName { get; set; }
         public decimal ScoreValue { get; set; }
-        public string Answer { get; set; }
+        public string AnswerContent { get; set; }
     }
 
 }
