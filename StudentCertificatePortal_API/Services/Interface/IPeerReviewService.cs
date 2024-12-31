@@ -10,5 +10,7 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<PeerReviewDto> GetPeerReviewByIdAsync(int peerReviewId, CancellationToken cancellationToken);
         Task<PeerReviewDto> UpdatePeerReviewAsync(int peerReviewId, UpdatePeerReviewRequest request, CancellationToken cancellationToken);
         Task<PeerReviewDto> DeletePeerReviewAsync(int peerReviewId, CancellationToken cancellationToken);
+
+        Task<List<PeerReviewDto>> GetListPeerReviewAsyncForExam(int examId, CancellationToken cancellationToken);
     }
 }
