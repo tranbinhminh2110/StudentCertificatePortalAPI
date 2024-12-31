@@ -93,119 +93,120 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         }
 
 
-        public async Task<PeerReviewDto> UpdatePeerReviewAsync(int peerReviewId, UpdatePeerReviewRequest request, CancellationToken cancellationToken)
-        {
-            // Retrieve the peer review with the associated score
-            var peerReview = await _uow.PeerReviewRepository.FirstOrDefaultAsync(
-                x => x.PeerReviewId == peerReviewId,
-                cancellationToken,
-                include: x => x.Include(sc => sc.Score)
-            );
-
-            if (peerReview == null)
+            public async Task<PeerReviewDto> UpdatePeerReviewAsync(int peerReviewId, UpdatePeerReviewRequest request, CancellationToken cancellationToken)
             {
-                throw new KeyNotFoundException("PeerReview not found.");
-            }
+                // Retrieve the peer review with the associated score
+                var peerReview = await _uow.PeerReviewRepository.FirstOrDefaultAsync(
+                    x => x.PeerReviewId == peerReviewId,
+                    cancellationToken,
+                    include: x => x.Include(sc => sc.Score)
+                );
 
-            // Check if the reviewer is reviewing their own submission
-            if (peerReview.ReviewedUserId == request.ReviewerId)
-            {
-                throw new InvalidOperationException("You cannot review your own submission.");
-            }
+                if (peerReview == null)
+                {
+                    throw new KeyNotFoundException("PeerReview not found.");
+                }
 
-
-            // Check if the user has passed the exam
-            var examId = peerReview.Score.ExamId;
-            var userScores = await _uow.ScoreRepository
-    .WhereAsync(x => x.UserId == request.ReviewerId && x.ExamId == examId);
-
-            var exam = await _uow.SimulationExamRepository.FirstOrDefaultAsync(
-                x => x.ExamId == examId,
-                cancellationToken
-            );
-
-            if (exam == null)
-            {
-                throw new Exception("Exam not found.");
-            }
+                // Check if the reviewer is reviewing their own submission
+                if (peerReview.ReviewedUserId == request.ReviewerId)
+                {
+                    throw new InvalidOperationException("You cannot review your own submission.");
+                }
 
 
+                // Check if the user has passed the exam
+                var examId = peerReview.Score.ExamId;
+                var userScores = await _uow.ScoreRepository
+                        .WhereAsync(x => x.UserId == request.ReviewerId && x.ExamId == examId);
 
-            if (!userScores.Any(x => x.ScoreValue >= exam.PassingScore))
-            {
-                throw new InvalidOperationException("The user has not passed the exam and cannot be reviewed.");
-            }
+                var exam = await _uow.SimulationExamRepository.FirstOrDefaultAsync(
+                    x => x.ExamId == examId,
+                    cancellationToken
+                );
 
-            var peerReviewOfReviewer = await _uow.PeerReviewRepository.FirstOrDefaultAsync(
-                x => x.ReviewerId == request.ReviewerId && x.ReviewerId == peerReview.ReviewerId,
-                cancellationToken
-            );
-            if (peerReviewOfReviewer != null)
-            {
-                // Update the main peer review properties
-                peerReviewOfReviewer.ReviewDate = DateTime.UtcNow;
-                peerReviewOfReviewer.ScorePeerReviewer = request.ScorePeerReviewer;
-                peerReviewOfReviewer.FeedbackPeerReviewer = request.FeedbackPeerReviewer;
-                peerReviewOfReviewer.ReviewerId = request.ReviewerId;
 
-                // Iterate over each question score in the request
+                if (exam == null)
+                {
+                    throw new Exception("Exam not found.");
+                }
+
+
+
+                if (!userScores.Any(x => x.ScoreValue >= exam.PassingScore))
+                {
+                    throw new InvalidOperationException("The user has not passed the exam and cannot be reviewed.");
+                }
+
+                //var peerReviewOfReviewer = await _uow.PeerReviewRepository.FirstOrDefaultAsync(
+                //    x => x.ReviewerId == request.ReviewerId && x.ReviewerId == peerReview.ReviewerId,
+                //    cancellationToken
+                //);
+                //if (peerReviewOfReviewer != null)
+                //{
+                //    // Update the main peer review properties
+                //    peerReviewOfReviewer.ReviewDate = DateTime.UtcNow;
+                //    peerReviewOfReviewer.ScorePeerReviewer = request.ScorePeerReviewer;
+                //    peerReviewOfReviewer.FeedbackPeerReviewer = request.FeedbackPeerReviewer;
+                //    peerReviewOfReviewer.ReviewerId = request.ReviewerId;
+
+                //    // Iterate over each question score in the request
+                //    foreach (var questionScore in request.peerReviewQuestionScores)
+                //    {
+                //        // Check if the PeerReviewDetail already exists for the specific PeerReviewId and QuestionId
+                //        var existingPeerReviewDetail = await _uow.PeerReviewDetailRepository
+                //            .FirstOrDefaultAsync(x => x.PeerReviewId == peerReviewOfReviewer.PeerReviewId && x.QuestionId == questionScore.QuestionId, cancellationToken);
+
+                //        if (existingPeerReviewDetail != null)
+                //        {
+                //            // If a PeerReviewDetail exists for this question, update it
+                //            existingPeerReviewDetail.ScoreEachQuestion = questionScore.ScoreForQuestion;
+                //            existingPeerReviewDetail.Feedback = questionScore.FeedBackForQuestion;
+                //            _uow.PeerReviewDetailRepository.Update(existingPeerReviewDetail);
+                //        }
+                //        else
+                //        {
+                //            // If no PeerReviewDetail exists for this question, create a new one
+                //            var newPeerReviewDetail = new PeerReviewDetail
+                //            {
+                //                PeerReviewId = peerReviewOfReviewer.PeerReviewId,
+                //                QuestionId = questionScore.QuestionId,
+                //                Feedback = questionScore.FeedBackForQuestion,
+                //                ScoreEachQuestion = questionScore.ScoreForQuestion
+                //            };
+
+                //            await _uow.PeerReviewDetailRepository.AddAsync(newPeerReviewDetail);
+                //        }
+                //    }
+                //}
+
+
+                // Proceed with the update
+                peerReview.ReviewDate = DateTime.UtcNow;
+                peerReview.ScorePeerReviewer = request.ScorePeerReviewer;
+                peerReview.FeedbackPeerReviewer = request.FeedbackPeerReviewer;
+                peerReview.ReviewerId = request.ReviewerId;
+
                 foreach (var questionScore in request.peerReviewQuestionScores)
                 {
-                    // Check if the PeerReviewDetail already exists for the specific PeerReviewId and QuestionId
-                    var existingPeerReviewDetail = await _uow.PeerReviewDetailRepository
-                        .FirstOrDefaultAsync(x => x.PeerReviewId == peerReviewOfReviewer.PeerReviewId && x.QuestionId == questionScore.QuestionId, cancellationToken);
+                    var userAnswer = await _uow.UserAnswerRepository
+                        .FirstOrDefaultAsync(x => x.QuestionId == questionScore.QuestionId && x.ScoreId == peerReview.ScoreId);
 
-                    if (existingPeerReviewDetail != null)
+                    if (userAnswer != null)
                     {
-                        // If a PeerReviewDetail exists for this question, update it
-                        existingPeerReviewDetail.ScoreEachQuestion = questionScore.ScoreForQuestion;
-                        existingPeerReviewDetail.Feedback = questionScore.FeedBackForQuestion;
-                        _uow.PeerReviewDetailRepository.Update(existingPeerReviewDetail);
+                        userAnswer.ScoreValue = questionScore.ScoreForQuestion;
+                        _uow.UserAnswerRepository.Update(userAnswer);
                     }
                     else
                     {
-                        // If no PeerReviewDetail exists for this question, create a new one
-                        var newPeerReviewDetail = new PeerReviewDetail
-                        {
-                            PeerReviewId = peerReviewOfReviewer.PeerReviewId,
-                            QuestionId = questionScore.QuestionId,
-                            Feedback = questionScore.FeedBackForQuestion,
-                            ScoreEachQuestion = questionScore.ScoreForQuestion
-                        };
-
-                        await _uow.PeerReviewDetailRepository.AddAsync(newPeerReviewDetail);
+                        throw new Exception("The user's answer has been deleted.");
                     }
                 }
+
+                await _uow.Commit(cancellationToken);
+
+                // Map to DTO and return
+                return _mapper.Map<PeerReviewDto>(peerReview);
             }
-
-
-            // Proceed with the update
-            peerReview.ReviewDate = DateTime.UtcNow;
-            peerReview.ScorePeerReviewer = request.ScorePeerReviewer;
-            peerReview.FeedbackPeerReviewer = request.FeedbackPeerReviewer;
-            peerReview.ReviewerId = request.ReviewerId;
-
-            foreach (var questionScore in request.peerReviewQuestionScores)
-            {
-                var userAnswer = await _uow.UserAnswerRepository
-                    .FirstOrDefaultAsync(x => x.QuestionId == questionScore.QuestionId && x.ScoreId == peerReview.ScoreId);
-
-                if (userAnswer != null)
-                {
-                    userAnswer.ScoreValue = questionScore.ScoreForQuestion;
-                    _uow.UserAnswerRepository.Update(userAnswer);
-                }
-                else
-                {
-                    throw new Exception("The user's answer has been deleted.");
-                }
-            }
-
-            await _uow.Commit(cancellationToken);
-
-            // Map to DTO and return
-            return _mapper.Map<PeerReviewDto>(peerReview);
-        }
 
 
 
