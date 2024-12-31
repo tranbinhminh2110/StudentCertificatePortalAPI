@@ -37,6 +37,7 @@ namespace StudentCertificatePortal_Repository.Implementation
         private IBaseRepository<Notification>? _notificationRepository;
         private IBaseRepository<UserAnswer>? _userAnswerRepository;
         private IBaseRepository<PeerReview>? _peerReviewRepository;
+        private IBaseRepository<PeerReviewDetail>? _peerReviewDetailRepository;
 
         public UnitOfWork(CipdbContext context)
         {
@@ -78,6 +79,8 @@ namespace StudentCertificatePortal_Repository.Implementation
         public IBaseRepository<UserAnswer> UserAnswerRepository => _userAnswerRepository ??= new UserAnswerRepository(_context);
 
         public IBaseRepository<PeerReview> PeerReviewRepository => _peerReviewRepository ??= new PeerReviewRepository(_context);
+
+        public IBaseRepository<PeerReviewDetail> PeerReviewDetailRepository => _peerReviewDetailRepository ??= new PeerReviewDetailRepository(_context);
 
         public async Task Commit(CancellationToken cancellationToken)
         {

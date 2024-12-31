@@ -7,7 +7,7 @@ public partial class PeerReview
 {
     public int PeerReviewId { get; set; }
 
-    public int ReviewerId { get; set; }
+    public int? ReviewerId { get; set; }
 
     public int? ReviewedUserId { get; set; }
 
@@ -23,7 +23,7 @@ public partial class PeerReview
 
     public virtual User? ReviewedUser { get; set; }
 
-    public virtual User Reviewer { get; set; } = null!;
+    public virtual User? Reviewer { get; set; }
 
     public virtual Score Score { get; set; } = null!;
 }

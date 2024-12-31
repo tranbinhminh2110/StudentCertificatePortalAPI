@@ -577,7 +577,6 @@ public partial class CipdbContext : DbContext
 
             entity.HasOne(d => d.Reviewer).WithMany(p => p.PeerReviewReviewers)
                 .HasForeignKey(d => d.ReviewerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__PeerRevie__revie__251C81ED");
 
             entity.HasOne(d => d.Score).WithMany(p => p.PeerReviews)

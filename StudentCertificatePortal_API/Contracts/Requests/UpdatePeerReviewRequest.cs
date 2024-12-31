@@ -2,7 +2,7 @@
 {
     public class UpdatePeerReviewRequest
     {
-        public int ReviewedUserId { get; set; }
+        public int ReviewerId { get; set; }
 
         public decimal ScorePeerReviewer { get; set; }
 
