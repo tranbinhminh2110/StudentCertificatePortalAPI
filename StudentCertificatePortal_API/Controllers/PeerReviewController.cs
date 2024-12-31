@@ -84,5 +84,28 @@ namespace StudentCertificatePortal_API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [HttpGet("exam/{examId}")]
+        public async Task<ActionResult<List<PeerReviewDto>>> GetListPeerReviewForExamAsync(int examId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var peerReviewDtos = await _peerReviewService.GetListPeerReviewAsyncForExam(examId, cancellationToken);
+
+                if (peerReviewDtos == null || !peerReviewDtos.Any())
+                {
+                    return NotFound(new { Message = $"No peer reviews found for the exam with ID: {examId}" });
+                }
+
+                return Ok(peerReviewDtos); // Return 200 OK with the list of peer reviews
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { Message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Message = "An error occurred while processing your request.", Details = ex.Message });
+            }
+        }
     }
 }

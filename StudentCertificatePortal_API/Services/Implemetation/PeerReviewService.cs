@@ -65,6 +65,23 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             return _mapper.Map<List<PeerReviewDto>>(result);
         }
 
+        public async Task<List<PeerReviewDto>> GetListPeerReviewAsyncForExam(int examId, CancellationToken cancellationToken)
+        {
+            // Retrieve the peer reviews for the given examId, including related Score entity
+            var peerReviews = await _uow.PeerReviewRepository
+                .WhereAsync(x => x.Score.ExamId == examId, cancellationToken, include: x => x.Include(x => x.Score));
+
+            if (peerReviews == null || !peerReviews.Any())
+            {
+                throw new KeyNotFoundException($"No peer reviews found for the exam with ID: {examId}");
+            }
+
+            // Map the results to PeerReviewDto
+            var peerReviewDtos = _mapper.Map<List<PeerReviewDto>>(peerReviews);
+
+            return peerReviewDtos;
+        }
+
         public async Task<PeerReviewDto> GetPeerReviewByIdAsync(int peerReviewId, CancellationToken cancellationToken)
         {
 
