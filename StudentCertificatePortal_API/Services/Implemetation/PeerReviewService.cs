@@ -166,31 +166,53 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<PeerReviewDto> GetPeerReviewByIdAsync(int peerReviewId, CancellationToken cancellationToken)
         {
+            // Fetch peer review including details
+            var peerReview = await _uow.PeerReviewRepository.FirstOrDefaultAsync(
+                x => x.PeerReviewId == peerReviewId,
+                cancellationToken,
+                include: x => x.Include(pr => pr.PeerReviewDetails));
 
-            var peerReview = await _uow.PeerReviewRepository.FirstOrDefaultAsync(x => x.PeerReviewId == peerReviewId);
             if (peerReview == null)
             {
                 throw new KeyNotFoundException("Peer review not found.");
             }
 
+            // Check points for each question
             var pointsEachQuestion = await CheckPointEachQuestion(peerReview.ScoreId);
-            var userAnswers = await _uow.UserAnswerRepository.WhereAsync(x => x.ScoreId == peerReview.ScoreId && x.QuestionType == Enums.EnumQuestionType.Essay.ToString(), cancellationToken,
+
+            // Fetch user answers for essays
+            var userAnswers = await _uow.UserAnswerRepository.WhereAsync(
+                x => x.ScoreId == peerReview.ScoreId &&
+                     x.QuestionType == Enums.EnumQuestionType.Essay.ToString(),
+                cancellationToken,
                 include: x => x.Include(q => q.Question));
-            
+
+            // Map peer review to DTO
             var peerReviewDto = _mapper.Map<PeerReviewDto>(peerReview);
 
-            peerReviewDto.UserAnswers = userAnswers.Select(userAnswer => new UserAnswerForEssayDto
+            // Map user answers and include scores from PeerReviewDetails
+            peerReviewDto.UserAnswers = userAnswers.Select(userAnswer =>
             {
-                UserAnswerId = userAnswer.UserAnswerId,
-                QuestionId = userAnswer.QuestionId ?? 0,
-                QuestionName = userAnswer.Question?.QuestionText ?? "Unknown",
-                ScoreValue = userAnswer.ScoreValue ?? 0,
-                AnswerContent = userAnswer.AnswerContent
+                var peerReviewDetail = peerReview.PeerReviewDetails
+                    .FirstOrDefault(detail => detail.QuestionId == userAnswer.QuestionId);
+
+                return new UserAnswerForEssayDto
+                {
+                    UserAnswerId = userAnswer.UserAnswerId,
+                    QuestionId = userAnswer.QuestionId ?? 0,
+                    QuestionName = userAnswer.Question?.QuestionText ?? "Unknown",
+                    ScoreValue = peerReviewDetail?.ScoreEachQuestion ?? 0, 
+                    AnswerContent = userAnswer.AnswerContent,
+                    FeedbackForEachQuestion = peerReviewDetail?.Feedback,
+                };
             }).ToList();
 
+            // Set max question score
             peerReviewDto.MaxQuestionScore = pointsEachQuestion;
+
             return peerReviewDto;
         }
+
 
 
         public async Task<PeerReviewDto> UpdatePeerReviewAsync(int peerReviewId, UpdatePeerReviewRequest request, CancellationToken cancellationToken)
