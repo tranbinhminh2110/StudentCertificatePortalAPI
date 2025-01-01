@@ -27,9 +27,10 @@ namespace StudentCertificatePortal_API.DTOs
     {
         public int UserAnswerId { get; set; }
         public int QuestionId { get; set; }
-        public string QuestionName { get; set; }
+        public string? QuestionName { get; set; }
         public decimal ScoreValue { get; set; }
-        public string AnswerContent { get; set; }
+        public string? AnswerContent { get; set; }
+        public string? FeedbackForEachQuestion { get; set; }
     }
 
 }
