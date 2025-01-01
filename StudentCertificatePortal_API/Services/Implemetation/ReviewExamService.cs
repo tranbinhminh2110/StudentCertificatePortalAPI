@@ -47,7 +47,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
     {
         ExamId = examId,
         UserId = userId,
-        TotalScore = score.ScoreValue, // Total score
+        TotalScore = score.ScoreValue ?? 0, // Total score
         Questions = new List<QuestionReviewDto>()
     };
 

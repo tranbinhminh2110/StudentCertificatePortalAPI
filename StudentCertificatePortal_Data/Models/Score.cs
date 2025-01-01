@@ -11,9 +11,9 @@ public partial class Score
 
     public int? ExamId { get; set; }
 
-    public decimal ScoreValue { get; set; }
+    public decimal? ScoreValue { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime? CreatedAt { get; set; }
 
     public virtual SimulationExam? Exam { get; set; }
 

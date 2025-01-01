@@ -50,9 +50,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<PeerReviewDto> DeletePeerReviewAsync(int peerReviewId, CancellationToken cancellationToken)
         {
-            var result = await _uow.PeerReviewRepository.FirstOrDefaultAsync(x => x.PeerReviewId == peerReviewId, cancellationToken, include: i => i.Include(pr => pr.Score));
+            var result = await _uow.PeerReviewRepository.FirstOrDefaultAsync(x => x.PeerReviewId == peerReviewId, cancellationToken, include: i => i.Include(pr => pr.Score).Include(pr => pr.PeerReviewDetails));
             if (result == null) { throw new KeyNotFoundException("Peer Review not found."); }
 
+
+            result.PeerReviewDetails.Clear();
             _uow.PeerReviewRepository.Delete(result);
 
             await _uow.Commit(cancellationToken);
