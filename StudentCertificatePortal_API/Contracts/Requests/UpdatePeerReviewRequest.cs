@@ -14,6 +14,8 @@
     public class PeerReviewQuestionScore
     {
         public int QuestionId { get; set; }
+
+        public int UserAnswerId { get; set; }
         public string FeedBackForQuestion { get; set; }
 
         public decimal ScoreForQuestion { get; set; }

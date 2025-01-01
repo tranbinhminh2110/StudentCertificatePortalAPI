@@ -1,3 +1,4 @@
+using AutoMapper.Configuration.Annotations;
 using StudentCertificatePortal_API.Mapping;
 using StudentCertificatePortal_Data.Models;
 
@@ -18,6 +19,7 @@ namespace StudentCertificatePortal_API.DTOs
         public string FeedbackPeerReviewer { get; set; } = null!;
 
         public DateTime ReviewDate { get; set; }
+        public double MaxQuestionScore { get; set; }
 
         public List<UserAnswerForEssayDto> UserAnswers { get; set; } = new List<UserAnswerForEssayDto>();
     }
