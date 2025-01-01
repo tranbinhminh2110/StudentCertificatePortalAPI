@@ -20,10 +20,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         }
         public async Task<PeerReviewDto> CreatePeerReviewAsync(CreatePeerReviewRequest request, CancellationToken cancellationToken)
         {
-            var reviewer = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == request.ReviewedUserId);
-            if (reviewer == null)
+
+            var reviewedUser = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == request.ReviewedUserId);
+            if (reviewedUser == null)
             {
-                throw new KeyNotFoundException("Reviewer not found.");
+                throw new KeyNotFoundException("User not found.");
             }
 
             var score = await _uow.ScoreRepository.FirstOrDefaultAsync(x => x.ScoreId == request.ScoreId);
@@ -32,6 +33,13 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new KeyNotFoundException("Score not found.");
             }
 
+            var peerReview = await _uow.PeerReviewRepository.WhereAsync(x => x.ReviewedUserId == request.ReviewedUserId && x.ScoreId == request.ScoreId && x.ReviewerId == null);
+
+
+            if(peerReview.Any())
+            {
+                throw new InvalidOperationException("You have already submitted a review for this user.");
+            }
             var peerReviewDto = new PeerReview()
             {
                 ReviewedUserId = request.ReviewedUserId,
