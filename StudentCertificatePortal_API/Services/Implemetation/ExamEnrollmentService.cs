@@ -467,12 +467,18 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             var userId = examEnrollment.UserId;
             var examId = examEnrollment.StudentOfExams.Select(x => x.ExamId).ToList();
-            foreach(var exam in examId)
+            foreach (var exam in examId)
             {
-                var score = await _uow.ScoreRepository.FirstOrDefaultAsync(x => x.UserId == userId && x.ExamId == exam);
-                _uow.ScoreRepository.Delete(score);
-                await _uow.Commit(cancellationToken);
+                var score = await _uow.ScoreRepository.FirstOrDefaultAsync(x => x.UserId == userId && x.ExamId == exam, cancellationToken
+                    , include: i => i.Include(sc => sc.PeerReviews));
+                if (score != null)
+                {
+                    score.PeerReviews.Clear();
+                    _uow.ScoreRepository.Delete(score);
+                    await _uow.Commit(cancellationToken);
+                }
             }
+
             examEnrollment?.StudentOfExams.Clear();
             examEnrollment?.Payments.Clear();
             _uow.ExamEnrollmentRepository.Delete(examEnrollment);
