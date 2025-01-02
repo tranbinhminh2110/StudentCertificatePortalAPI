@@ -302,10 +302,34 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         private async Task<double> CheckPointEachQuestion(int scoreId)
         {
-            var userAnswer = await _uow.UserAnswerRepository.WhereAsync(x => x.ScoreId == scoreId);
-            var result = 100 / userAnswer.Count();
-            return result;
+            // Lấy danh sách câu trả lời của người dùng
+            var userAnswers = await _uow.UserAnswerRepository.WhereAsync(x => x.ScoreId == scoreId);
+            if (!userAnswers.Any())
+            {
+                return 0; // Không có câu trả lời nào
+            }
+
+            // Lấy thông tin bài thi và số lượng câu hỏi
+            var scoreExam = await _uow.ScoreRepository.FirstOrDefaultAsync(
+                x => x.ScoreId == scoreId,
+                new CancellationToken(),
+                include: x => x.Include(sc => sc.Exam)
+            );
+
+            if (scoreExam?.Exam == null || scoreExam.Exam.QuestionCount <= 0)
+            {
+                return 0; // Không tìm thấy bài thi hoặc số lượng câu hỏi không hợp lệ
+            }
+
+            var questionCount = scoreExam.Exam.QuestionCount;
+
+            // Sử dụng số lượng câu hỏi nếu số câu trả lời khác số lượng câu hỏi
+            var countToUse = userAnswers.Count() != questionCount ? questionCount : userAnswers.Count();
+
+            // Tính điểm mỗi câu hỏi
+            return 100.0 / countToUse ?? 0;
         }
+
 
 
 
