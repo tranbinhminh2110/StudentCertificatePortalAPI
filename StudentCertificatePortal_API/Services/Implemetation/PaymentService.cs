@@ -80,6 +80,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 // Tính tổng giá của các Exam cần mua
                 var totalPriceToPay = examsToPurchase.Sum(soe => soe.Price ?? 0);
 
+                // Áp dụng TotalPriceVoucher nếu có
+                if (enrollExams.TotalPriceVoucher.HasValue)
+                {
+                    totalPriceToPay = enrollExams.TotalPriceVoucher.Value;
+                }
+
                 // Kiểm tra số dư trong ví
                 bool canPay = await CanPay(request.UserId, totalPriceToPay);
                 if (!canPay)

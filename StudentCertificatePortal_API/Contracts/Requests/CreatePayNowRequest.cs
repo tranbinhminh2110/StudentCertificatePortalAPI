@@ -7,5 +7,7 @@
         public List<int> Simulation_Exams { get; set; } = new List<int>();
 
         public List<int> Courses { get; set; } = new List<int>();
+        public List<int> VoucherIds { get; set; } = new List<int>();
+
     }
 }

@@ -61,12 +61,13 @@ namespace StudentCertificatePortal_API.Controllers
             if (request.Simulation_Exams.Any(id => id != 0 && request.UserId != 0))
             {
 
-                var enroll = new CreateExamEnrollmentRequest()
+                var enroll = new CreateExamEnrollmentVoucherRequest()
                 {
                     UserId = request.UserId,
                     Simulation_Exams = request.Simulation_Exams,
+                    VoucherIds = request.VoucherIds,
                 };
-                var eEnrollment = await _examEnrollmentService.CreateExamEnrollmentAsync(enroll, new CancellationToken());
+                var eEnrollment = await _examEnrollmentService.CreateExamEnrollmentVoucherAsync(enroll, new CancellationToken());
                 if (eEnrollment == null) throw new Exception("Error enrollment and please try again.");
                 var payment = new CreatePaymentRequest()
                 {
