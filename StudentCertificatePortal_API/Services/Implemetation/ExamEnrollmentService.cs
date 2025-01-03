@@ -571,6 +571,24 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             {
                 throw new KeyNotFoundException("No exam enrollments found for the provided User ID.");
             }
+            // Check and update each enrollment
+            foreach (var enroll in eEnroll)
+            {
+                // Update TotalPriceVoucher if the status is OnGoing or Expired
+                if (enroll.ExamEnrollmentStatus == Enums.EnumExamEnrollment.OnGoing.ToString() ||
+                    enroll.ExamEnrollmentStatus == Enums.EnumExamEnrollment.Expired.ToString())
+                {
+                    enroll.TotalPriceVoucher = enroll.TotalPrice;
+                    _uow.ExamEnrollmentRepository.Update(enroll);
+                }
+                else if (enroll.ExamEnrollmentStatus != Enums.EnumExamEnrollment.Completed.ToString())
+                {
+                    await CheckExamInEnrollment(enroll, cancellationToken);
+                }
+            }
+
+            // Save changes to the database
+            await _uow.Commit(cancellationToken);
 
             // Check and update each enrollment
             foreach (var enroll in eEnroll)
