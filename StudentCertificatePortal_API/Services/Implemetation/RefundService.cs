@@ -131,8 +131,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 emailBody.AppendLine($"- User Name: {wallet.User.Fullname}");
                 emailBody.AppendLine($"- Bank Name: {bankName}");
                 emailBody.AppendLine($"- Account Number: {request.BankAccount.AccountNumber}");
-                emailBody.AppendLine($"- Points Requested: {request.Point}");
                 emailBody.AppendLine($"- Wallet Balance: {wallet.Point}");
+                emailBody.AppendLine($"- Points Requested: {request.Point}");
                 emailBody.AppendLine();
                 emailBody.AppendLine("Please process this request as soon as possible.");
                 emailBody.AppendLine();
