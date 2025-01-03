@@ -4,7 +4,6 @@
     {
         public int ReviewerId { get; set; }
 
-        public decimal ScorePeerReviewer { get; set; }
 
         public string FeedbackPeerReviewer { get; set; } = null!;
 

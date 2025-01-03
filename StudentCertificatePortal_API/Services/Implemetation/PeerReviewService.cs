@@ -255,7 +255,6 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
 
             peerReview.ReviewDate = DateTime.UtcNow;
-            peerReview.ScorePeerReviewer = request.ScorePeerReviewer;
             peerReview.FeedbackPeerReviewer = request.FeedbackPeerReviewer;
             peerReview.ReviewerId = request.ReviewerId;
 
@@ -270,6 +269,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 {
 
                     peerReviewDetail.ScoreEachQuestion = questionScore.ScoreForQuestion;
+                    peerReview.ScorePeerReviewer += questionScore.ScoreForQuestion;
                     peerReviewDetail.Feedback = questionScore.FeedBackForQuestion;
                     _uow.PeerReviewDetailRepository.Update(peerReviewDetail);
                 }
