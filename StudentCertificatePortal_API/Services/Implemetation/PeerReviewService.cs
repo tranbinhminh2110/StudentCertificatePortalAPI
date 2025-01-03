@@ -12,11 +12,13 @@ namespace StudentCertificatePortal_API.Services.Implemetation
     {
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
+        public readonly IEmailService _emailService;
 
-        public PeerReviewService(IUnitOfWork uow, IMapper mapper)
+        public PeerReviewService(IUnitOfWork uow, IMapper mapper, IEmailService emailService)
         {
             _uow = uow;
             _mapper = mapper;
+            _emailService = emailService;
         }
         public async Task<PeerReviewDto> CreatePeerReviewAsync(CreatePeerReviewRequest request, CancellationToken cancellationToken)
         {
@@ -36,7 +38,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var peerReview = await _uow.PeerReviewRepository.WhereAsync(x => x.ReviewedUserId == request.ReviewedUserId && x.ScoreId == request.ScoreId && x.ReviewerId == null);
 
 
-            if(peerReview.Any())
+            if (peerReview.Any())
             {
                 throw new InvalidOperationException("You have already submitted a review for this user.");
             }
@@ -95,7 +97,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new InvalidOperationException("None of your reviews have been graded yet.");
             }
 
-           
+
             var peerReviewDtos = new List<PeerReviewForReviewedUserDto>();
 
             foreach (var peerReview in gradedPeerReviews)
@@ -108,7 +110,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     ReviewerName = peerReview.Reviewer?.Fullname ?? "Unknown",
                     ReviewDate = peerReview.ReviewDate,
                     ScoreId = peerReview.ScoreId,
-                    MaxQuestionScore = await CheckPointEachQuestion(scoreId),  
+                    MaxQuestionScore = await CheckPointEachQuestion(scoreId),
                     FeedbackPeerReviewer = peerReview.FeedbackPeerReviewer,
                     ScorePeerReviewer = peerReview.ScorePeerReviewer ?? 0,
                     ExamName = peerReview.Score?.Exam?.ExamName ?? "Unknown Exam",
@@ -201,7 +203,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     UserAnswerId = userAnswer.UserAnswerId,
                     QuestionId = userAnswer.QuestionId ?? 0,
                     QuestionName = userAnswer.Question?.QuestionText ?? "Unknown",
-                    ScoreValue = peerReviewDetail?.ScoreEachQuestion ?? 0, 
+                    ScoreValue = peerReviewDetail?.ScoreEachQuestion ?? 0,
                     AnswerContent = userAnswer.AnswerContent,
                     FeedbackForEachQuestion = peerReviewDetail?.Feedback,
                 };
@@ -289,6 +291,24 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             await _uow.Commit(cancellationToken);
 
+
+            var reviewedUser = await _uow.UserRepository.FirstOrDefaultAsync(
+                    x => x.UserId == peerReview.ReviewedUserId,
+                    cancellationToken
+                    );
+
+            if (reviewedUser != null)
+            {
+                var emailSubject = "Peer Review Process Completed";
+                var emailBody = $"Dear {reviewedUser.Fullname},\n\n" +
+                                "We are pleased to inform you that your submission has been successfully reviewed as part of the peer review process.\n\n" +
+                                "We sincerely appreciate your efforts and contributions to this initiative. Should you have any further inquiries or require additional information, please do not hesitate to reach out.\n\n" +
+                                "Thank you for your participation and dedication.\n\n" +
+                                "Best regards,\n" +
+                                "Student Information Portal";
+
+                await _emailService.SendEmailAsync(reviewedUser.Email, emailSubject, emailBody);
+            }
             var createNewPeerReview = new CreatePeerReviewRequest
             {
                 ReviewedUserId = peerReview.ReviewedUserId ?? 0,
@@ -302,14 +322,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         private async Task<double> CheckPointEachQuestion(int scoreId)
         {
-            // Lấy danh sách câu trả lời của người dùng
             var userAnswers = await _uow.UserAnswerRepository.WhereAsync(x => x.ScoreId == scoreId);
             if (!userAnswers.Any())
             {
-                return 0; // Không có câu trả lời nào
+                return 0; 
             }
 
-            // Lấy thông tin bài thi và số lượng câu hỏi
             var scoreExam = await _uow.ScoreRepository.FirstOrDefaultAsync(
                 x => x.ScoreId == scoreId,
                 new CancellationToken(),
@@ -318,23 +336,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             if (scoreExam?.Exam == null || scoreExam.Exam.QuestionCount <= 0)
             {
-                return 0; // Không tìm thấy bài thi hoặc số lượng câu hỏi không hợp lệ
+                return 0; 
             }
 
             var questionCount = scoreExam.Exam.QuestionCount;
 
-            // Sử dụng số lượng câu hỏi nếu số câu trả lời khác số lượng câu hỏi
             var countToUse = userAnswers.Count() != questionCount ? questionCount : userAnswers.Count();
 
-            // Tính điểm mỗi câu hỏi
             return 100.0 / countToUse ?? 0;
         }
-
-
-
-
-
-
-
     }
 }
