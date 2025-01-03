@@ -6,5 +6,6 @@
         public int? UserId { get; set; }
 
         public List<int> Simulation_Exams { get; set; } = new List<int>();
+
     }
 }
