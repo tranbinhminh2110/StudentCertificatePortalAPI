@@ -10,5 +10,6 @@ namespace StudentCertificatePortal_API.Services.Interface
         Task<List<PaymentDto>> GetEEnrollPaymentByUserIdAsync(int userId);
         Task<List<PaymentDto>> GetCEnrollPaymentByUserIdAsync(int userId);
         Task<PaymentDto> ProcessPayment(CreatePaymentRequest request, CancellationToken cancellation);
+        Task<PaymentPointDto> UpdateUserLevelAsync(int userId, CancellationToken cancellationToken);
     }
 }

@@ -2,6 +2,7 @@
 using StudentCertificatePortal_API.Commons;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
+using StudentCertificatePortal_API.Services.Implemetation;
 using StudentCertificatePortal_API.Services.Interface;
 
 namespace StudentCertificatePortal_API.Controllers
@@ -101,5 +102,12 @@ namespace StudentCertificatePortal_API.Controllers
             return BadRequest("Error processing payment.");
 
         }
+        [HttpPut("update-user-level/{userId:int}")]
+        public async Task<ActionResult<Result<PaymentPointDto>>> UpdateUserLevel([FromRoute] int userId)
+        {
+            var result = await _service.UpdateUserLevelAsync(userId, new CancellationToken());
+            return Ok(Result<PaymentPointDto>.Succeed(result));
+        }
+
     }
 }
