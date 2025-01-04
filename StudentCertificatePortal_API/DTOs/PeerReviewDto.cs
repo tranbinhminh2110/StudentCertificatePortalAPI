@@ -20,7 +20,7 @@ namespace StudentCertificatePortal_API.DTOs
 
         public DateTime ReviewDate { get; set; }
         public double MaxQuestionScore { get; set; }
-
+        public List<QuestionReviewDto> QuestionReviews { get; set; } = new List<QuestionReviewDto>();
         public List<UserAnswerForEssayDto> UserAnswers { get; set; } = new List<UserAnswerForEssayDto>();
     }
     public class UserAnswerForEssayDto

@@ -58,11 +58,11 @@ namespace StudentCertificatePortal_API.Controllers
         }
 
         [HttpGet("{peerReviewId}")]
-        public async Task<IActionResult> GetPeerReviewByIdAsync(int peerReviewId, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetPeerReviewByIdAsync(int peerReviewId, Enums.EnumPeerReviewType peerType, CancellationToken cancellationToken)
         {
             try
             {
-                var result = await _peerReviewService.GetPeerReviewByIdAsync(peerReviewId, cancellationToken);
+                var result = await _peerReviewService.GetPeerReviewByIdAsync(peerReviewId, peerType, cancellationToken);
                 return Ok(result);
             }
             catch (Exception ex)
