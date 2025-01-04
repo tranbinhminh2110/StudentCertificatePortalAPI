@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
 using StudentCertificatePortal_API.Enums;
 using StudentCertificatePortal_API.Services.Interface;
+using StudentCertificatePortal_API.Utils;
 using StudentCertificatePortal_Data.Models;
 using StudentCertificatePortal_Repository.Interface;
 using System.Xml.XPath;
@@ -15,10 +17,15 @@ namespace StudentCertificatePortal_API.Services.Implemetation
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
 
-        public PaymentService(IUnitOfWork uow, IMapper mapper)
+        private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly INotificationService _notificationService;
+
+        public PaymentService(IUnitOfWork uow, IMapper mapper, IHubContext<NotificationHub> hubContext, INotificationService notificationService)
         {
             _uow = uow;
             _mapper = mapper;
+            _hubContext = hubContext;
+            _notificationService = notificationService;
         }
 
         public async Task<List<PaymentDto>> GetAll()
@@ -132,6 +139,14 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 enrollExams.ExamEnrollmentStatus = EnumExamEnrollment.Completed.ToString();
                 _uow.ExamEnrollmentRepository.Update(enrollExams);
                 await _uow.Commit(cancellation);
+                if (request.UserId.HasValue)
+                {
+                    await UpdateUserLevelAsync(request.UserId.Value, cancellation);
+                }
+                else
+                {
+                    throw new Exception("Invalid UserId");
+                }
             }
             else if (request.CourseEnrollmentId > 0)
             {
@@ -210,6 +225,16 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 courseEnrollment.CourseEnrollmentStatus = EnumCourseEnrollment.Completed.ToString();
                 _uow.CourseEnrollmentRepository.Update(courseEnrollment);
                 await _uow.Commit(cancellation);
+
+                if (request.UserId.HasValue)
+                {
+                    await UpdateUserLevelAsync(request.UserId.Value, cancellation);
+                }
+                else
+                {
+                    throw new Exception("Invalid UserId");
+                }
+
             }
             else
             {
@@ -283,6 +308,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             // Tính tổng PaymentPoint
             var totalPaymentPoints = payments.Sum(p => p.PaymentPoint);
 
+            var oldUserLevel = user.UserLevel;
+
             // Xác định UserLevel dựa trên PaymentPoint
             if (totalPaymentPoints >= 500)
             {
@@ -299,6 +326,28 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             else
             {
                 user.UserLevel = EnumLevel.Bronze.ToString();
+            }
+
+            if (user.UserLevel != oldUserLevel)
+            {
+                var notification = new Notification()
+                {
+                    NotificationName = $"Congratulations you have been promoted to {user.UserLevel} membership",
+                    NotificationDescription = $"Congratulations you have been promoted to {user.UserLevel} membership, after reaching the spending milestone of {totalPaymentPoints} coins.",
+                    NotificationImage = user.UserImage,
+                    CreationDate = DateTime.UtcNow,
+                    Role = "Student",
+                    IsRead = false,
+                    UserId = user.UserId,
+                };
+
+                // Thêm thông báo vào cơ sở dữ liệu
+                await _uow.NotificationRepository.AddAsync(notification);
+                await _uow.Commit(cancellationToken);
+
+                // Gửi thông báo qua SignalR (nếu cần)
+                var notifications = await _notificationService.GetNotificationByRoleAsync("Student", cancellationToken);
+                await _hubContext.Clients.All.SendAsync("ReceiveNotification", notifications);
             }
 
             // Cập nhật User trong Database
