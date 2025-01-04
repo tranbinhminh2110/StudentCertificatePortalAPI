@@ -166,9 +166,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
 
 
-        public async Task<PeerReviewDto> GetPeerReviewByIdAsync(int peerReviewId, CancellationToken cancellationToken)
+        public async Task<PeerReviewDto> GetPeerReviewByIdAsync(int peerReviewId, Enums.EnumPeerReviewType peerType, CancellationToken cancellationToken)
         {
-            // Fetch peer review including details
             var peerReview = await _uow.PeerReviewRepository.FirstOrDefaultAsync(
                 x => x.PeerReviewId == peerReviewId,
                 cancellationToken,
@@ -179,41 +178,95 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new KeyNotFoundException("Peer review not found.");
             }
 
-            // Check points for each question
-            var pointsEachQuestion = await CheckPointEachQuestion(peerReview.ScoreId);
+            if (peerType == Enums.EnumPeerReviewType.View && (peerReview.ReviewerId == null || peerReview.ReviewerId <= 0))
+            {
+                throw new InvalidOperationException("This peer review has not been reviewed yet.");
+            }
 
-            // Fetch user answers for essays
+
+            var questionTypes = peerType == Enums.EnumPeerReviewType.Review
+                ? new[] { Enums.EnumQuestionType.Essay.ToString() } 
+                : new[] { Enums.EnumQuestionType.Essay.ToString(), Enums.EnumQuestionType.Choice.ToString() };
+
+
             var userAnswers = await _uow.UserAnswerRepository.WhereAsync(
                 x => x.ScoreId == peerReview.ScoreId &&
-                     x.QuestionType == Enums.EnumQuestionType.Essay.ToString(),
+                     questionTypes.Contains(x.QuestionType),
                 cancellationToken,
-                include: x => x.Include(q => q.Question));
+                include: x => x.Include(q => q.Question)
+                               .ThenInclude(q => q.Answers));
+            if (!userAnswers.Any(x => x.QuestionType == Enums.EnumQuestionType.Essay.ToString()))
+            {
+                throw new InvalidOperationException("This peer review does not contain any essay questions.");
+            }
 
-            // Map peer review to DTO
+            if (!userAnswers.Any())
+            {
+                throw new InvalidOperationException("The user has not submitted any answers.");
+            }
+
+
+            var pointsEachQuestion = await CheckPointEachQuestion(peerReview.ScoreId);
+
             var peerReviewDto = _mapper.Map<PeerReviewDto>(peerReview);
 
-            // Map user answers and include scores from PeerReviewDetails
-            peerReviewDto.UserAnswers = userAnswers.Select(userAnswer =>
+            if (peerType == Enums.EnumPeerReviewType.Review)
             {
-                var peerReviewDetail = peerReview.PeerReviewDetails
-                    .FirstOrDefault(detail => detail.QuestionId == userAnswer.QuestionId);
-
-                return new UserAnswerForEssayDto
+                peerReviewDto.UserAnswers = userAnswers.Select(userAnswer =>
                 {
-                    UserAnswerId = userAnswer.UserAnswerId,
-                    QuestionId = userAnswer.QuestionId ?? 0,
-                    QuestionName = userAnswer.Question?.QuestionText ?? "Unknown",
-                    ScoreValue = peerReviewDetail?.ScoreEachQuestion ?? 0,
-                    AnswerContent = userAnswer.AnswerContent,
-                    FeedbackForEachQuestion = peerReviewDetail?.Feedback,
-                };
-            }).ToList();
+                    var peerReviewDetail = peerReview.PeerReviewDetails
+                        .FirstOrDefault(detail => detail.QuestionId == userAnswer.QuestionId);
 
-            // Set max question score
+                    return new UserAnswerForEssayDto
+                    {
+                        UserAnswerId = userAnswer.UserAnswerId,
+                        QuestionId = userAnswer.QuestionId ?? 0,
+                        QuestionName = userAnswer.Question?.QuestionText ?? "Unknown",
+                        ScoreValue = peerReviewDetail?.ScoreEachQuestion ?? 0,
+                        AnswerContent = userAnswer.AnswerContent,
+                        FeedbackForEachQuestion = peerReviewDetail?.Feedback,
+                    };
+                }).ToList();
+            }
+            else if (peerType == Enums.EnumPeerReviewType.View)
+            {
+
+                peerReviewDto.QuestionReviews = userAnswers.Select(userAnswer =>
+                {
+                    var peerReviewDetail = peerReview.PeerReviewDetails
+                        .FirstOrDefault(detail => detail.QuestionId == userAnswer.QuestionId);
+
+                    return new QuestionReviewDto
+                    {
+                        QuestionId = userAnswer.QuestionId ?? 0,
+                        QuestionName = userAnswer.Question?.QuestionText ?? "Unknown",
+                        QuestionType = userAnswer.QuestionType,
+                        UserAnswersForChoice = userAnswer.QuestionType == Enums.EnumQuestionType.Choice.ToString()
+                                ? new List<int> { userAnswer.AnswerId ?? 0 } 
+                                : null,
+                        UserAnswerContentForEssay = userAnswer.QuestionType == Enums.EnumQuestionType.Essay.ToString()
+                            ? userAnswer.AnswerContent
+                            : null,
+                        SystemAnswers = userAnswer.Question?.Answers.Select(a => new AnswerDto
+                        {
+                            AnswerId = a.AnswerId,
+                            Text = a.Text, 
+                            IsCorrect = a.IsCorrect
+                        }).ToList() ?? new List<AnswerDto>(),
+                        IsCorrectQuestion = peerReviewDetail?.ScoreEachQuestion > 0,
+                        ScoreValue = userAnswer.QuestionType == Enums.EnumQuestionType.Essay.ToString() ? peerReviewDetail?.ScoreEachQuestion ?? 0 : userAnswer.ScoreValue ?? 0,
+                        SubmittedAt = userAnswer.SubmittedAt
+                    };
+                }).ToList();
+            }
+
             peerReviewDto.MaxQuestionScore = pointsEachQuestion;
 
             return peerReviewDto;
         }
+
+
+
 
 
 
