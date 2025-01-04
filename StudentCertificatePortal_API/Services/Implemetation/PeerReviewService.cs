@@ -40,7 +40,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             if (peerReview.Any())
             {
-                throw new InvalidOperationException("You have already submitted a review for this user.");
+                throw new KeyNotFoundException("You have already submitted a review for this user.");
             }
             var peerReviewDto = new PeerReview()
             {
@@ -94,7 +94,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             if (!gradedPeerReviews.Any())
             {
-                throw new InvalidOperationException("None of your reviews have been graded yet.");
+                throw new KeyNotFoundException("None of your reviews have been graded yet.");
             }
 
 
@@ -180,7 +180,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             if (peerType == Enums.EnumPeerReviewType.View && (peerReview.ReviewerId == null || peerReview.ReviewerId <= 0))
             {
-                throw new InvalidOperationException("This peer review has not been reviewed yet.");
+                throw new KeyNotFoundException("This peer review has not been reviewed yet.");
             }
 
 
@@ -197,12 +197,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                                .ThenInclude(q => q.Answers));
             if (!userAnswers.Any(x => x.QuestionType == Enums.EnumQuestionType.Essay.ToString()))
             {
-                throw new InvalidOperationException("This peer review does not contain any essay questions.");
+                throw new KeyNotFoundException("This peer review does not contain any essay questions.");
             }
 
             if (!userAnswers.Any())
             {
-                throw new InvalidOperationException("The user has not submitted any answers.");
+                throw new KeyNotFoundException("The user has not submitted any answers.");
             }
 
 
@@ -286,7 +286,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             if (peerReview.ReviewedUserId == request.ReviewerId)
             {
-                throw new InvalidOperationException("You cannot review your own submission.");
+                throw new KeyNotFoundException("You cannot review your own submission.");
             }
 
             var examId = peerReview.Score.ExamId;
@@ -305,7 +305,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             if (!userScores.Any(x => x.ScoreValue >= exam.PassingScore))
             {
-                throw new InvalidOperationException("The user has not passed the exam and cannot be reviewed.");
+                throw new KeyNotFoundException("The user has not passed the exam and cannot be reviewed.");
             }
 
 
