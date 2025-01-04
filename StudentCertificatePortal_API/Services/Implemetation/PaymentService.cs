@@ -284,15 +284,15 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var totalPaymentPoints = payments.Sum(p => p.PaymentPoint);
 
             // Xác định UserLevel dựa trên PaymentPoint
-            if (totalPaymentPoints > 500)
+            if (totalPaymentPoints >= 500)
             {
                 user.UserLevel = EnumLevel.Diamond.ToString();
             }
-            else if (totalPaymentPoints > 300)
+            else if (totalPaymentPoints >= 300)
             {
                 user.UserLevel = EnumLevel.Gold.ToString();
             }
-            else if (totalPaymentPoints > 100)
+            else if (totalPaymentPoints >= 100)
             {
                 user.UserLevel = EnumLevel.Silver.ToString();
             }
