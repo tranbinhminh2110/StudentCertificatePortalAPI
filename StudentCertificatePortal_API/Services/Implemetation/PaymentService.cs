@@ -261,5 +261,61 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             return _mapper.Map<List<PaymentDto>>(payments);
         }
+        public async Task<PaymentPointDto> UpdateUserLevelAsync(int userId, CancellationToken cancellationToken)
+        {
+            // Lấy thông tin User
+            var user = await _uow.UserRepository.FirstOrDefaultAsync(x => x.UserId == userId);
+            if (user == null)
+            {
+                throw new KeyNotFoundException("User not found.");
+            }
+
+            // Lấy Wallet tương ứng với User
+            var wallet = await _uow.WalletRepository.FirstOrDefaultAsync(x => x.UserId == userId);
+            if (wallet == null)
+            {
+                throw new KeyNotFoundException("Wallet not found.");
+            }
+
+            // Lấy danh sách Payments
+            var payments = await _uow.PaymentRepository.WhereAsync(p => p.WalletId == wallet.WalletId);
+
+            // Tính tổng PaymentPoint
+            var totalPaymentPoints = payments.Sum(p => p.PaymentPoint);
+
+            // Xác định UserLevel dựa trên PaymentPoint
+            if (totalPaymentPoints > 500)
+            {
+                user.UserLevel = EnumLevel.Diamond.ToString();
+            }
+            else if (totalPaymentPoints > 300)
+            {
+                user.UserLevel = EnumLevel.Gold.ToString();
+            }
+            else if (totalPaymentPoints > 100)
+            {
+                user.UserLevel = EnumLevel.Silver.ToString();
+            }
+            else
+            {
+                user.UserLevel = EnumLevel.Bronze.ToString();
+            }
+
+            // Cập nhật User trong Database
+            _uow.UserRepository.Update(user);
+            await _uow.Commit(cancellationToken);
+
+      
+            var userLevelDto = new PaymentPointDto
+            {
+                User = _mapper.Map<UserDto>(user),  // Chuyển đổi thông tin User sang UserDto
+                TotalPaymentPoints = totalPaymentPoints ?? 0
+            };
+
+            return userLevelDto;
+        }
+
+
+
     }
 }
