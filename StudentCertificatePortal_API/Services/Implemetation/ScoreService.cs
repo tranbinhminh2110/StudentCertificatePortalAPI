@@ -35,8 +35,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new InvalidOperationException("User is not enrolled in this exam.");
             }
 
-            var numberQuestion = exam.QuestionCount ?? 0;
-            var pointsPerQuestion = 100 / numberQuestion;
+            double numberQuestion = exam.QuestionCount ?? 0;
+            double pointsPerQuestion = 100 / numberQuestion;
             var scoreEntity = new Score()
             {
                 UserId = request.UserId,
@@ -82,7 +82,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                                 ExamId = exam.ExamId,
                                 QuestionId = model.QuestionId,
                                 AnswerId = index,
-                                ScoreValue = pointsPerQuestion,
+                                ScoreValue = (decimal)pointsPerQuestion,
                                 SubmittedAt = DateTime.UtcNow,
                                 IsCorrect = true,
                                 QuestionType = "Choice",
