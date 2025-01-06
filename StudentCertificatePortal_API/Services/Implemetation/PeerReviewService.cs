@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
 using StudentCertificatePortal_API.DTOs;
@@ -40,7 +40,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             if (peerReview.Any())
             {
-                throw new KeyNotFoundException("You have already submitted a review for this user.");
+                throw new KeyNotFoundException("You have already submitted a review for this exam.");
             }
             var peerReviewDto = new PeerReview()
             {
