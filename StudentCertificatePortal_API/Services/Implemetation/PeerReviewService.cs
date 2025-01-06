@@ -35,7 +35,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new KeyNotFoundException("Score not found.");
             }
 
-            var peerReview = await _uow.PeerReviewRepository.WhereAsync(x => x.ReviewedUserId == request.ReviewedUserId && x.ScoreId == request.ScoreId && x.ReviewerId == null);
+            var peerReview = await _uow.PeerReviewRepository.WhereAsync(
+    x => x.ReviewedUserId == request.ReviewedUserId 
+         && x.ScoreId == request.ScoreId 
+         && (x.ReviewerId == null || x.ReviewerId == 0)
+);
 
 
             if (peerReview.Any())
