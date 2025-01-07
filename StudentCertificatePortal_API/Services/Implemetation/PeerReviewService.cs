@@ -277,6 +277,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 x => x.PeerReviewId == peerReviewId,
                 cancellationToken,
                 include: x => x.Include(sc => sc.Score)
+                .Include(sc => sc.Reviewer)
             );
 
             if (peerReview == null)
