@@ -281,6 +281,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 x => x.PeerReviewId == peerReviewId,
                 cancellationToken,
                 include: x => x.Include(sc => sc.Score)
+                .Include(sc => sc.Reviewer)
             );
 
             if (peerReview == null)
@@ -357,23 +358,20 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             if (reviewedUser != null)
             {
                 var emailSubject = "Peer Review Process Completed";
-                var emailBody = $@"Dear {reviewedUser.Fullname},
+                var emailBody = $@"Dear {reviewedUser.Fullname},<br><br>
 
-                We are pleased to inform you that your submission ({exam.ExamName}) has been successfully reviewed as part of the peer review process.
+We are pleased to inform you that your submission ({exam.ExamName}) has been successfully reviewed as part of the peer review process.<br><br>
 
+Reviewer: {peerReview.Reviewer?.Fullname}<br>
+Review Date: {peerReview.ReviewDate.ToString("dd/MM/yyyy")}<br><br>
 
-                Reviewer: {peerReview.Reviewer?.Fullname}
+We sincerely appreciate your efforts and contributions to this initiative. Should you have any further inquiries or require additional information, please do not hesitate to reach out.<br><br>
 
+Thank you for your participation and dedication.<br><br>
 
-                Review Date: {peerReview.ReviewDate.ToString("dd/MM/yyyy")}
+Best regards,<br>  
+Student Information Portal";
 
-
-                We sincerely appreciate your efforts and contributions to this initiative. Should you have any further inquiries or require additional information, please do not hesitate to reach out.
-
-                Thank you for your participation and dedication.
-
-                Best regards,  
-                Student Information Portal";
 
 
                 await _emailService.SendEmailAsync(reviewedUser.Email, emailSubject, emailBody);
