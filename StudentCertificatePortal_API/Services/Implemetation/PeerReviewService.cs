@@ -276,12 +276,11 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
         public async Task<PeerReviewDto> UpdatePeerReviewAsync(int peerReviewId, UpdatePeerReviewRequest request, CancellationToken cancellationToken)
         {
-
             var peerReview = await _uow.PeerReviewRepository.FirstOrDefaultAsync(
                 x => x.PeerReviewId == peerReviewId,
                 cancellationToken,
                 include: x => x.Include(sc => sc.Score)
-                .Include(sc => sc.Reviewer)
+                               .Include(sc => sc.Reviewer) // Ensure Reviewer is included
             );
 
             if (peerReview == null)
@@ -313,21 +312,17 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 throw new KeyNotFoundException("The user has not passed the exam and cannot be reviewed.");
             }
 
-
             peerReview.ReviewDate = DateTime.UtcNow;
             peerReview.FeedbackPeerReviewer = request.FeedbackPeerReviewer;
             peerReview.ReviewerId = request.ReviewerId;
 
-
             foreach (var questionScore in request.peerReviewQuestionScores)
             {
-
                 var peerReviewDetail = await _uow.PeerReviewDetailRepository
                     .FirstOrDefaultAsync(x => x.PeerReviewId == peerReview.PeerReviewId && x.QuestionId == questionScore.QuestionId);
 
                 if (peerReviewDetail != null)
                 {
-
                     peerReviewDetail.ScoreEachQuestion = questionScore.ScoreForQuestion;
                     peerReview.ScorePeerReviewer += questionScore.ScoreForQuestion;
                     peerReviewDetail.Feedback = questionScore.FeedBackForQuestion;
@@ -349,33 +344,31 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             await _uow.Commit(cancellationToken);
 
-
             var reviewedUser = await _uow.UserRepository.FirstOrDefaultAsync(
-                    x => x.UserId == peerReview.ReviewedUserId,
-                    cancellationToken
-                    );
+                x => x.UserId == peerReview.ReviewedUserId,
+                cancellationToken
+            );
 
             if (reviewedUser != null)
             {
                 var emailSubject = "Peer Review Process Completed";
-                var emailBody = $@"Dear {reviewedUser.Fullname},<br><br>
+                var emailBody = $@"Dear {reviewedUser.Fullname},
 
-We are pleased to inform you that your submission ({exam.ExamName}) has been successfully reviewed as part of the peer review process.<br><br>
+We are pleased to inform you that your submission ({exam.ExamName}) has been successfully reviewed as part of the peer review process.
 
-Reviewer: {peerReview.Reviewer?.Fullname}<br>
-Review Date: {peerReview.ReviewDate.ToString("dd/MM/yyyy")}<br><br>
+Reviewer: {peerReview.Reviewer?.Fullname}
+Review Date: {peerReview.ReviewDate.ToString("dd/MM/yyyy")}
 
-We sincerely appreciate your efforts and contributions to this initiative. Should you have any further inquiries or require additional information, please do not hesitate to reach out.<br><br>
+We sincerely appreciate your efforts and contributions to this initiative. Should you have any further inquiries or require additional information, please do not hesitate to reach out.
 
-Thank you for your participation and dedication.<br><br>
+Thank you for your participation and dedication.
 
-Best regards,<br>  
+Best regards,  
 Student Information Portal";
-
-
 
                 await _emailService.SendEmailAsync(reviewedUser.Email, emailSubject, emailBody);
             }
+
             var createNewPeerReview = new CreatePeerReviewRequest
             {
                 ReviewedUserId = peerReview.ReviewedUserId ?? 0,
@@ -386,6 +379,7 @@ Student Information Portal";
 
             return _mapper.Map<PeerReviewDto>(peerReview);
         }
+
 
         private async Task<double> CheckPointEachQuestion(int scoreId)
         {
