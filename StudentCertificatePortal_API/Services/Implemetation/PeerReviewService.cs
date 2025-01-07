@@ -280,7 +280,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 x => x.PeerReviewId == peerReviewId,
                 cancellationToken,
                 include: x => x.Include(sc => sc.Score)
-                               .Include(sc => sc.Reviewer) // Ensure Reviewer is included
+                               .Include(sc => sc.Reviewer)
             );
 
             if (peerReview == null)
@@ -343,6 +343,10 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
 
             await _uow.Commit(cancellationToken);
+            var reviewer = await _uow.UserRepository.FirstOrDefaultAsync(
+                x => x.UserId == request.ReviewerId,
+                cancellationToken
+            );
 
             var reviewedUser = await _uow.UserRepository.FirstOrDefaultAsync(
                 x => x.UserId == peerReview.ReviewedUserId,
@@ -356,7 +360,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
 We are pleased to inform you that your submission ({exam.ExamName}) has been successfully reviewed as part of the peer review process.
 
-Reviewer: {peerReview.Reviewer?.Fullname}
+Reviewer: {reviewer?.Fullname}
 Review Date: {peerReview.ReviewDate.ToString("dd/MM/yyyy")}
 
 We sincerely appreciate your efforts and contributions to this initiative. Should you have any further inquiries or require additional information, please do not hesitate to reach out.
