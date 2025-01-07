@@ -189,7 +189,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
 
             var questionTypes = peerType == Enums.EnumPeerReviewType.Review
-                ? new[] { Enums.EnumQuestionType.Essay.ToString() } 
+                ? new[] { Enums.EnumQuestionType.Essay.ToString() }
                 : new[] { Enums.EnumQuestionType.Essay.ToString(), Enums.EnumQuestionType.Choice.ToString() };
 
 
@@ -246,7 +246,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         QuestionName = userAnswer.Question?.QuestionText ?? "Unknown",
                         QuestionType = userAnswer.QuestionType,
                         UserAnswersForChoice = userAnswer.QuestionType == Enums.EnumQuestionType.Choice.ToString()
-                                ? new List<int> { userAnswer.AnswerId ?? 0 } 
+                                ? new List<int> { userAnswer.AnswerId ?? 0 }
                                 : null,
                         UserAnswerContentForEssay = userAnswer.QuestionType == Enums.EnumQuestionType.Essay.ToString()
                             ? userAnswer.AnswerContent
@@ -254,7 +254,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                         SystemAnswers = userAnswer.Question?.Answers.Select(a => new AnswerDto
                         {
                             AnswerId = a.AnswerId,
-                            Text = a.Text, 
+                            Text = a.Text,
                             IsCorrect = a.IsCorrect
                         }).ToList() ?? new List<AnswerDto>(),
                         IsCorrectQuestion = peerReviewDetail?.ScoreEachQuestion > 0,
@@ -357,12 +357,19 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             if (reviewedUser != null)
             {
                 var emailSubject = "Peer Review Process Completed";
-                var emailBody = $"Dear {reviewedUser.Fullname},\n\n" +
-                                "We are pleased to inform you that your submission has been successfully reviewed as part of the peer review process.\n\n" +
-                                "We sincerely appreciate your efforts and contributions to this initiative. Should you have any further inquiries or require additional information, please do not hesitate to reach out.\n\n" +
-                                "Thank you for your participation and dedication.\n\n" +
-                                "Best regards,\n" +
-                                "Student Information Portal";
+                var emailBody = $@"Dear {reviewedUser.Fullname},
+
+We are pleased to inform you that your submission ({exam.ExamName}) has been successfully reviewed as part of the peer review process.
+
+Review Date: {peerReview.ReviewDate}
+
+We sincerely appreciate your efforts and contributions to this initiative. Should you have any further inquiries or require additional information, please do not hesitate to reach out.
+
+Thank you for your participation and dedication.
+
+Best regards,  
+Student Information Portal";
+
 
                 await _emailService.SendEmailAsync(reviewedUser.Email, emailSubject, emailBody);
             }
@@ -382,7 +389,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             var userAnswers = await _uow.UserAnswerRepository.WhereAsync(x => x.ScoreId == scoreId);
             if (!userAnswers.Any())
             {
-                return 0; 
+                return 0;
             }
 
             var scoreExam = await _uow.ScoreRepository.FirstOrDefaultAsync(
@@ -393,7 +400,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
 
             if (scoreExam?.Exam == null || scoreExam.Exam.QuestionCount <= 0)
             {
-                return 0; 
+                return 0;
             }
 
             var questionCount = scoreExam.Exam.QuestionCount;
