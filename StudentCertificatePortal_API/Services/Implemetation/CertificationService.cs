@@ -101,6 +101,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
 
             await _uow.CertificationRepository.AddAsync(certificationEntity);
+            await _uow.Commit(cancellationToken);
             var notification = new Notification()
             {
                 NotificationName = "New Certification Created",
