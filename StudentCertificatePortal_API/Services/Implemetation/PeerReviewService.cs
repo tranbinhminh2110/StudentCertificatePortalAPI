@@ -316,6 +316,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             peerReview.FeedbackPeerReviewer = request.FeedbackPeerReviewer;
             peerReview.ReviewerId = request.ReviewerId;
 
+            List<dynamic> peerReviewDetails = new();
+
             foreach (var questionScore in request.peerReviewQuestionScores)
             {
                 var peerReviewDetail = await _uow.PeerReviewDetailRepository
@@ -340,6 +342,24 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                     };
                     await _uow.PeerReviewDetailRepository.AddAsync(newPeerReviewDetail, cancellationToken);
                 }
+
+                /**
+                 * After all mandatory operations, Add the peer review details to the list
+                 * So this step is not effect anything in the database cause it not use unitOfWork to modify data (except using unit of work to retrieve data)
+                 */
+                var questionName = await _uow.QuestionRepository.FirstOrDefaultAsync(
+                    x => x.QuestionId == questionScore.QuestionId,
+                    cancellationToken
+                );
+
+                peerReviewDetails.Add(new
+                {
+                    QuestionId = questionScore.QuestionId,
+                    QuestionName = questionName?.QuestionText,
+                    FeedBackForQuestion = questionScore.FeedBackForQuestion,
+                    ScoreForQuestion = questionScore.ScoreForQuestion
+                });
+
             }
 
             await _uow.Commit(cancellationToken);
@@ -362,6 +382,9 @@ We are pleased to inform you that your submission ({exam.ExamName}) has been suc
 
 Reviewer: {reviewer?.Fullname}
 Review Date: {peerReview.ReviewDate.ToString("dd/MM/yyyy")}
+
+This is the detail of peer review:
+{string.Join("\n", peerReviewDetails.Select(x => $"Question: {x.QuestionName}\nFeedback: {x.FeedBackForQuestion}\nScore: {x.ScoreForQuestion}\n"))}
 
 We sincerely appreciate your efforts and contributions to this initiative. Should you have any further inquiries or require additional information, please do not hesitate to reach out.
 
