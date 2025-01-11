@@ -102,12 +102,12 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 }
             }
             if (exam.ExamFee.HasValue && totalDiscount > 0)
-            {
+            {   
                 float discountAmount = exam.ExamFee.Value * (totalDiscount / 100f);
                 exam.ExamDiscountFee = (int?)(exam.ExamFee.Value - discountAmount);
             }
 
-            result.ExamDiscountFee = (int?)(result.ExamFee.Value * totalDiscount);
+            result.ExamDiscountFee = exam.ExamFee - (int?)(result.ExamFee.Value * totalDiscount);
 
             _uow.SimulationExamRepository.Update(result);
             await _uow.Commit(cancellationToken);

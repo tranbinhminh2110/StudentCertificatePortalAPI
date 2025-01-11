@@ -759,7 +759,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             if (totalVoucherDiscount > 0)
             {
                 float discountAmount = totalPrice * (totalVoucherDiscount / 100f);
-                totalPriceVoucher = (int)Math.Ceiling(totalPrice - discountAmount);
+                totalPriceVoucher = (int)Math.Ceiling(totalPrice - discountAmount); 
             }
 
             // Cập nhật thông tin ExamEnrollment
