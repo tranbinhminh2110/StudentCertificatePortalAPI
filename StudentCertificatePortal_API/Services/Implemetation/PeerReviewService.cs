@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using StudentCertificatePortal_API.Contracts.Requests;
@@ -36,8 +37,8 @@ namespace StudentCertificatePortal_API.Services.Implemetation
             }
 
             var peerReview = await _uow.PeerReviewRepository.WhereAsync(
-    x => x.ReviewedUserId == request.ReviewedUserId 
-         && x.ScoreId == request.ScoreId 
+    x => x.ReviewedUserId == request.ReviewedUserId
+         && x.ScoreId == request.ScoreId
          && (x.ReviewerId == null || x.ReviewerId == 0)
 );
 
@@ -355,7 +356,7 @@ namespace StudentCertificatePortal_API.Services.Implemetation
                 peerReviewDetails.Add(new
                 {
                     QuestionId = questionScore.QuestionId,
-                    QuestionName = questionName?.QuestionText,
+                    QuestionName = RemoveHtmlTags(questionName?.QuestionText ?? string.Empty),
                     FeedBackForQuestion = questionScore.FeedBackForQuestion,
                     ScoreForQuestion = questionScore.ScoreForQuestion
                 });
@@ -433,5 +434,22 @@ Student Information Portal";
 
             return 100.0 / countToUse ?? 0;
         }
+
+        public static string RemoveHtmlTags(string html)
+        {
+            if (string.IsNullOrWhiteSpace(html))
+                return string.Empty;
+
+            // Regex to remove HTML tags
+            string noHtml = Regex.Replace(html, "<.*?>", string.Empty);
+
+            // Remove multiple spaces, newlines, and trim the result
+            noHtml = Regex.Replace(noHtml, @"\s+", " ").Trim();
+
+            return noHtml;
+        }
+
     }
+
+
 }
