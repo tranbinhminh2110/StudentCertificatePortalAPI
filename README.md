@@ -54,7 +54,6 @@ The **Student Certificate Portal API** is a comprehensive platform designed to s
   The platform focuses on certification and exam preparation. Job placement or career services will not be included.
 
 ## Contact
-- Author: Minh Tran Binh
-- LinkedIn: [www.linkedin.com/in/tranbinhminh211002](https://www.linkedin.com/in/tranbinhminh211002)
+- LinkedIn: [www.linkedin.com/in/tranbinhminh211002](https://www.linkedin.com/in/tranbinhminh2110)
 - Email: tranbinhminh211002@gmail.com
 
