@@ -56,4 +56,6 @@ The **Student Certificate Portal API** is a comprehensive platform designed to s
 ## Contact
 - LinkedIn: [www.linkedin.com/in/tranbinhminh211002](https://www.linkedin.com/in/tranbinhminh2110)
 - Email: tranbinhminh211002@gmail.com
-
+## Contributors
+- **Tran Binh Minh** - Backend Developer  
+- **Nguyen Thanh Dat** - Backend Developer 
